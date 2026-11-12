@@ -1,0 +1,7 @@
+refer/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/.venv/
+__pycache__/
+.DS_Store

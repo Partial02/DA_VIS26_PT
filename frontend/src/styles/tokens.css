@@ -1,0 +1,15 @@
+:root {
+  font-family: 'Instrument Sans', 'Noto Sans KR', sans-serif;
+  color: #f7f7fb;
+  background: #020205;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  --void: #020205;
+  --silver: #d9dcea;
+  --muted: #8f8b9f;
+  --violet: #a999dc;
+  --line: #b8a9d522;
+  --glass: #0d0b18a6;
+  --ease: cubic-bezier(.22, 1, .36, 1);
+}
