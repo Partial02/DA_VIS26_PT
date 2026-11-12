@@ -4,6 +4,7 @@ import type { ThreeEvent } from '@react-three/fiber'
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, ShaderMaterial } from 'three'
 import { seededRandom, seedOf } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
+import { spacePosition } from './space'
 
 const vertexShader = `
   attribute float aSize;
@@ -17,7 +18,8 @@ const vertexShader = `
     vec3 p = position;
     p.y += sin(uTime * .19 + p.x * 1.3) * .025 * uMotion;
     gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.);
-    gl_PointSize = aSize * (1. + sin(uTime * .7 + position.x * 5.) * .12 * uMotion);
+    float distanceScale = clamp(24. / max(1., -(modelViewMatrix * vec4(p, 1.)).z), .55, 2.4);
+    gl_PointSize = aSize * distanceScale * (1. + sin(uTime * .7 + position.x * 5.) * .12 * uMotion);
   }
 `
 const fragmentShader = `
@@ -26,8 +28,10 @@ const fragmentShader = `
   void main() {
     float d = length(gl_PointCoord - .5) * 2.;
     if (d > 1.) discard;
-    float light = exp(-d * d * 5.5) * vGlow;
-    gl_FragColor = vec4(vColor, light);
+    float core = exp(-d * d * 30.);
+    float halo = exp(-d * d * 4.) * .32;
+    vec3 starlight = mix(vColor, vec3(.94, .95, 1.), core * .85);
+    gl_FragColor = vec4(starlight, min(1., (core + halo) * vGlow));
   }
 `
 
@@ -39,13 +43,13 @@ export function ParticleField({ reduced, suppressed }: { reduced: boolean; suppr
     const positions: number[] = [], colors: number[] = [], sizes: number[] = [], glows: number[] = []
     for (const track of catalog.tracks) {
       const rng = seededRandom(seedOf(track.id))
-      positions.push(...track.position, (rng() - .5) * .08)
+      positions.push(...spacePosition(track.position, track.genreId, track.id).toArray())
       const visited = track.subgenreIds.reduce((sum, id) => sum + (state.visits[id] ?? 0), 0)
       const active = state.view.level === 'universe' || state.view.genreId === track.genreId
-      const color = new Color('#d9dcea').lerp(new Color(catalog.genreById.get(track.genreId)!.color), .35)
+      const color = new Color(catalog.genreById.get(track.genreId)!.color)
       colors.push(color.r, color.g, color.b)
       sizes.push((1.8 + rng() * 3.4 + Math.min(visited, 6) * .5) * Math.min(devicePixelRatio, 1.75))
-      glows.push(state.view.level === 'system' ? .07 : active ? .48 + Math.min(visited, 6) * .09 : .035)
+      glows.push(state.view.level === 'system' ? .07 : active ? .5 + Math.min(visited, 6) * .04 : .05)
     }
     result.setAttribute('position', new BufferAttribute(new Float32Array(positions), 3))
     result.setAttribute('color', new BufferAttribute(new Float32Array(colors), 3))
@@ -72,7 +76,7 @@ export function ParticleField({ reduced, suppressed }: { reduced: boolean; suppr
 }
 
 export function SystemDust({ id, position, color, reduced }: {
-  id: string; position: [number, number]; color: string; reduced: boolean
+  id: string; position: [number, number, number]; color: string; reduced: boolean
 }) {
   const geometry = useMemo(() => {
     const rng = seededRandom(seedOf(id)), count = reduced ? 2600 : 5600
@@ -102,7 +106,7 @@ export function SystemDust({ id, position, color, reduced }: {
     if (points.current && !reduced) points.current.rotation.z += delta * .025
   })
   const points = useRef<import('three').Points>(null)
-  return <points ref={points} position={[...position, .2]} geometry={geometry}>
+  return <points ref={points} position={position} geometry={geometry}>
     <shaderMaterial ref={material} vertexColors transparent depthWrite={false} blending={AdditiveBlending}
       vertexShader={vertexShader} fragmentShader={fragmentShader} uniforms={uniforms} />
   </points>

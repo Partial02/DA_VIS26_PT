@@ -1,7 +1,11 @@
 import { Component, Suspense, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode, RefObject } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { OrthographicCamera, Vector3 } from 'three'
+import { PerspectiveCamera, Vector3 } from 'three'
+import { OrbitControls } from '@react-three/drei'
+import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
+import { cameraFootprint, frameSpace, spacePosition } from './space'
+import type { Position } from '../domain/catalog'
 import gsap from 'gsap'
 import { adjacentSubgenre, seedOf, systemTracks } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
@@ -22,94 +26,69 @@ class CanvasBoundary extends Component<{ children: ReactNode; onError: () => voi
   render() { return this.state.failed ? null : this.props.children }
 }
 
-function CameraRig({ reduced, controls }: { reduced: boolean; controls: RefObject<NavigationControls | null> }) {
+function CameraRig({ reduced, controls, onBoundsChange }: { reduced: boolean; controls: RefObject<NavigationControls | null>; onBoundsChange: (bounds: Position[] | null) => void }) {
   const { catalog, state, dispatch } = useExperience()
-  const { camera, size, raycaster, gl } = useThree()
+  const { camera, get, raycaster } = useThree()
+  const orbit = useRef<OrbitControlsImpl>(null)
+  const travel = useRef<gsap.core.Tween | null>(null)
+  const lastBounds = useRef('')
+  const lastReport = useRef(-Infinity)
+  useFrame(({ clock }) => {
+    if (clock.elapsedTime - lastReport.current < .1) return
+    const bounds = cameraFootprint(camera)
+    const key = JSON.stringify(bounds)
+    if (key === lastBounds.current) return
+    lastBounds.current = key
+    lastReport.current = clock.elapsedTime
+    onBoundsChange(bounds)
+  })
   useEffect(() => {
-    if (!(camera instanceof OrthographicCamera)) return
-    const isSystem = state.view.level === 'system'
+    if (!(camera instanceof PerspectiveCamera) || !orbit.current) return
+    const controller = orbit.current
+    const system = state.view.level === 'system'
     const members = state.view.level === 'universe' ? catalog.tracks :
       catalog.genreById.get(state.view.genreId)!.trackIds.map(id => catalog.trackById.get(id)!)
-    const xs = members.map(t => t.position[0]), ys = members.map(t => t.position[1])
-    const xMin = Math.min(...xs), xMax = Math.max(...xs), yMin = Math.min(...ys), yMax = Math.max(...ys)
-    const center = state.view.level === 'system' ? catalog.subgenreById.get(state.view.subgenreId)!.position : [(xMin + xMax) / 2, (yMin + yMax) / 2]
-    const width = isSystem ? 8.7 : state.view.level === 'genre' ? Math.max(xMax - xMin + .7, 1.8) : xMax - xMin + 3
-    const height = isSystem ? 7 : state.view.level === 'genre' ? Math.max(yMax - yMin + .8, 1.8) : yMax - yMin + 5
-    const target = { x: camera.position.x, y: camera.position.y, zoom: camera.zoom }
-    const zoom = Math.min(size.width / width, size.height / height)
-    raycaster.params.Points = { threshold: Math.max(.06, 5 / zoom) }
-    let travelFinished = false
-    const tween = gsap.to(target, {
-      x: center[0], y: center[1], zoom, duration: reduced ? .15 : .65, ease: 'power3.inOut',
-      onUpdate: () => { camera.position.x = target.x; camera.position.y = target.y; camera.zoom = target.zoom; camera.updateProjectionMatrix() },
-      onComplete: () => { travelFinished = true; dispatch({ type: 'arrive', transition: state.transition }) },
+    const size = get().size
+    const points = state.view.level === 'system' ? [spacePosition(catalog.subgenreById.get(state.view.subgenreId)!.position, state.view.genreId)] :
+      members.map(track => spacePosition(track.position, track.genreId, track.id))
+    const { center, destination, distance } = frameSpace(points, size.width / size.height, camera.fov, system)
+    controller.minDistance = Math.max(1.5, distance * .12)
+    controller.maxDistance = distance * 3
+    raycaster.params.Points = { threshold: .09 }
+    const origin = camera.position.clone(), oldTarget = controller.target.clone()
+    const progress = { value: 0 }
+    travel.current = gsap.to(progress, {
+      value: 1, duration: reduced ? .15 : .8, ease: 'power3.inOut',
+      onUpdate: () => {
+        camera.position.lerpVectors(origin, destination, progress.value)
+        controller.target.lerpVectors(oldTarget, center, progress.value)
+        controller.update()
+      },
+      onComplete: () => { dispatch({ type: 'arrive', transition: state.transition }) },
     })
-    const canvas = gl.domElement
-    let pointer: { id: number; x: number; y: number } | null = null
-    function finishTravel() { if (!travelFinished) tween.progress(1); tween.kill() }
-    function update() {
-      const span = Math.max(xMax - xMin, yMax - yMin, 4)
-      camera.position.x = Math.max(xMin - span, Math.min(xMax + span, camera.position.x))
-      camera.position.y = Math.max(yMin - span, Math.min(yMax + span, camera.position.y))
-      camera.updateProjectionMatrix()
-      raycaster.params.Points = { threshold: 5 / camera.zoom }
+    const finishTravel = () => { travel.current?.progress(1); travel.current?.kill() }
+    controller.addEventListener('start', finishTravel)
+    controls.current = {
+      zoom: factor => {
+        finishTravel()
+        const offset = camera.position.clone().sub(controller.target)
+        offset.setLength(Math.max(controller.minDistance, Math.min(controller.maxDistance, offset.length() / factor)))
+        camera.position.copy(controller.target).add(offset); controller.update()
+      },
+      pan: (x, y) => {
+        finishTravel()
+        const offset = camera.position.clone().sub(controller.target)
+        offset.applyAxisAngle(new Vector3(0, 1, 0), x * .003)
+        offset.applyAxisAngle(new Vector3(1, 0, 0), y * .003)
+        camera.position.copy(controller.target).add(offset); controller.update()
+      },
+      reset: () => { finishTravel(); camera.position.copy(destination); controller.target.copy(center); controller.update() },
     }
-    function changeZoom(factor: number, x = 0, y = 0) {
-      finishTravel()
-      const oldZoom = camera.zoom
-      camera.zoom = Math.max(zoom * .4, Math.min(zoom * 8, oldZoom * factor))
-      camera.position.x += x / oldZoom - x / camera.zoom
-      camera.position.y += y / oldZoom - y / camera.zoom
-      update()
-    }
-    function pan(x: number, y: number) {
-      finishTravel()
-      camera.position.x -= x / camera.zoom
-      camera.position.y += y / camera.zoom
-      update()
-    }
-    function down(event: PointerEvent) {
-      if (isSystem || event.button !== 0 || !event.isPrimary) return
-      finishTravel()
-      pointer = { id: event.pointerId, x: event.clientX, y: event.clientY }
-      canvas.setPointerCapture(event.pointerId)
-      canvas.style.cursor = 'grabbing'
-    }
-    function move(event: PointerEvent) {
-      if (!pointer || pointer.id !== event.pointerId) return
-      pan(event.clientX - pointer.x, event.clientY - pointer.y)
-      pointer.x = event.clientX; pointer.y = event.clientY
-    }
-    function up(event: PointerEvent) {
-      if (pointer?.id !== event.pointerId) return
-      pointer = null
-      if (canvas.hasPointerCapture(event.pointerId)) canvas.releasePointerCapture(event.pointerId)
-      canvas.style.cursor = ''
-    }
-    function wheel(event: WheelEvent) {
-      event.preventDefault()
-      const rect = canvas.getBoundingClientRect()
-      changeZoom(Math.exp(-Math.max(-120, Math.min(120, event.deltaY)) * .003),
-        event.clientX - rect.left - rect.width / 2, rect.height / 2 - (event.clientY - rect.top))
-    }
-    controls.current = { zoom: changeZoom, pan, reset: () => {
-      finishTravel(); camera.position.x = center[0]; camera.position.y = center[1]; camera.zoom = zoom; update()
-    } }
-    canvas.addEventListener('pointerdown', down)
-    canvas.addEventListener('pointermove', move)
-    canvas.addEventListener('pointerup', up)
-    canvas.addEventListener('pointercancel', up)
-    canvas.addEventListener('wheel', wheel, { passive: false })
-    return () => {
-      tween.kill(); controls.current = null
-      if (pointer && canvas.hasPointerCapture(pointer.id)) canvas.releasePointerCapture(pointer.id)
-      canvas.style.cursor = ''
-      canvas.removeEventListener('pointerdown', down); canvas.removeEventListener('pointermove', move)
-      canvas.removeEventListener('pointerup', up); canvas.removeEventListener('pointercancel', up)
-      canvas.removeEventListener('wheel', wheel)
-    }
-  }, [camera, catalog, controls, dispatch, gl, raycaster, reduced, size, state.transition, state.view])
-  return null
+    return () => { travel.current?.kill(); controller.removeEventListener('start', finishTravel); controls.current = null }
+  }, [camera, catalog, controls, dispatch, get, raycaster, reduced, state.transition, state.view])
+  return <OrbitControls ref={orbit} makeDefault enableDamping={!reduced} dampingFactor={.08} rotateSpeed={.55}
+    minAzimuthAngle={-1.1} maxAzimuthAngle={1.1} minPolarAngle={.5} maxPolarAngle={2.6} enableRotate={state.view.level !== 'system'}
+    enablePan={state.view.level !== 'system'} />
 }
 
 function Markers({ suppressed, onHover }: { suppressed: () => boolean; onHover: (id: string) => void }) {
@@ -124,7 +103,7 @@ function Markers({ suppressed, onHover }: { suppressed: () => boolean; onHover: 
       dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id }
         : { level: 'system', genreId: item.genreId, subgenreId: item.id } })
     }
-    return <group key={item.id} position={[...item.position, 1]}>
+    return <group key={item.id} position={spacePosition(item.position, genre.id)}>
       <mesh onClick={event => { event.stopPropagation(); navigate() }} onPointerOver={() => onHover(item.id)}>
         <sphereGeometry args={[state.view.level === 'universe' ? .045 : .014, 12, 12]} />
         <meshBasicMaterial color={count ? '#ece4ff' : genre.color} />
@@ -139,6 +118,7 @@ interface Label {
   detail: string
   position: [number, number, number]
   visited: boolean
+  color?: string
   orbit?: number
   selected?: boolean
   navigate: () => void
@@ -207,7 +187,7 @@ function LabelProjection({ labels, elements, lines, reduced, onUnavailable, onRe
   return null
 }
 
-export default function Scene({ reduced, onUnavailable }: { reduced: boolean; onUnavailable: () => void }) {
+export default function Scene({ reduced, onUnavailable, onBoundsChange }: { reduced: boolean; onUnavailable: () => void; onBoundsChange: (bounds: Position[] | null) => void }) {
   const { catalog, state, dispatch } = useExperience()
   const start = useRef<[number, number] | null>(null)
   const suppressUntil = useRef(0)
@@ -222,7 +202,7 @@ export default function Scene({ reduced, onUnavailable }: { reduced: boolean; on
       const sub = catalog.subgenreById.get(state.view.subgenreId)!
       const tracks = systemTracks(catalog, sub.id)
       return tracks.map((track, index) => ({ id: track.id, name: track.title, detail: `0${index + 1}`,
-        position: [...sub.position, 1], orbit: index, visited: false,
+        position: spacePosition(sub.position, sub.genreId).add(new Vector3(0, 0, .5)).toArray() as [number, number, number], orbit: index, visited: false,
         selected: (state.selectedTrackId ?? tracks[0].id) === track.id,
         navigate: () => dispatch({ type: 'selectTrack', id: track.id }) }))
     }
@@ -230,7 +210,8 @@ export default function Scene({ reduced, onUnavailable }: { reduced: boolean; on
     return [...items].sort((a, b) => b.trackIds.length - a.trackIds.length)
       .filter((item, index) => state.view.level === 'universe' || index < 7 || item.id === hovered)
       .map(item => ({ id: item.id, name: item.name, detail: `${item.trackIds.length.toLocaleString()} TRACKS`,
-        position: [...item.position, 1], visited: 'color' in item ? item.subgenreIds.some(id => state.visits[id]) : Boolean(state.visits[item.id]),
+        position: spacePosition(item.position, 'color' in item ? item.id : item.genreId).toArray() as [number, number, number],
+        color: 'color' in item ? item.color : catalog.genreById.get(item.genreId)!.color, visited: 'color' in item ? item.subgenreIds.some(id => state.visits[id]) : Boolean(state.visits[item.id]),
         navigate: () => { if (!suppressed()) dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id } : { level: 'system', genreId: item.genreId, subgenreId: item.id } }) },
       }))
   }, [catalog, dispatch, hovered, state.selectedTrackId, state.view, state.visits])
@@ -239,7 +220,7 @@ export default function Scene({ reduced, onUnavailable }: { reduced: boolean; on
     const sub = adjacentSubgenre(catalog, state.view.subgenreId, direction)
     dispatch({ type: 'navigate', destination: { level: 'system', genreId: sub.genreId, subgenreId: sub.id } })
   }
-  return <div className={styles.viewport} tabIndex={0} role="region" aria-label="장르 우주 지도. 드래그로 이동, 휠로 확대 축소. 항성계에서 좌우 방향키로 세부장르를 전환합니다."
+  return <div className={styles.viewport} tabIndex={0} role="region" aria-label="장르 우주 지도. 드래그로 회전, 우클릭 드래그 또는 두 손가락으로 이동, 휠로 접근하거나 물러납니다. 항성계에서 좌우 방향키로 세부장르를 전환합니다."
     onKeyDown={event => {
       if (event.target !== event.currentTarget) return
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', '0'].includes(event.key)) event.preventDefault()
@@ -267,11 +248,11 @@ export default function Scene({ reduced, onUnavailable }: { reduced: boolean; on
       if (state.view.level === 'system' && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) step(dx < 0 ? 1 : -1)
     }} onPointerCancel={() => { start.current = null }}>
     <CanvasBoundary onError={onUnavailable}>
-      <Canvas orthographic camera={{ position: [0, 0, 40], zoom: 20, near: .1, far: 100 }} dpr={[1, 1.75]}
+      <Canvas camera={{ position: [0, -6, 40], fov: 45, near: .1, far: 500 }} dpr={[1, 1.75]}
         gl={{ alpha: true, antialias: false, powerPreference: 'high-performance' }}
         fallback={<span className="srOnly">3D 지도 대신 장르 목록에서 탐색해 주세요.</span>}>
         <Suspense fallback={null}>
-          <CameraRig reduced={reduced} controls={controls} />
+          <CameraRig reduced={reduced} controls={controls} onBoundsChange={onBoundsChange} />
           <ParticleField reduced={reduced} suppressed={suppressed} />
           <Markers suppressed={suppressed} onHover={setHovered} />
           <MusicSystem reduced={reduced} />
@@ -283,14 +264,13 @@ export default function Scene({ reduced, onUnavailable }: { reduced: boolean; on
     <div className={styles.labels}><svg className={styles.labelLines} aria-hidden="true">{labels.filter(l => l.orbit === undefined).map(label => <line key={label.id} ref={element => { if (element) lines.current.set(label.id, element); else lines.current.delete(label.id) }} />)}</svg>{labels.map(label => <button key={label.id}
       ref={element => { if (element) elements.current.set(label.id, element); else elements.current.delete(label.id) }}
       className={label.orbit === undefined ? `${styles.marker} ${label.visited ? styles.visitedMarker : ''}` : `${styles.planetLabel} ${label.selected ? styles.selectedPlanet : ''}`}
-      onClick={label.navigate} title={label.name}>
-      {label.orbit !== undefined ? <><span>{label.detail}</span> {label.name}</> : <><span className={styles.markerName}>{label.name}</span><span>{label.detail}{label.visited ? ' · 발견됨' : ''}</span></>}
+      onClick={label.navigate} title={label.name} style={label.color ? { color: label.color } : undefined}>
+      {label.orbit !== undefined ? <><span>{label.detail}</span> {label.name}</> : <><span className={styles.markerName}>{label.name}</span><span className="srOnly">{label.detail}{label.visited ? ' · 발견됨' : ''}</span></>}
     </button>)}</div>
     <div className={styles.mapControls} aria-label="지도 배율 조절">
       <button onClick={() => controls.current?.zoom(1.3)} aria-label="지도 확대" title="확대 (+)">+</button>
       <button onClick={() => controls.current?.zoom(1 / 1.3)} aria-label="지도 축소" title="축소 (-)">−</button>
       <button onClick={() => controls.current?.reset()} aria-label="지도 보기 초기화" title="원래 보기 (0)">⌖</button>
-      <span>{state.view.level === 'system' ? 'SCROLL TO ZOOM' : 'DRAG TO PAN · SCROLL TO ZOOM'}</span>
     </div>
   </div>
 }

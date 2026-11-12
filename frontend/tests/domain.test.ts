@@ -15,6 +15,8 @@ test('the shipped catalog retains every real track and genre relationship', () =
   assert.equal(catalog.genres.length, 15)
   assert.equal(catalog.subgenres.length, 146)
   assert.equal(catalog.meta.profileCount, 339)
+  assert.equal(new Set(catalog.genres.map(g => g.color)).size, 15)
+  assert.ok(catalog.genres.every(g => catalog.genreById.get(g.id) === g))
   assert.equal(catalog.trackById.get('0007391')!.title, 'Au Coeur Des Villes / Feat . Cynthia')
   assert.equal(catalog.trackById.get('0007391')!.duration, 188.1)
   assert.ok(catalog.genres.some(g => g.name === 'Folk / Country'))

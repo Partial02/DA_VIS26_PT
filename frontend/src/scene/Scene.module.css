@@ -1,4 +1,4 @@
-.viewport { position: absolute; inset: 48px 340px 30px 240px; touch-action: none; outline: none; }
+.viewport { position: absolute; inset: 48px 340px 30px 0; touch-action: none; outline: none; }
 .viewport:focus-visible { border-radius: 24px; outline: 1px solid #a999dc66; outline-offset: -12px; }
 .viewport canvas { cursor: grab; }
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -10,17 +10,16 @@
 .marker { text-align: center; white-space: nowrap; padding: 5px 8px; border-radius: 8px; line-height: 1.7; transition: background .2s; }
 .marker:hover, .marker:focus-visible { background: #151224d9; }
 .marker span { display: block; color: #837990; font-size: 8px; letter-spacing: 1px; }
-.marker .markerName { color: #cbc2db; font-size: 12px; letter-spacing: .3px; }
-.visitedMarker .markerName { color: #eee6ff; text-shadow: 0 0 14px #a999dc; }
+.marker .markerName { color: inherit; font-size: 12px; letter-spacing: .3px; text-shadow: 0 1px 8px #000, 0 0 16px currentColor; }
+.visitedMarker .markerName { text-shadow: 0 0 14px currentColor; }
 .planetLabel { padding: 5px 9px; white-space: nowrap; max-width: 155px; overflow: hidden; text-overflow: ellipsis; color: #9690ab; font-size: 9px; background: #07071188; border-radius: 4px; }
 .planetLabel span { color: #74648e; margin-right: 4px; font-size: 8px; }
 .selectedPlanet { color: #f4edf9; }
-@media (max-width: 1100px) { .viewport { left: 190px; right: 300px; } }
-@media (max-width: 900px) { .viewport { inset: 140px 18px 190px; } .marker .markerName { font-size: 9px; } }
+@media (max-width: 1100px) { .viewport { right: 300px; } }
+@media (max-width: 900px) { .viewport { inset: 80px 0 30px; } .marker .markerName { font-size: 9px; } }
 
 .mapControls { position: absolute; right: 14px; top: 18px; display: flex; align-items: center; gap: 2px; z-index: 2; }
 .mapControls button { width: 30px; height: 30px; color: #b7a5ce; font-size: 18px; background: #0b0816b3; border: 1px solid #b8a9d526; }
 .mapControls button:first-child { border-radius: 8px 0 0 8px; }
 .mapControls button:nth-child(3) { border-radius: 0 8px 8px 0; }
 .mapControls button:hover { background: #a999dc22; }
-.mapControls span { position: absolute; right: 0; top: 40px; white-space: nowrap; color: #7f6e94; font-size: 6px; letter-spacing: .7px; pointer-events: none; }

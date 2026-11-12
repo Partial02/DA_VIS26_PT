@@ -7,6 +7,7 @@ import { seedOf, systemTracks } from '../domain/catalog'
 import type { Track } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
 import { SystemDust } from './ParticleField'
+import { spacePosition } from './space'
 
 function TrackOrbit({ track, index, selected, color, reduced, onSelect }: {
   track: Track; index: number; selected: boolean; color: string; reduced: boolean; onSelect: () => void
@@ -41,9 +42,10 @@ export function MusicSystem({ reduced }: { reduced: boolean }) {
   const genre = catalog.genreById.get(sub.genreId)!
   const tracks = systemTracks(catalog, sub.id)
   const selected = state.selectedTrackId ?? tracks[0]?.id
+  const position = spacePosition(sub.position, sub.genreId).toArray() as [number, number, number]
   return <>
-    <SystemDust key={`${sub.id}:${selected}`} id={`${sub.id}:${selected}`} position={sub.position} color={genre.color} reduced={reduced} />
-    <group position={[...sub.position, .5]}>
+    <SystemDust key={`${sub.id}:${selected}`} id={`${sub.id}:${selected}`} position={position} color={genre.color} reduced={reduced} />
+    <group position={position}>
       <mesh>
         <planeGeometry args={[1.7, 1.7]} />
         <shaderMaterial transparent depthWrite={false} uniforms={{ uColor: { value: new Color(genre.color) } }}
