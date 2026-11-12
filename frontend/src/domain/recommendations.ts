@@ -28,7 +28,7 @@ export function recommendGenres(catalog: Catalog, preferences: PreferencePair[])
   const pairs = preferences.filter(p => p.weight > 0 && catalog.genreById.get(p.genreId)?.instruments.includes(p.instrument))
   const total = pairs.reduce((sum, pair) => sum + pair.weight, 0)
   if (!total) return []
-  return catalog.subgenres.map(sub => {
+  const ranked = catalog.subgenres.map(sub => {
     let score = 0
     const instruments: string[] = []
     for (const pair of pairs) {
@@ -40,5 +40,6 @@ export function recommendGenres(catalog: Catalog, preferences: PreferencePair[])
     return { subgenreId: sub.id, genreId: sub.genreId, score, instruments }
   }).filter(result => result.score > 0)
     .sort((a, b) => b.score - a.score || catalog.subgenreById.get(a.subgenreId)!.name.localeCompare(catalog.subgenreById.get(b.subgenreId)!.name, 'en'))
-    .slice(0, 3)
+  // Offer one destination per parent genre, keeping its highest-scoring subgenre.
+  return ranked.filter((result, index) => ranked.findIndex(other => other.genreId === result.genreId) === index).slice(0, 3)
 }

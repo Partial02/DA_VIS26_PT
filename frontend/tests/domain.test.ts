@@ -55,13 +55,14 @@ test('recommendations normalize weights and combine actual instrument frequencie
   const results = recommendGenres(fixture, [
     { genreId: 'jazz', instrument: 'Piano', weight: 75 }, { genreId: 'pop', instrument: 'Piano', weight: 25 },
   ])
-  assert.deepEqual(results.map(r => [r.subgenreId, r.score]), [['jazz--b', .75], ['jazz--a', .375], ['pop--c', .25]])
+  assert.deepEqual(results.map(r => [r.subgenreId, r.score]), [['jazz--b', .75], ['pop--c', .25]])
   assert.deepEqual(results[0].instruments, ['Piano'])
   const combined = recommendGenres(fixture, [
     { genreId: 'jazz', instrument: 'Piano', weight: 50 }, { genreId: 'jazz', instrument: 'Guitar', weight: 50 },
   ])
   assert.equal(combined[0].subgenreId, 'jazz--a') // .25 + .25; alphabetical tie break.
   assert.equal(combined[0].score, .5)
+  assert.equal(combined.length, 1)
 })
 
 test('weight changes alter destinations; empty, zero and nonexistent pairs yield no results', () => {
@@ -72,6 +73,7 @@ test('weight changes alter destinations; empty, zero and nonexistent pairs yield
   assert.deepEqual(recommendGenres(fixture, [{ genreId: 'pop', instrument: 'Piano', weight: 100 }]).map(r => r.subgenreId), ['pop--c'])
   const actual = recommendGenres(catalog, initialState.preferences)
   assert.equal(actual.length, 3)
+  assert.equal(new Set(actual.map(r => r.genreId)).size, 3)
   assert.ok(actual.every(r => catalog.subgenreById.has(r.subgenreId) && r.score > 0))
 })
 
