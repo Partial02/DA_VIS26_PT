@@ -8,9 +8,9 @@ import { Explore } from './components/Explore'
 import { Presentation } from './presentation/Presentation'
 
 function parseHash() {
-  if (location.hash === '#/explore') return { story: false, chapter: 1 }
+  if (location.hash === '#/explore') return { story: false, chapter: 0 }
   const match = location.hash.match(/^#\/story\/([1-6])$/)
-  return { story: true, chapter: match ? Number(match[1]) : 1 }
+  return { story: true, chapter: match ? Number(match[1]) : 0 }
 }
 
 export default function App() {
@@ -33,7 +33,7 @@ export default function App() {
   if (error) return <main className="loadScreen"><h1>별의 지도를 불러오지 못했어요.</h1><p>데이터 파일과 개발 서버 연결을 확인한 뒤 다시 시도해 주세요.</p><button className="outlinedButton" onClick={() => location.reload()}>다시 불러오기 ↗</button></main>
   if (!catalog) return <main className="loadScreen"><i /><span>GATHERING THE STARS</span></main>
   return <ExperienceProvider catalog={catalog}>
-    <div className="app"><AmbientBackground /><Header story={route.story} />
+    <div className="app"><AmbientBackground /><Header story={route.story} chapter={route.chapter} />
       {route.story ? <Presentation chapter={route.chapter} /> : <Explore />}
     </div>
   </ExperienceProvider>
