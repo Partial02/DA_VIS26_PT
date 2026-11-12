@@ -1,5 +1,5 @@
-.presentation { position: relative; min-height: 100svh; padding: 150px 6% 125px; display: flex; flex-direction: column; justify-content: center; }
-.partLabel { position: absolute; top: 136px; left: 6%; color: #b6a3cc; font-size: 8px; letter-spacing: 2px; }
+.presentation { position: relative; min-height: 100svh; padding: 100px 6% 125px; display: flex; flex-direction: column; justify-content: center; }
+.partLabel { position: absolute; top: 80px; left: 6%; color: #b6a3cc; font-size: 8px; letter-spacing: 2px; }
 .partLabel span { margin-left: 22px; color: #64586f; font-size: 7px; }
 .chapter { display: grid; grid-template-columns: 1fr 1.2fr; gap: 8%; width: 100%; align-items: center; padding: 40px 0; }
 .chapterCopy { min-width: 0; }
@@ -23,4 +23,4 @@
 .storyFooter > div { display: flex; align-items: center; gap: 35px; }
 .storyFooter > div a { display: flex; align-items: center; gap: 16px; color: #aa94bf; font-size: 8px; letter-spacing: 1px; }
 .storyFooter .disabled { opacity: .25; pointer-events: none; }
-@media (max-width: 900px) { .presentation { padding: 135px 24px 150px; } .partLabel { top: 105px; left: 24px; font-size: 6px; } .partLabel span { font-size: 5px; margin-left: 10px; } .chapter { grid-template-columns: 1fr; gap: 25px; padding: 20px 0; } .chapterCopy h1 { font-size: 35px; margin: 20px 0; } .bodySlot { min-height: 70px; } .visualSlot { min-height: 220px; max-height: 300px; aspect-ratio: auto; } .storyFooter { bottom: 30px; left: 24px; right: 24px; align-items: flex-start; gap: 20px; flex-direction: column; } .storyFooter > div { align-self: flex-end; } }
+@media (max-width: 900px) { .presentation { padding: 135px 24px 150px; } .partLabel { top: 75px; left: 24px; font-size: 6px; } .partLabel span { font-size: 5px; margin-left: 10px; } .chapter { grid-template-columns: 1fr; gap: 25px; padding: 20px 0; } .chapterCopy h1 { font-size: 35px; margin: 20px 0; } .bodySlot { min-height: 70px; } .visualSlot { min-height: 220px; max-height: 300px; aspect-ratio: auto; } .storyFooter { bottom: 30px; left: 24px; right: 24px; align-items: flex-start; gap: 20px; flex-direction: column; } .storyFooter > div { align-self: flex-end; } }

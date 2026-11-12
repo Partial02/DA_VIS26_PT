@@ -1,4 +1,5 @@
 const paths = {
+  menu: 'M4 7h16M4 12h16M4 17h16',
   arrow: 'M5 12h14M13 6l6 6-6 6',
   back: 'M19 12H5m6-6-6 6 6 6',
   close: 'm6 6 12 12M6 18 18 6',
