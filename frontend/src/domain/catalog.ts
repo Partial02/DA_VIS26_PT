@@ -63,9 +63,14 @@ export function indexCatalog(data: MusicData): Catalog {
   }
 }
 
-export function systemTracks(catalog: Catalog, subgenreId: string): Track[] {
-  return (catalog.subgenreById.get(subgenreId)?.trackIds ?? [])
+export function systemTracks(catalog: Catalog, subgenreId: string, selectedId?: string | null): Track[] {
+  const members = catalog.subgenreById.get(subgenreId)?.trackIds ?? []
+  const tracks = members
     .toSorted().slice(0, 3).map(id => catalog.trackById.get(id)!)
+  if (selectedId && members.includes(selectedId) && !tracks.some(track => track.id === selectedId)) {
+    tracks[0] = catalog.trackById.get(selectedId)!
+  }
+  return tracks
 }
 
 export function adjacentSubgenre(catalog: Catalog, subgenreId: string, direction: number): Subgenre {

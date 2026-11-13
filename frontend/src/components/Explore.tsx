@@ -28,7 +28,7 @@ export function Explore() {
   const reduced = useReducedMotion()
   const [webgl, setWebgl] = useState(hasWebGL)
   const [activePanel, setActivePanel] = useState<'genres' | 'recommendations' | 'map' | 'visits' | null>(null)
-  const [recommendationWidth, setRecommendationWidth] = useState(420)
+  const [recommendationWidth, setRecommendationWidth] = useState(300)
   const resizeStart = useRef<{ x: number; width: number } | null>(null)
   const [mapBounds, setMapBounds] = useState<Position[] | null>(null)
   const toolbar = useRef<HTMLElement>(null)
@@ -83,7 +83,7 @@ export function Explore() {
         {activePanel === 'visits' && <VisitPanel />}
       </div>
     </section>}
-    {showRecommendations && <div id={activePanel === 'recommendations' ? 'exploreTools' : undefined} className={subgenre ? styles.systemSidebar : styles.recommendationPopover}
+    {showRecommendations && <div id={!subgenre && activePanel === 'recommendations' ? 'exploreTools' : undefined} className={subgenre ? styles.systemSidebar : styles.recommendationPopover}
       role={subgenre ? 'complementary' : undefined} aria-label={subgenre ? '세부장르 플레이리스트와 추천' : undefined} inert={Boolean(subgenre) && transitioning}
       onKeyDown={event => { if (!subgenre && event.key === 'Escape' && !(event.target as Element).closest('dialog')) { event.stopPropagation(); closePanel() } }}>
       <div className={styles.recommendationResize} role="separator" aria-orientation="vertical" aria-label={subgenre ? '오른쪽 패널 너비 조절' : '추천 패널 너비 조절'} tabIndex={0}

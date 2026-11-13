@@ -7,10 +7,10 @@ import { useReducedMotion } from '../state/useReducedMotion'
 const silver = ['#d9dce5', '#d9dce5', '#e2dfd6', '#bbc4d8', '#a39bc2', '#90b7bc']
 
 export function AmbientBackground({ cover, exploring, drift }: { cover: boolean; exploring: boolean; drift: RefObject<{ depth: number }> }) {
-  const { catalog, state } = useExperience()
+  const { catalog } = useExperience()
   const reduced = useReducedMotion()
   const canvas = useRef<HTMLCanvasElement>(null)
-  const followsPointer = !exploring || state.view.level !== 'universe'
+  const followsPointer = !exploring
   const appearance = useRef({ cover, followsPointer })
   useEffect(() => {
     appearance.current.cover = cover

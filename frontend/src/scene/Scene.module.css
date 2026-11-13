@@ -1,5 +1,5 @@
 .viewport { position: absolute; inset: 48px 0 0 60px; touch-action: none; outline: none; }
-.viewport[data-system='true'] { right: calc(var(--system-panel-width) + 40px); }
+.viewport[data-system='true'] { right: calc(var(--system-panel-width) + 64px); }
 .viewport:focus-visible { border-radius: 0; outline: 1px solid #a999dc66; outline-offset: -12px; }
 .viewport canvas { cursor: grab; }
 .labels { position: absolute; inset: 0; pointer-events: none; overflow: hidden; }
@@ -12,8 +12,10 @@
 .marker:hover, .marker:focus-visible { background: #151224d9; }
 .marker span { display: block; color: #837990; font-size: 8px; letter-spacing: 1px; }
 .marker .markerName { color: inherit; font-size: 12px; letter-spacing: .3px; text-shadow: 0 1px 8px #000, 0 0 16px currentColor; }
+.viewport:not(.universe) .marker[data-highlighted='true'] .markerName { filter: saturate(1.2); }
 .visitedMarker .markerName { text-shadow: 0 0 14px currentColor; }
 .universe .marker { opacity: 0; pointer-events: none; transition: opacity .3s, color .45s, background .3s; }
+.viewport[data-hovered='true'] canvas { cursor: pointer; }
 .universe .marker[data-highlighted="true"], .universe .marker:focus-visible { opacity: 1; pointer-events: auto; }
 .universe .labelLines line { visibility: hidden; }
 .universe .labelLines line[data-highlighted="true"] { visibility: visible; stroke: #e1d5f4; }

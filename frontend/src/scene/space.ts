@@ -16,11 +16,13 @@ export function frameSpace(points: Vector3[], aspect: number, fov: number, syste
   const direction = new Vector3(0, -.16, 1).normalize()
   const up = new Vector3(0, 1, .16).normalize()
   // Fit actual 3D points, including the near side of the globe and tilted view.
-  const distance = system ? Math.max(7 / (2 * tangent), 9 / (2 * tangent * aspect)) + 2 :
-    Math.max(...points.map(point => {
-      const offset = point.clone().sub(center)
-      return offset.dot(direction) + Math.max(Math.abs(offset.x) / (tangent * aspect), Math.abs(offset.dot(up)) / tangent)
-    })) + 2.4
+  const fit = Math.max(...points.map(point => {
+    const offset = point.clone().sub(center)
+    return offset.dot(direction) + Math.max(Math.abs(offset.x) / (tangent * aspect), Math.abs(offset.dot(up)) / tangent)
+  })) + 2.4
+  // Subgenres are a close-up of their existing coordinates, with outer members
+  // allowed beyond the frame instead of replacing them with a synthetic system.
+  const distance = system ? Math.max(3, fit * .65) : fit
   const destination = center.clone().addScaledVector(direction, distance)
   return { center, destination, distance }
 }

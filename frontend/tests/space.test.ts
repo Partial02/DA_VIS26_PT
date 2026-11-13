@@ -71,3 +71,13 @@ test('home and genre camera framing keeps the actual stars within rectangular vi
     }
   }
 })
+
+test('subgenre close-up zooms into existing stars without changing their coordinates', () => {
+  const points = [new Vector3(-3, -2, 1), new Vector3(4, 3, -1), new Vector3(1, 0, 2)]
+  const originals = points.map(point => point.toArray())
+  const wide = frameSpace(points, 1.4, 45, false)
+  const close = frameSpace(points, 1.4, 45, true)
+  assert.ok(close.distance < wide.distance)
+  assert.deepEqual(close.center.toArray(), wide.center.toArray())
+  assert.deepEqual(points.map(point => point.toArray()), originals)
+})

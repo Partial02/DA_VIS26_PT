@@ -1,18 +1,20 @@
 import { Component, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { ReactNode, RefObject } from 'react'
 import { Canvas, useFrame, useThree } from '@react-three/fiber'
-import { Euler, PerspectiveCamera, Quaternion, Vector3 } from 'three'
+import { PerspectiveCamera, Vector3 } from 'three'
 import { OrbitControls } from '@react-three/drei'
 import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { cameraFootprint, frameSpace, spaceFlight, spacePosition } from './space'
 import type { Position } from '../domain/catalog'
 import gsap from 'gsap'
-import { adjacentSubgenre, seedOf, systemTracks } from '../domain/catalog'
+import { systemTracks } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
 import type { Destination } from '../state/reducer'
 import { journeyMotion } from '../state/motion'
 import { ConstellationLinks, ParticleField } from './ParticleField'
+import { starHitRadius } from './hover'
 import { MusicSystem } from './MusicSystem'
+import { trackOrbitPosition } from './orbits'
 import styles from './Scene.module.css'
 
 const zoomFactor = 1.3
@@ -23,7 +25,7 @@ interface NavigationControls {
   reset: () => void
 }
 
-interface FlightState { busy: boolean; reveal: number }
+interface FlightState { busy: boolean; reveal: number; orbitScale: number }
 
 class CanvasBoundary extends Component<{ children: ReactNode; onError: () => void }, { failed: boolean }> {
   state = { failed: false }
@@ -42,39 +44,8 @@ function CameraRig({ reduced, paused, controls, flight, onSceneArrival, onTravel
   const lastBounds = useRef('')
   const lastReport = useRef(-Infinity)
   const firstFlight = useRef(true)
-  const steering = useRef({ x: 0, y: 0, targetX: 0, targetY: 0 })
-  const look = useMemo(() => ({ rotation: new Euler(0, 0, 0, 'YXZ'), quaternion: new Quaternion() }), [])
-  useEffect(() => {
-    const reset = () => { steering.current.targetX = 0; steering.current.targetY = 0 }
-    const move = (event: PointerEvent) => {
-      if (event.pointerType !== 'mouse' || event.buttons) { reset(); return }
-      const rect = gl.domElement.getBoundingClientRect()
-      steering.current.targetX = (event.clientX - rect.left) / rect.width * 2 - 1
-      steering.current.targetY = (event.clientY - rect.top) / rect.height * 2 - 1
-    }
-    gl.domElement.addEventListener('pointermove', move)
-    gl.domElement.addEventListener('pointerleave', reset)
-    gl.domElement.addEventListener('pointerdown', reset)
-    window.addEventListener('blur', reset)
-    return () => {
-      gl.domElement.removeEventListener('pointermove', move)
-      gl.domElement.removeEventListener('pointerleave', reset)
-      gl.domElement.removeEventListener('pointerdown', reset)
-      window.removeEventListener('blur', reset)
-    }
-  }, [gl])
-  useFrame(({ clock }, delta) => {
-    const moving = flight.current.busy
-    const followsPointer = !reduced && state.view.level !== 'universe'
-    const follow = 1 - Math.exp(-Math.min(delta, .05) * 5)
-    const gaze = steering.current
-    gaze.x += ((!followsPointer || moving ? 0 : gaze.targetX) - gaze.x) * follow
-    gaze.y += ((!followsPointer || moving ? 0 : gaze.targetY) - gaze.y) * follow
-    if (followsPointer && !moving) {
-      look.rotation.set(-gaze.y * .04, -gaze.x * .065, 0)
-      camera.quaternion.multiply(look.quaternion.setFromEuler(look.rotation))
-      camera.updateMatrixWorld()
-    }
+  const previousView = useRef(state.view)
+  useFrame(({ clock }) => {
     if (clock.elapsedTime - lastReport.current < .1) return
     const bounds = cameraFootprint(camera)
     const key = JSON.stringify(bounds)
@@ -87,17 +58,26 @@ function CameraRig({ reduced, paused, controls, flight, onSceneArrival, onTravel
     if (!(camera instanceof PerspectiveCamera) || !orbit.current) return
     const controller = orbit.current
     const system = state.view.level === 'system'
-    const members = state.view.level === 'universe' ? catalog.tracks :
-      catalog.genreById.get(state.view.genreId)!.trackIds.map(id => catalog.trackById.get(id)!)
+    const ids = state.view.level === 'system' ? catalog.subgenreById.get(state.view.subgenreId)!.trackIds :
+      state.view.level === 'genre' ? catalog.genreById.get(state.view.genreId)!.trackIds : null
+    const members = ids ? ids.map(id => catalog.trackById.get(id)!) : catalog.tracks
     const size = gl.domElement.parentElement!.getBoundingClientRect()
-    const points = state.view.level === 'system' ? [spacePosition(catalog.subgenreById.get(state.view.subgenreId)!.position)] :
-      members.map(track => spacePosition(track.position))
+    const points = members.map(track => spacePosition(track.position))
     const { center, destination, distance } = frameSpace(points, size.width / size.height, 45, system)
+    if (state.view.level === 'system') {
+      const offset = destination.clone().sub(center)
+      center.copy(spacePosition(catalog.subgenreById.get(state.view.subgenreId)!.position))
+      destination.copy(center).add(offset)
+    }
+    flight.current.orbitScale = Math.min(1, distance * Math.tan(Math.PI / 8) * Math.min(1, size.width / size.height) / 3.2)
+    const localZoom = !firstFlight.current && previousView.current.level !== 'universe' && state.view.level !== 'universe'
+      && previousView.current.genreId === state.view.genreId
+    if (localZoom) destination.copy(center).addScaledVector(camera.position.clone().sub(controller.target).normalize(), distance)
+    previousView.current = state.view
     controller.enabled = false
     flight.current.busy = true
     onTravelChange(true)
-    steering.current.x = steering.current.y = 0
-    raycaster.params.Points = { threshold: .09 }
+    raycaster.params.Points = { threshold: system ? .09 : starHitRadius }
     const origin = firstFlight.current && !reduced
       ? destination.clone().add(new Vector3(0, 0, distance * .12)) : camera.position.clone()
     const oldTarget = firstFlight.current ? center.clone() : camera.position.clone()
@@ -121,7 +101,7 @@ function CameraRig({ reduced, paused, controls, flight, onSceneArrival, onTravel
     timeline.to(progress, {
       value: 1, duration: reduced ? .12 : initial ? .9 : journeyMotion.duration, ease: journeyMotion.ease,
       onUpdate: () => {
-        if (reduced) camera.position.lerpVectors(origin, destination, progress.value)
+        if (reduced || localZoom) camera.position.lerpVectors(origin, destination, progress.value)
         else path.getPoint(progress.value, camera.position)
         controller.target.lerpVectors(oldTarget, center, progress.value)
         lookTarget.lerpVectors(oldTarget, center, progress.value)
@@ -149,6 +129,12 @@ function CameraRig({ reduced, paused, controls, flight, onSceneArrival, onTravel
         if (flight.current.busy) return
         const viewport = get().size
         const frame = frameSpace(points, viewport.width / viewport.height, 45, system)
+        if (state.view.level === 'system') {
+          const offset = frame.destination.clone().sub(frame.center)
+          frame.center.copy(spacePosition(catalog.subgenreById.get(state.view.subgenreId)!.position))
+          frame.destination.copy(frame.center).add(offset)
+        }
+        flight.current.orbitScale = Math.min(1, frame.distance * Math.tan(Math.PI / 8) * Math.min(1, viewport.width / viewport.height) / 3.2)
         controller.minDistance = Math.max(1.5, frame.distance * .12)
         controller.maxDistance = frame.distance * 3
         camera.position.copy(frame.destination); controller.target.copy(frame.center); controller.update()
@@ -158,35 +144,7 @@ function CameraRig({ reduced, paused, controls, flight, onSceneArrival, onTravel
   }, [camera, catalog, controls, dispatch, flight, get, gl, onSceneArrival, onTravelChange, raycaster, reduced, state.transition, state.view])
   return <OrbitControls ref={orbit} makeDefault enableDamping={!reduced} dampingFactor={.08} rotateSpeed={.55}
     autoRotate={!reduced && state.view.level === 'universe' && !paused} autoRotateSpeed={.22}
-    minAzimuthAngle={state.view.level === 'universe' ? -Infinity : -1.1} maxAzimuthAngle={state.view.level === 'universe' ? Infinity : 1.1}
-    minPolarAngle={.5} maxPolarAngle={2.6} enableRotate={state.view.level !== 'system'}
-    enablePan={state.view.level !== 'system'} />
-}
-
-function Markers({ view, suppressed, onHover }: { view: Destination; suppressed: () => boolean; onHover: (id: string | null) => void }) {
-  const { catalog, state, dispatch } = useExperience()
-  const items = useMemo(() => view.level === 'universe' ? catalog.genres : view.level === 'genre'
-    ? catalog.genreById.get(view.genreId)!.subgenreIds.map(id => catalog.subgenreById.get(id)!) : [], [catalog, view])
-  if (view.level === 'universe') return null
-  return <>{items.map(item => {
-    const genre = 'color' in item ? item : catalog.genreById.get(item.genreId)!
-    const count = 'color' in item ? item.subgenreIds.reduce((sum, id) => sum + (state.visits[id] ?? 0), 0) : state.visits[item.id] ?? 0
-    const navigate = () => {
-      if (suppressed()) return
-      dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id }
-        : { level: 'system', genreId: item.genreId, subgenreId: item.id } })
-    }
-    return <group key={item.id} position={spacePosition(item.position)}>
-      <mesh onClick={event => { event.stopPropagation(); navigate() }} onPointerOver={event => { event.stopPropagation(); onHover(item.id) }} onPointerOut={() => onHover(null)}>
-        <sphereGeometry args={[.18, 12, 12]} />
-        <meshBasicMaterial transparent opacity={0} depthWrite={false} />
-      </mesh>
-      <mesh raycast={() => {}}>
-        <sphereGeometry args={[.014, 12, 12]} />
-      <meshBasicMaterial color={count ? '#ece7dc' : genre.color} />
-      </mesh>
-    </group>
-  })}</>
+    minPolarAngle={.5} maxPolarAngle={2.6} enableRotate enablePan />
 }
 
 interface Label {
@@ -196,7 +154,9 @@ interface Label {
   position: [number, number, number]
   visited: boolean
   color?: string
+  track?: boolean
   orbit?: number
+  orbitCenter?: [number, number, number]
   selected?: boolean
   navigate: () => void
 }
@@ -225,11 +185,9 @@ function LabelProjection({ labels, elements, lines, container, flight, reduced, 
       const element = elements.current.get(label.id)
       if (!element) continue
       vector.set(...label.position)
-      if (label.orbit !== undefined) {
-        const radius = 1.25 + label.orbit * .76
-        const angle = (seedOf(label.id) % 628) / 100 + (reduced ? 0 : clock.elapsedTime * (.055 - label.orbit * .01))
-        vector.x += Math.cos(angle) * radius
-        vector.y += Math.sin(angle) * radius * .65 - .16
+      if (label.orbit !== undefined && label.orbitCenter && !flight.current.busy) {
+        trackOrbitPosition(label.id, label.orbit, reduced ? 0 : clock.elapsedTime, flight.current.orbitScale, vector)
+        vector.x += label.orbitCenter[0]; vector.y += label.orbitCenter[1]; vector.z += label.orbitCenter[2]
       }
       vector.project(camera)
       const anchorX = (vector.x + 1) / 2 * size.width
@@ -241,8 +199,8 @@ function LabelProjection({ labels, elements, lines, container, flight, reduced, 
         continue
       }
       const width = element.offsetWidth, height = element.offsetHeight
-      let x = anchorX, y = anchorY
-      if (label.orbit === undefined) {
+      let x = anchorX, y = anchorY + (label.track ? 8 : 0)
+      if (!label.track) {
         let placed = false
         for (const offsetY of [8, -42, 42, -80, 80, -118, 118, -156, 156]) {
           for (const offsetX of [0, -65, 65, -130, 130]) {
@@ -275,7 +233,7 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
   const start = useRef<[number, number] | null>(null)
   const suppressUntil = useRef(0)
   const controls = useRef<NavigationControls | null>(null)
-  const flight = useRef<FlightState>({ busy: true, reveal: 0 })
+  const flight = useRef<FlightState>({ busy: true, reveal: 0, orbitScale: 1 })
   const labelsContainer = useRef<HTMLDivElement>(null)
   const [sceneView, setSceneView] = useState(state.view)
   const [traveling, setTraveling] = useState(true)
@@ -315,9 +273,10 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
   const labels = useMemo((): Label[] => {
     if (sceneView.level === 'system') {
       const sub = catalog.subgenreById.get(sceneView.subgenreId)!
-      const tracks = systemTracks(catalog, sub.id)
-      return tracks.map((track, index) => ({ id: track.id, name: track.title, detail: `0${index + 1}`,
-        position: spacePosition(sub.position).add(new Vector3(0, 0, .5)).toArray() as [number, number, number], orbit: index, visited: false,
+      const tracks = systemTracks(catalog, sub.id, state.selectedTrackId)
+      const ordered = sub.trackIds.toSorted()
+      return tracks.map((track, index) => ({ id: track.id, name: track.title, detail: String(ordered.indexOf(track.id) + 1).padStart(2, '0'),
+        position: track.position, track: true, orbit: index, orbitCenter: sub.position, visited: false,
         selected: (state.selectedTrackId ?? tracks[0].id) === track.id,
         navigate: () => dispatch({ type: 'selectTrack', id: track.id }) }))
     }
@@ -330,20 +289,14 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
         navigate: () => { if (!suppressed()) dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id } : { level: 'system', genreId: item.genreId, subgenreId: item.id } }) },
       }))
   }, [catalog, dispatch, hovered, state.selectedTrackId, sceneView, state.visits, state.genreVisits])
-  function step(direction: number) {
-    if (state.view.level !== 'system') return
-    const sub = adjacentSubgenre(catalog, state.view.subgenreId, direction)
-    dispatch({ type: 'navigate', destination: { level: 'system', genreId: sub.genreId, subgenreId: sub.id } })
-  }
-  return <div ref={viewport} className={`${styles.viewport} ${sceneView.level === 'universe' ? styles.universe : ''}`} data-system={state.view.level === 'system'} tabIndex={0} role="region" aria-busy={traveling} aria-label="장르 우주 지도. 드래그로 회전, 우클릭 드래그 또는 두 손가락으로 이동, 휠로 접근하거나 물러납니다. 항성계에서 좌우 방향키로 세부장르를 전환합니다."
+  return <div ref={viewport} className={`${styles.viewport} ${sceneView.level === 'universe' ? styles.universe : ''}`} data-system={state.view.level === 'system'} data-hovered={sceneView.level !== 'system' && hovered !== null} tabIndex={0} role="region" aria-busy={traveling} aria-label="장르 우주 지도. 드래그로 회전, 우클릭 드래그 또는 두 손가락으로 이동, 휠로 접근하거나 물러납니다. 방향키로 회전하고 0으로 원래 보기를 복원합니다."
     onKeyDown={event => {
       if (event.target !== event.currentTarget) return
       if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', '+', '=', '-', '0'].includes(event.key)) event.preventDefault()
       if (event.key === '+' || event.key === '=') controls.current?.zoom(zoomFactor)
       else if (event.key === '-') controls.current?.zoom(1 / zoomFactor)
       else if (event.key === '0') controls.current?.reset()
-      else if (state.view.level === 'system' && ['ArrowLeft', 'ArrowRight'].includes(event.key)) step(event.key === 'ArrowRight' ? 1 : -1)
-      else if (state.view.level !== 'system') {
+      else {
         if (event.key === 'ArrowLeft') controls.current?.pan(50, 0)
         if (event.key === 'ArrowRight') controls.current?.pan(-50, 0)
         if (event.key === 'ArrowUp') controls.current?.pan(0, 50)
@@ -361,7 +314,6 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
       const dx = event.clientX - start.current[0], dy = event.clientY - start.current[1]
       start.current = null
       if (Math.hypot(dx, dy) > 8) suppressUntil.current = performance.now() + 300
-      if (state.view.level === 'system' && Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.3) step(dx < 0 ? 1 : -1)
     }} onPointerCancel={() => { start.current = null }} onPointerLeave={() => highlight(null)}>
     <CanvasBoundary onError={onUnavailable}>
       <Canvas camera={{ position: [0, -6, 40], fov: 45, near: .1, far: 500 }} dpr={[1, 1.75]}
@@ -369,22 +321,21 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
         fallback={<span className="srOnly">3D 지도 대신 장르 목록에서 탐색해 주세요.</span>}>
         <Suspense fallback={null}>
           <CameraRig reduced={reduced} paused={traveling || hovered !== null} controls={controls} flight={flight} onSceneArrival={setSceneView} onTravelChange={setTraveling} onBoundsChange={onBoundsChange} />
-          <ParticleField view={sceneView} reduced={reduced} suppressed={suppressed} highlighted={sceneView.level === 'universe' ? hovered : null} onHover={highlight} />
+          <ParticleField view={state.view} reduced={reduced} suppressed={suppressed} highlighted={hovered} onHover={highlight} />
           <ConstellationLinks view={sceneView} highlighted={sceneView.level === 'universe' ? hovered : null} />
-          <Markers view={sceneView} suppressed={suppressed} onHover={highlight} />
-          <MusicSystem key={sceneView.level === 'system' ? sceneView.subgenreId : sceneView.level} view={sceneView} reduced={reduced} />
+          {!traveling && <MusicSystem view={sceneView} reduced={reduced} orbitScale={() => flight.current.orbitScale} suppressed={suppressed} />}
           <LabelProjection labels={labels} elements={elements} lines={lines} container={labelsContainer} flight={flight} reduced={reduced} onUnavailable={onUnavailable} onReady={() => setReady(true)} />
         </Suspense>
       </Canvas>
     </CanvasBoundary>
     {!ready && <div className={styles.loadingStars} role="status"><i />GATHERING THE STARS</div>}
-    <div ref={labelsContainer} className={styles.labels} style={{ opacity: 0 }}><svg className={styles.labelLines} aria-hidden="true">{labels.filter(l => l.orbit === undefined).map(label => <line key={label.id} data-highlighted={hovered === label.id} ref={element => { if (element) lines.current.set(label.id, element); else lines.current.delete(label.id) }} />)}</svg>{labels.map(label => <button key={label.id}
+    <div ref={labelsContainer} className={styles.labels} style={{ opacity: 0 }}><svg className={styles.labelLines} aria-hidden="true">{labels.filter(l => !l.track).map(label => <line key={label.id} data-highlighted={hovered === label.id} ref={element => { if (element) lines.current.set(label.id, element); else lines.current.delete(label.id) }} />)}</svg>{labels.map(label => <button key={label.id}
       ref={element => { if (element) elements.current.set(label.id, element); else elements.current.delete(label.id) }}
-      className={label.orbit === undefined ? `${styles.marker} ${label.visited ? styles.visitedMarker : ''}` : `${styles.planetLabel} ${label.selected ? styles.selectedPlanet : ''}`}
+      className={!label.track ? `${styles.marker} ${label.visited ? styles.visitedMarker : ''}` : `${styles.planetLabel} ${label.selected ? styles.selectedPlanet : ''}`}
       onClick={label.navigate} onPointerEnter={() => highlight(label.id)} onPointerLeave={() => highlight(null)} onFocus={() => highlight(label.id, true)} onBlur={() => highlight(null)}
       data-highlighted={hovered === label.id} title={label.name}
-      style={label.color ? { color: sceneView.level === 'universe' && hovered !== label.id ? '#aeb5c2' : label.color } : undefined}>
-      {label.orbit !== undefined ? <><span>{label.detail}</span> {label.name}</> : <><span className={styles.markerName}>{label.name}</span><span className="srOnly">{label.detail}{label.visited ? ' · 발견됨' : ''}</span></>}
+      style={label.color ? { color: hovered === label.id ? label.color : sceneView.level === 'universe' ? '#aeb5c2' : `color-mix(in srgb, ${label.color} 30%, #e3e9f7)` } : undefined}>
+      {label.track ? <><span>{label.detail}</span> {label.name}</> : <><span className={styles.markerName}>{label.name}</span><span className="srOnly">{label.detail}{label.visited ? ' · 발견됨' : ''}</span></>}
     </button>)}</div>
     <div className={styles.mapControls} aria-label="지도 배율 조절">
       <button disabled={traveling} onClick={() => controls.current?.zoom(zoomFactor)} aria-label="지도 확대" title="확대 (+)">+</button>
