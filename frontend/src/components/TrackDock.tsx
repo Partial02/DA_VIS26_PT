@@ -19,12 +19,12 @@ export function TrackDock() {
   const signal = useMemo(() => createDemoSignal(current?.id ?? 'quiet'), [current?.id])
   if (!tracks.length) return null
   return <aside className={styles.trackDock} aria-label="항성계의 세 곡">
-    <div className={styles.panelHeading}><span>노래</span></div>
+    <div className={styles.panelHeading}><span>플레이리스트</span></div>
       <div className={styles.trackList}>{tracks.map((track, index) => <button key={track.id}
         className={`${styles.trackCard} ${current?.id === track.id ? styles.activeTrack : ''}`}
         aria-pressed={current?.id === track.id} onClick={() => dispatch({ type: 'selectTrack', id: track.id })}>
         <span className={styles.trackIndex}>0{index + 1}</span>
-        <span className={styles.trackArt} style={{ '--cover-hue': `${220 + index * 23}deg` } as CSSProperties}><i /><b /></span>
+        <span className={styles.trackArt} style={{ '--cover-angle': `${-35 + index * 18}deg` } as CSSProperties}><i /><b /></span>
         <span className={styles.trackText}><strong>{track.title}</strong><span>{track.artist}</span></span>
         <span className={styles.duration}>{formatDuration(track.duration)}</span>
       </button>)}</div>

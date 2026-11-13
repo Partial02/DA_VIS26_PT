@@ -36,9 +36,8 @@ export function SoundToggle() {
   }
   return <>
     <button className={styles.soundToggle} onClick={toggle} aria-pressed={enabled}
-      aria-label={enabled ? '우주 앰비언트 소리 끄기' : '우주 앰비언트 소리 켜기'} title={error ? '오디오를 사용할 수 없습니다. 다시 눌러 재시도하세요.' : '직접 합성한 우주 앰비언트'}>
+      aria-label={enabled ? '우주 앰비언트 소리 끄기' : '우주 앰비언트 소리 켜기'} title={error ? '오디오를 사용할 수 없습니다. 다시 눌러 재시도하세요.' : enabled ? '소리 끄기' : '소리 켜기'}>
       <span className={styles.soundBars} aria-hidden="true"><i /><i /><i /><i /></span>
-      <span>{enabled ? '소리 끄기' : '소리 켜기'}</span>
     </button>
     {error && <span className="srOnly" role="status">소리를 재생하지 못했습니다. 소리 버튼으로 다시 시도할 수 있습니다.</span>}
   </>

@@ -20,7 +20,7 @@ export function MiniMap({ bounds }: { bounds: Position[] | null }) {
   const footprint = bounds?.map(point => project(point).join(',')).join(' ')
   return <aside className={styles.miniMap} aria-label="방문 기록과 전체 내비게이션 지도">
     <svg viewBox="0 0 220 240" role="group" aria-label="장르와 세부장르의 실제 분포를 표시하는 미니맵">
-      <defs><clipPath id="miniMapBounds"><rect x="1" y="1" width="218" height="238" rx="10" /></clipPath></defs>
+      <defs><clipPath id="miniMapBounds"><rect x="1" y="1" width="218" height="238" /></clipPath></defs>
       <path d="M1 12V1h11m196 0h11v11M1 228v11h11m196 0h11v-11" fill="none" stroke="#b9a6d03b" strokeWidth=".6" />
       <path d="M110 1v238M1 120h218" stroke="#9b87b520" strokeDasharray="2 6" strokeWidth=".5" />
       {trackDots}

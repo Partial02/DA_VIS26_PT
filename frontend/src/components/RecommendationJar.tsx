@@ -7,7 +7,7 @@ import { Icon } from './Icon'
 import { containDialogFocus } from './dialogFocus'
 import styles from './Interface.module.css'
 
-export function RecommendationJar() {
+export function RecommendationJar({ onClose }: { onClose?: () => void }) {
   const { catalog, state, dispatch } = useExperience()
   const [editing, setEditing] = useState(false)
   const [genreId, setGenreId] = useState('jazz')
@@ -28,7 +28,10 @@ export function RecommendationJar() {
   }, [editing])
   function close() { setEditing(false); editButton.current?.focus() }
   return <aside className={styles.recommendation} aria-label="장르별 탐색 목적지 추천">
-    <div className={styles.panelHeading}><span>다음 장르</span><button ref={editButton} onClick={() => setEditing(true)} aria-label="장르와 악기 조합 편집"><Icon name="mix" size={16} /></button></div>
+    <div className={styles.recommendationHeader}><span>추천</span><div>
+      <button ref={editButton} onClick={() => setEditing(true)} aria-label="장르와 악기 조합 편집"><Icon name="mix" size={16} /></button>
+      {onClose && <button onClick={onClose} aria-label="추천 닫기"><Icon name="close" size={16} /></button>}
+    </div></div>
     <ol className={styles.genreRecommendations}>{results.map(result => {
       const genre = catalog.genreById.get(result.genreId)!
       const subgenre = catalog.subgenreById.get(result.subgenreId)!
@@ -41,7 +44,6 @@ export function RecommendationJar() {
             {dust.map((point, index) => <circle key={index} cx={point.x} cy={point.y} r={point.radius} opacity={point.opacity} />)}
           </svg>
           <span className={styles.genreGlassLabel}><strong>{genre.name}</strong><small>{subgenre.name}</small></span>
-          <Icon name="arrow" size={18} />
         </button>
       </li>
     })}</ol>

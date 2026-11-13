@@ -269,7 +269,7 @@ function LabelProjection({ labels, elements, lines, container, flight, reduced, 
   return null
 }
 
-export default function Scene({ reduced, onUnavailable, onBoundsChange }: { reduced: boolean; onUnavailable: () => void; onBoundsChange: (bounds: Position[] | null) => void }) {
+export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMap }: { reduced: boolean; onUnavailable: () => void; onBoundsChange: (bounds: Position[] | null) => void; onOpenMap: () => void }) {
   const { catalog, state, dispatch } = useExperience()
   const viewport = useRef<HTMLDivElement>(null)
   const start = useRef<[number, number] | null>(null)
@@ -389,7 +389,7 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange }: { redu
     <div className={styles.mapControls} aria-label="지도 배율 조절">
       <button disabled={traveling} onClick={() => controls.current?.zoom(zoomFactor)} aria-label="지도 확대" title="확대 (+)">+</button>
       <button disabled={traveling} onClick={() => controls.current?.zoom(1 / zoomFactor)} aria-label="지도 축소" title="축소 (-)">−</button>
-      <button onClick={() => controls.current?.reset()} aria-label="지도 보기 초기화" title="원래 보기 (0)">⌖</button>
+      <button onClick={onOpenMap} aria-label="미니맵 열기" title="미니맵">⌖</button>
     </div>
   </div>
 }
