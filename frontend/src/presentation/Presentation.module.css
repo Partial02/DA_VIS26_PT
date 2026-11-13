@@ -10,7 +10,7 @@
 .coverContent { position: relative; height: 100%; padding: 60px 8vw; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
 .coverContent h1 { margin: 0; font-size: clamp(48px, 7.3vw, 140px); font-weight: 300; line-height: 1.25; letter-spacing: -.065em; color: #e9e2ef; word-break: keep-all; }
 .coverContent em { color: #bba8d5; font-style: normal; font-family: inherit; font-weight: 300; }
-.continueButton { display: grid; place-items: center; width: 56px; height: 56px; margin-top: 44px; border: 1px solid #c1afcf40; border-radius: 50%; color: #c1afcf; transition: border-color .3s, background .3s, color .3s; }
+.continueButton { display: grid; place-items: center; width: 56px; height: 56px; margin-top: 44px; border: 1px solid #c1afcf40; border-radius: 0; color: #c1afcf; transition: border-color .3s, background .3s, color .3s; }
 .continueButton svg { animation: continueArrow 2.8s ease-in-out infinite; }
 .continueButton:hover, .continueButton:focus-visible { border-color: #d9c6ee99; background: #bba8d510; color: #eee2fa; }
 .continueButton:hover svg, .continueButton:focus-visible svg { animation: none; transform: translateX(3px); }
