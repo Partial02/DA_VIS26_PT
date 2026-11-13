@@ -6,6 +6,7 @@ import type { MusicData, Track } from '../src/domain/catalog.ts'
 import { recommendGenres, pairKey } from '../src/domain/recommendations.ts'
 import { experienceReducer, initialState } from '../src/state/reducer.ts'
 import { createDemoSignal } from '../src/domain/visualization.ts'
+import { genreVisitAppearance } from '../src/domain/visits.ts'
 
 const catalog = indexCatalog(JSON.parse(readFileSync(new URL('../public/data/music-catalog.json', import.meta.url), 'utf8')) as MusicData)
 
@@ -151,6 +152,54 @@ test('only arrival at the current destination increments visits, including rapid
   state = experienceReducer(state, { type: 'arrive', transition: 4 })
   assert.deepEqual(state.visits, { a: 2, c: 1 })
   assert.deepEqual(state.history, ['a', 'c', 'a'])
+})
+
+test('genre visits count completed entries without counting subgenre moves twice', () => {
+  let state = experienceReducer(initialState, { type: 'navigate', destination: { level: 'genre', genreId: 'jazz' } })
+  assert.deepEqual(state.genreVisits, {})
+  state = experienceReducer(state, { type: 'arrive', transition: state.transition })
+  assert.deepEqual(state.genreVisits, { jazz: 1 })
+  assert.equal(experienceReducer(state, { type: 'arrive', transition: state.transition }), state)
+  for (const subgenreId of ['a', 'b']) {
+    state = experienceReducer(state, { type: 'navigate', destination: { level: 'system', genreId: 'jazz', subgenreId } })
+    state = experienceReducer(state, { type: 'arrive', transition: state.transition })
+  }
+  state = experienceReducer(state, { type: 'navigate', destination: { level: 'genre', genreId: 'jazz' } })
+  state = experienceReducer(state, { type: 'arrive', transition: state.transition })
+  assert.deepEqual(state.genreVisits, { jazz: 1 })
+  assert.deepEqual(state.visits, { a: 1, b: 1 })
+  state = experienceReducer(state, { type: 'navigate', destination: { level: 'universe' } })
+  state = experienceReducer(state, { type: 'arrive', transition: state.transition })
+  state = experienceReducer(state, { type: 'navigate', destination: { level: 'genre', genreId: 'jazz' } })
+  state = experienceReducer(state, { type: 'arrive', transition: state.transition })
+  assert.deepEqual(state.genreVisits, { jazz: 2 })
+})
+
+test('direct recommendations count their parent genre and canceled arrivals do not add visits', () => {
+  let state = experienceReducer(initialState, { type: 'navigate', destination: { level: 'genre', genreId: 'rock' } })
+  const canceled = state.transition
+  state = experienceReducer(state, { type: 'navigate', destination: { level: 'system', genreId: 'jazz', subgenreId: 'a' } })
+  assert.equal(experienceReducer(state, { type: 'arrive', transition: canceled }), state)
+  state = experienceReducer(state, { type: 'arrive', transition: state.transition })
+  assert.deepEqual(state.genreVisits, { jazz: 1 })
+  state = experienceReducer(state, { type: 'navigate', destination: { level: 'system', genreId: 'rock', subgenreId: 'b' } })
+  state = experienceReducer(state, { type: 'arrive', transition: state.transition })
+  assert.deepEqual(state.genreVisits, { jazz: 1, rock: 1 })
+  state = experienceReducer(state, { type: 'selectTrack', id: '0007391' })
+  assert.deepEqual(state.genreVisits, { jazz: 1, rock: 1 })
+})
+
+test('accumulated color reaches the hover tint and brightness increases with a finite cap', () => {
+  assert.deepEqual(genreVisitAppearance(0), { colorMix: 0, brightness: 1 })
+  let previous = genreVisitAppearance(0)
+  for (let visits = 1; visits <= 10; visits++) {
+    const current = genreVisitAppearance(visits)
+    assert.ok(current.colorMix >= previous.colorMix && current.colorMix <= 1)
+    assert.ok(current.brightness > previous.brightness)
+    previous = current
+  }
+  assert.equal(genreVisitAppearance(5).colorMix, 1)
+  assert.deepEqual(genreVisitAppearance(10), genreVisitAppearance(1000))
 })
 
 test('swiping wraps through alphabetic siblings, without crossing parent genres', () => {

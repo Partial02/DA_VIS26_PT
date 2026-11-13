@@ -8,6 +8,7 @@ import { useExperience } from '../state/ExperienceContext'
 import type { Destination } from '../state/reducer'
 import { spacePosition } from './space'
 import { hoveredGenre } from './hover'
+import { genreVisitAppearance } from '../domain/visits'
 
 // Match refer/index (1).html: tiny tapered points and slow, seed-based alpha.
 const fieldVertexShader = `
@@ -15,13 +16,13 @@ const fieldVertexShader = `
   varying vec3 vColor;
   varying float vAlpha;
   uniform float uTime, uMotion, uOpacity, uDpr;
-  uniform float uFocus[15], uVisibility[15];
+  uniform float uFocus[15], uVisibility[15], uVisitColor[15], uVisitBrightness[15];
   void main() {
     float focus = uFocus[int(aGenre)];
     float twinkle = .55 + .45 * sin(aSeed * 45. + uTime * (.35 + aSeed * .2) * uMotion);
     vec3 tint = color / max(max(color.r, color.g), color.b);
-    vColor = mix(vec3(.75, .78, .85), tint, focus);
-    vAlpha = twinkle * aGlow * uOpacity * uVisibility[int(aGenre)] * (1. + focus * .2);
+    vColor = mix(vec3(.75, .78, .85), tint, max(focus, uVisitColor[int(aGenre)]));
+    vAlpha = twinkle * aGlow * uOpacity * uVisibility[int(aGenre)] * uVisitBrightness[int(aGenre)] * (1. + focus * .2);
     vec4 mv = modelViewMatrix * vec4(position, 1.);
     gl_PointSize = clamp(aSize * uDpr * 65. / max(8., -mv.z), 1.25 * uDpr, 2.5 * uDpr);
     gl_Position = projectionMatrix * mv;
@@ -86,7 +87,7 @@ const fragmentShader = `
 export function ParticleField({ view, reduced, suppressed, highlighted, onHover }: {
   view: Destination; reduced: boolean; suppressed: () => boolean; highlighted: string | null; onHover: (id: string | null) => void
 }) {
-  const { catalog, dispatch } = useExperience()
+  const { catalog, state, dispatch } = useExperience()
   const { gl } = useThree()
   const points = useRef<Points>(null)
   const hover = useMemo(() => ({ ray: new Raycaster(), pointer: new Vector2(), active: false, dirty: false, lastCheck: 0 }), [])
@@ -127,7 +128,8 @@ export function ParticleField({ view, reduced, suppressed, highlighted, onHover 
   }, [catalog])
   useEffect(() => () => geometry.dispose(), [geometry])
   const uniforms = useMemo(() => ({ uTime: { value: 0 }, uOpacity: { value: 1 }, uMotion: { value: reduced ? 0 : 1 },
-    uDpr: { value: Math.min(devicePixelRatio, 1.75) }, uFocus: { value: new Float32Array(15) }, uVisibility: { value: new Float32Array(15).fill(1) } }), [reduced])
+    uDpr: { value: Math.min(devicePixelRatio, 1.75) }, uFocus: { value: new Float32Array(15) }, uVisibility: { value: new Float32Array(15).fill(1) },
+    uVisitColor: { value: new Float32Array(15) }, uVisitBrightness: { value: new Float32Array(15).fill(1) } }), [reduced])
   useFrame(({ clock, camera }, delta) => {
     const rendered = material.current?.uniforms
     if (!rendered) return
@@ -142,6 +144,9 @@ export function ParticleField({ view, reduced, suppressed, highlighted, onHover 
     const genreId = view.level === 'universe' ? highlighted : view.genreId
     const blend = reduced ? 1 : 1 - Math.exp(-Math.min(delta, .05) * 5)
     catalog.genres.forEach((genre, index) => {
+      const accumulated = genreVisitAppearance(state.genreVisits[genre.id] ?? 0)
+      rendered.uVisitColor.value[index] += (accumulated.colorMix - rendered.uVisitColor.value[index]) * blend
+      rendered.uVisitBrightness.value[index] += (accumulated.brightness - rendered.uVisitBrightness.value[index]) * blend
       rendered.uFocus.value[index] += ((genre.id === genreId ? 1 : 0) - rendered.uFocus.value[index]) * blend
       const visibility = view.level === 'system' ? .02 : view.level === 'universe' || view.genreId === genre.id ? 1 : .03
       rendered.uVisibility.value[index] += (visibility - rendered.uVisibility.value[index]) * (reduced ? 1 : 1 - Math.exp(-Math.min(delta, .05) * 8))

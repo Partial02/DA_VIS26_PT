@@ -12,6 +12,8 @@ export interface ExperienceState {
   arrivedTransition: number
   selectedTrackId: string | null
   visits: Record<string, number>
+  genreVisits: Record<string, number>
+  arrivedGenreId: string | null
   history: string[]
   preferences: PreferencePair[]
 }
@@ -26,7 +28,7 @@ export type Action =
 
 export const initialState: ExperienceState = {
   view: { level: 'universe' }, transition: 0, arrivedTransition: 0,
-  selectedTrackId: null, visits: {}, history: [], preferences: initialPreferences,
+  selectedTrackId: null, visits: {}, genreVisits: {}, arrivedGenreId: null, history: [], preferences: initialPreferences,
 }
 
 export function experienceReducer(state: ExperienceState, action: Action): ExperienceState {
@@ -36,9 +38,13 @@ export function experienceReducer(state: ExperienceState, action: Action): Exper
       return { ...state, view: action.destination, selectedTrackId: null, transition: state.transition + 1 }
     case 'arrive': {
       if (action.transition !== state.transition || state.arrivedTransition === action.transition) return state
-      if (state.view.level !== 'system') return { ...state, arrivedTransition: action.transition }
+      const genreId = state.view.level === 'universe' ? null : state.view.genreId
+      const genreVisits = genreId && genreId !== state.arrivedGenreId
+        ? { ...state.genreVisits, [genreId]: (state.genreVisits[genreId] ?? 0) + 1 } : state.genreVisits
+      const arrived = { ...state, arrivedTransition: action.transition, genreVisits, arrivedGenreId: genreId }
+      if (state.view.level !== 'system') return arrived
       const id = state.view.subgenreId
-      return { ...state, arrivedTransition: action.transition,
+      return { ...arrived,
         visits: { ...state.visits, [id]: (state.visits[id] ?? 0) + 1 }, history: [...state.history, id] }
     }
     case 'selectTrack':

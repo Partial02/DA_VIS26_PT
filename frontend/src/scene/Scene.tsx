@@ -326,10 +326,10 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
       .filter((item, index) => sceneView.level === 'universe' || index < 7 || item.id === hovered)
       .map(item => ({ id: item.id, name: item.name, detail: `${item.trackIds.length.toLocaleString()} TRACKS`,
         position: spacePosition(item.position).toArray() as [number, number, number],
-        color: 'color' in item ? item.color : catalog.genreById.get(item.genreId)!.color, visited: 'color' in item ? item.subgenreIds.some(id => state.visits[id]) : Boolean(state.visits[item.id]),
+        color: 'color' in item ? item.color : catalog.genreById.get(item.genreId)!.color, visited: 'color' in item ? Boolean(state.genreVisits[item.id]) : Boolean(state.visits[item.id]),
         navigate: () => { if (!suppressed()) dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id } : { level: 'system', genreId: item.genreId, subgenreId: item.id } }) },
       }))
-  }, [catalog, dispatch, hovered, state.selectedTrackId, sceneView, state.visits])
+  }, [catalog, dispatch, hovered, state.selectedTrackId, sceneView, state.visits, state.genreVisits])
   function step(direction: number) {
     if (state.view.level !== 'system') return
     const sub = adjacentSubgenre(catalog, state.view.subgenreId, direction)

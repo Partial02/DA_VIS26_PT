@@ -19,7 +19,7 @@ export function AtlasDialog({ open, onClose }: { open: boolean; onClose: () => v
       {state.view.level !== 'universe' && <button className={styles.listBack} onClick={() => { dispatch({ type: 'navigate', destination: { level: 'universe' } }); setQuery('') }}><Icon name="back" size={14} /> 전체 장르</button>}
       <label className={styles.searchLabel}><span className="srOnly">장르 또는 세부장르 검색</span><input placeholder="찾고 싶은 장르가 있나요?" value={query} onChange={event => setQuery(event.target.value)} type="search" /></label>
       <div className={styles.atlasList}>{groups.map(group => {
-        const visits = 'genreId' in group ? state.visits[group.id] ?? 0 : group.subgenreIds.reduce((sum, id) => sum + (state.visits[id] ?? 0), 0)
+        const visits = 'genreId' in group ? state.visits[group.id] ?? 0 : state.genreVisits[group.id] ?? 0
         return <button key={group.id} onClick={() => {
           dispatch({ type: 'navigate', destination: 'genreId' in group
             ? { level: 'system', genreId: group.genreId, subgenreId: group.id } : { level: 'genre', genreId: group.id } })

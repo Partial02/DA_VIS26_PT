@@ -9,6 +9,7 @@ import { Icon } from './Icon'
 import { MiniMap } from './MiniMap'
 import { RecommendationJar } from './RecommendationJar'
 import { TrackDock } from './TrackDock'
+import { VisitPanel } from './VisitPanel'
 import styles from './Interface.module.css'
 
 const Scene = lazy(() => import('../scene/Scene'))
@@ -26,7 +27,7 @@ export function Explore() {
   const { catalog, state, dispatch } = useExperience()
   const reduced = useReducedMotion()
   const [webgl, setWebgl] = useState(hasWebGL)
-  const [activePanel, setActivePanel] = useState<'genres' | 'recommendations' | 'map' | null>(null)
+  const [activePanel, setActivePanel] = useState<'genres' | 'recommendations' | 'map' | 'visits' | null>(null)
   const [recommendationWidth, setRecommendationWidth] = useState(420)
   const resizeStart = useRef<{ x: number; width: number } | null>(null)
   const [mapBounds, setMapBounds] = useState<Position[] | null>(null)
@@ -54,6 +55,7 @@ export function Explore() {
   const tools = [
     { id: 'genres', icon: 'list', label: '장르' },
     { id: 'recommendations', icon: 'mix', label: '추천' },
+    { id: 'visits', icon: 'history', label: '방문 기록' },
   ] as const
   const showRecommendations = Boolean(subgenre) || activePanel === 'recommendations'
   const panelLabel = activePanel === 'map' ? '미니맵' : tools.find(tool => tool.id === activePanel)?.label
@@ -78,6 +80,7 @@ export function Explore() {
       <div className={styles.utilityPanelBody}>
         {activePanel === 'genres' && <AtlasDialog open onClose={closePanel} />}
         {activePanel === 'map' && <MiniMap bounds={webgl ? mapBounds : null} />}
+        {activePanel === 'visits' && <VisitPanel />}
       </div>
     </section>}
     {showRecommendations && <div id={activePanel === 'recommendations' ? 'exploreTools' : undefined} className={subgenre ? styles.systemSidebar : styles.recommendationPopover}
@@ -104,6 +107,6 @@ export function Explore() {
       {subgenre && <TrackDock />}
       <RecommendationJar onClose={subgenre ? undefined : closePanel} />
     </div>}
-    <div className="srOnly" role="status" aria-live="polite">{!transitioning && (subgenre ? `${genre!.name}, ${subgenre.name} 항성계. 방문 ${state.visits[subgenre.id] ?? 0}회.` : genre ? `${genre.name}. 세부장르 ${genre.subgenreIds.length}개.` : '전체 음악 지도. 15개 장르, 4961곡.')}</div>
+    <div className="srOnly" role="status" aria-live="polite">{!transitioning && (subgenre ? `${genre!.name}, ${subgenre.name} 항성계. 방문 ${state.visits[subgenre.id] ?? 0}회.` : genre ? `${genre.name}. 방문 ${state.genreVisits[genre.id] ?? 0}회. 세부장르 ${genre.subgenreIds.length}개.` : '전체 음악 지도. 15개 장르, 4961곡.')}</div>
   </main>
 }

@@ -40,6 +40,21 @@
 .utilityPanel .miniMap { position: static; display: block; width: 100%; max-width: none; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; backdrop-filter: none; }
 .utilityPanel .atlasPanel { padding: 0; max-height: none; overflow: visible; }
 .utilityPanel .searchLabel { margin-top: 0; }
+.visitStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 2px 0 18px; }
+.visitStats dt { color: #9e92ae; font-size: 10px; }
+.visitStats dd { margin: 8px 0 0; color: #eee5f6; font-size: 25px; font-variant-numeric: tabular-nums; }
+.visitStats dd small { color: #8c7f9e; font-size: 10px; margin-left: 3px; }
+.visitDescription { color: #b7a9c7; font-size: 11px; line-height: 1.8; margin: 0 0 12px; }
+.visitList { list-style: none; padding: 0; margin: 0; }
+.visitList li { padding: 13px 0; border-bottom: 1px solid #ffffff0a; }
+.visitRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #cbbfd8; font-size: 12px; }
+.visitRow > span { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.visitRow i { width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; }
+.visitRow strong { color: #b7a7c8; font-size: 10px; font-weight: 400; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.visitMeter { height: 3px; margin-top: 10px; overflow: hidden; background: #ffffff0a; border-radius: 2px; }
+.visitMeter span { display: block; height: 100%; border-radius: inherit; transition: width .4s ease; }
+.visitStrength { display: block; margin-top: 6px; color: #887b98; font-size: 9px; }
+.visitNote { color: #887b98; font-size: 10px; line-height: 1.9; margin: 14px 0 0; }
 .atlasPanel { padding: 0 16px 12px; max-height: min(420px, 45svh); overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a999dc55 transparent; }
 .atlasPanel[hidden] { display: none; }
 .panelHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #c0b3ce; font-size: 9px; letter-spacing: 1.5px; }

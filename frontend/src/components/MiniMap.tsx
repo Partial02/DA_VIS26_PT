@@ -40,7 +40,7 @@ export function MiniMap({ bounds }: { bounds: Position[] | null }) {
       })}
       {catalog.genres.map(genre => {
         const [x, y] = project(genre.position)
-        const visits = genre.subgenreIds.reduce((sum, id) => sum + (state.visits[id] ?? 0), 0)
+        const visits = state.genreVisits[genre.id] ?? 0
         const go = () => dispatch({ type: 'navigate', destination: { level: 'genre', genreId: genre.id } })
         return <g className={styles.mapDot} key={genre.id} role="button" tabIndex={0} aria-label={`${genre.name}, 방문 ${visits}회`} onClick={go} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); go() } }}>
           <title>{genre.name} · 방문 {visits}회</title>
