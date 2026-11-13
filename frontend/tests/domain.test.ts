@@ -14,7 +14,7 @@ test('the shipped catalog retains every real track and genre relationship', () =
   assert.equal(catalog.trackById.size, 4961)
   assert.equal(catalog.genres.length, 15)
   assert.equal(catalog.subgenres.length, 146)
-  assert.equal(catalog.meta.profileCount, 339)
+  assert.equal(catalog.meta.profileCount, new Set(catalog.tracks.map(t => JSON.stringify([t.genreId, t.subgenreIds, t.instruments]))).size)
   assert.equal(new Set(catalog.genres.map(g => g.color)).size, 15)
   assert.ok(catalog.genres.every(g => catalog.genreById.get(g.id) === g))
   assert.equal(catalog.trackById.get('0007391')!.title, 'Au Coeur Des Villes / Feat . Cynthia')
@@ -30,22 +30,68 @@ test('the shipped catalog retains every real track and genre relationship', () =
   for (const track of catalog.tracks) assert.ok(track.position.every(Number.isFinite))
 })
 
+test('the music globe fills a solid sphere and every constellation joins nearby real tracks', () => {
+  const radius = catalog.meta.layoutRadius
+  assert.equal(radius, 12)
+  let inner = 0
+  for (const track of catalog.tracks) {
+    assert.equal(track.position.length, 3)
+    const distance = Math.hypot(...track.position)
+    assert.ok(distance <= radius + .0001)
+    if (distance < radius / 2) inner++
+  }
+  assert.ok(Math.abs(inner / catalog.tracks.length - .125) < .005)
+  assert.ok(catalog.links.length > 0 && catalog.links.length <= 40)
+  const used = new Set<string>()
+  for (const [left, right] of catalog.links) {
+    const a = catalog.trackById.get(left)!, b = catalog.trackById.get(right)!
+    assert.ok(a && b && left !== right)
+    assert.ok(!used.has(left) && !used.has(right))
+    used.add(left); used.add(right)
+    assert.ok(a.instruments.some(instrument => b.instruments.includes(instrument)))
+    assert.ok(Math.hypot(...a.position.map((value, index) => value - b.position[index])) < 2.8)
+  }
+  for (const group of [...catalog.genres, ...catalog.subgenres]) {
+    for (let axis = 0; axis < 3; axis++) {
+      const center = group.trackIds.reduce((sum, id) => sum + catalog.trackById.get(id)!.position[axis], 0) / group.trackIds.length
+      assert.ok(Math.abs(group.position[axis] - center) < .0001)
+    }
+  }
+})
+
+test('density balancing retains more tag affinity among neighbors than unrelated tracks', () => {
+  const affinity = (a: Track, b: Track) => (a.genreId === b.genreId ? .15 : 0)
+    + .3 * a.subgenreIds.filter(id => b.subgenreIds.includes(id)).length / Math.sqrt(a.subgenreIds.length * b.subgenreIds.length)
+    + .55 * a.instruments.filter(id => b.instruments.includes(id)).length / Math.sqrt(a.instruments.length * b.instruments.length)
+  let nearby = 0, baseline = 0
+  for (let sample = 0; sample < 64; sample++) {
+    const track = catalog.tracks[sample * 73 % catalog.tracks.length]
+    const neighbors = catalog.tracks.filter(other => other !== track).map(other => ({ other,
+      distance: other.position.reduce((sum, value, axis) => sum + (value - track.position[axis]) ** 2, 0),
+    })).sort((a, b) => a.distance - b.distance).slice(0, 8)
+    nearby += neighbors.reduce((sum, { other }) => sum + affinity(track, other), 0) / 8
+    for (let i = 0; i < 8; i++) baseline += affinity(track, catalog.tracks[(sample * 173 + i * 617 + 29) % catalog.tracks.length]) / 8
+  }
+  assert.ok(nearby / 64 > .6)
+  assert.ok((nearby - baseline) / 64 > .3)
+})
+
 function scoringCatalog() {
   const makeTrack = (id: string, genreId: string, subgenreId: string, instruments: string[]): Track => ({
-    id, genreId, subgenreIds: [subgenreId], instruments, title: id, artist: 'Test', duration: 180, path: '', position: [0, 0],
+    id, genreId, subgenreIds: [subgenreId], instruments, title: id, artist: 'Test', duration: 180, path: '', position: [0, 0, 0],
   })
   return indexCatalog({
-    meta: catalog.meta,
+    meta: catalog.meta, links: [],
     tracks: [makeTrack('01', 'jazz', 'jazz--a', ['Piano']), makeTrack('02', 'jazz', 'jazz--a', ['Guitar']),
       makeTrack('03', 'jazz', 'jazz--b', ['Piano']), makeTrack('04', 'pop', 'pop--c', ['Piano'])],
     genres: [
-      { id: 'jazz', name: 'Jazz', trackIds: ['01', '02', '03'], subgenreIds: ['jazz--a', 'jazz--b'], instruments: ['Piano', 'Guitar'], color: '#fff', position: [0, 0] },
-      { id: 'pop', name: 'Pop', trackIds: ['04'], subgenreIds: ['pop--c'], instruments: ['Piano'], color: '#fff', position: [1, 1] },
+      { id: 'jazz', name: 'Jazz', trackIds: ['01', '02', '03'], subgenreIds: ['jazz--a', 'jazz--b'], instruments: ['Piano', 'Guitar'], color: '#fff', position: [0, 0, 0] },
+      { id: 'pop', name: 'Pop', trackIds: ['04'], subgenreIds: ['pop--c'], instruments: ['Piano'], color: '#fff', position: [1, 1, 0] },
     ],
     subgenres: [
-      { id: 'jazz--a', name: 'Acid Jazz', genreId: 'jazz', trackIds: ['01', '02'], position: [0, 0] },
-      { id: 'jazz--b', name: 'Bebop', genreId: 'jazz', trackIds: ['03'], position: [0, 0] },
-      { id: 'pop--c', name: 'Chanson', genreId: 'pop', trackIds: ['04'], position: [1, 1] },
+      { id: 'jazz--a', name: 'Acid Jazz', genreId: 'jazz', trackIds: ['01', '02'], position: [0, 0, 0] },
+      { id: 'jazz--b', name: 'Bebop', genreId: 'jazz', trackIds: ['03'], position: [0, 0, 0] },
+      { id: 'pop--c', name: 'Chanson', genreId: 'pop', trackIds: ['04'], position: [1, 1, 0] },
     ],
   })
 }

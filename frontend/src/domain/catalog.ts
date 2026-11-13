@@ -1,4 +1,5 @@
 export type Position = [number, number]
+export type SpacePosition = [number, number, number]
 
 export interface Track {
   id: string
@@ -9,7 +10,7 @@ export interface Track {
   genreId: string
   subgenreIds: string[]
   instruments: string[]
-  position: Position
+  position: SpacePosition
 }
 
 export interface Genre {
@@ -19,7 +20,7 @@ export interface Genre {
   trackIds: string[]
   subgenreIds: string[]
   instruments: string[]
-  position: Position
+  position: SpacePosition
 }
 
 export interface Subgenre {
@@ -27,7 +28,7 @@ export interface Subgenre {
   name: string
   genreId: string
   trackIds: string[]
-  position: Position
+  position: SpacePosition
 }
 
 export interface MusicData {
@@ -38,11 +39,13 @@ export interface MusicData {
     seed: number
     embedding: string
     placement: string
+    layoutRadius: number
     audio: boolean
   }
   tracks: Track[]
   genres: Genre[]
   subgenres: Subgenre[]
+  links: [string, string][]
 }
 
 export interface Catalog extends MusicData {

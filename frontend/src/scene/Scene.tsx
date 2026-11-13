@@ -49,8 +49,8 @@ function CameraRig({ reduced, controls, onBoundsChange }: { reduced: boolean; co
     const members = state.view.level === 'universe' ? catalog.tracks :
       catalog.genreById.get(state.view.genreId)!.trackIds.map(id => catalog.trackById.get(id)!)
     const size = get().size
-    const points = state.view.level === 'system' ? [spacePosition(catalog.subgenreById.get(state.view.subgenreId)!.position, state.view.genreId)] :
-      members.map(track => spacePosition(track.position, track.genreId, track.id))
+    const points = state.view.level === 'system' ? [spacePosition(catalog.subgenreById.get(state.view.subgenreId)!.position)] :
+      members.map(track => spacePosition(track.position))
     const { center, destination, distance } = frameSpace(points, size.width / size.height, camera.fov, system)
     controller.minDistance = Math.max(1.5, distance * .12)
     controller.maxDistance = distance * 3
@@ -103,7 +103,7 @@ function Markers({ suppressed, onHover }: { suppressed: () => boolean; onHover: 
       dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id }
         : { level: 'system', genreId: item.genreId, subgenreId: item.id } })
     }
-    return <group key={item.id} position={spacePosition(item.position, genre.id)}>
+    return <group key={item.id} position={spacePosition(item.position)}>
       <mesh onClick={event => { event.stopPropagation(); navigate() }} onPointerOver={() => onHover(item.id)}>
         <sphereGeometry args={[state.view.level === 'universe' ? .045 : .014, 12, 12]} />
         <meshBasicMaterial color={count ? '#ece4ff' : genre.color} />
@@ -202,7 +202,7 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange }: { redu
       const sub = catalog.subgenreById.get(state.view.subgenreId)!
       const tracks = systemTracks(catalog, sub.id)
       return tracks.map((track, index) => ({ id: track.id, name: track.title, detail: `0${index + 1}`,
-        position: spacePosition(sub.position, sub.genreId).add(new Vector3(0, 0, .5)).toArray() as [number, number, number], orbit: index, visited: false,
+        position: spacePosition(sub.position).add(new Vector3(0, 0, .5)).toArray() as [number, number, number], orbit: index, visited: false,
         selected: (state.selectedTrackId ?? tracks[0].id) === track.id,
         navigate: () => dispatch({ type: 'selectTrack', id: track.id }) }))
     }
@@ -210,7 +210,7 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange }: { redu
     return [...items].sort((a, b) => b.trackIds.length - a.trackIds.length)
       .filter((item, index) => state.view.level === 'universe' || index < 7 || item.id === hovered)
       .map(item => ({ id: item.id, name: item.name, detail: `${item.trackIds.length.toLocaleString()} TRACKS`,
-        position: spacePosition(item.position, 'color' in item ? item.id : item.genreId).toArray() as [number, number, number],
+        position: spacePosition(item.position).toArray() as [number, number, number],
         color: 'color' in item ? item.color : catalog.genreById.get(item.genreId)!.color, visited: 'color' in item ? item.subgenreIds.some(id => state.visits[id]) : Boolean(state.visits[item.id]),
         navigate: () => { if (!suppressed()) dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id } : { level: 'system', genreId: item.genreId, subgenreId: item.id } }) },
       }))

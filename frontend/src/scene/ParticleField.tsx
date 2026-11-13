@@ -43,7 +43,7 @@ export function ParticleField({ reduced, suppressed }: { reduced: boolean; suppr
     const positions: number[] = [], colors: number[] = [], sizes: number[] = [], glows: number[] = []
     for (const track of catalog.tracks) {
       const rng = seededRandom(seedOf(track.id))
-      positions.push(...spacePosition(track.position, track.genreId, track.id).toArray())
+      positions.push(...spacePosition(track.position).toArray())
       const visited = track.subgenreIds.reduce((sum, id) => sum + (state.visits[id] ?? 0), 0)
       const active = state.view.level === 'universe' || state.view.genreId === track.genreId
       const color = new Color(catalog.genreById.get(track.genreId)!.color)

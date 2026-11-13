@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { useExperience } from '../state/ExperienceContext'
-import type { Position } from '../domain/catalog'
+import type { Position, SpacePosition } from '../domain/catalog'
 import styles from './Interface.module.css'
 
 export function MiniMap({ bounds }: { bounds: Position[] | null }) {
@@ -9,7 +9,7 @@ export function MiniMap({ bounds }: { bounds: Position[] | null }) {
     const xs = catalog.tracks.map(t => t.position[0]), ys = catalog.tracks.map(t => t.position[1])
     const left = Math.min(...xs), right = Math.max(...xs), top = Math.max(...ys), bottom = Math.min(...ys)
     const scale = Math.min(180 / (right - left), 200 / (top - bottom))
-    return (p: Position) => [110 + (p[0] - (left + right) / 2) * scale, 120 - (p[1] - (top + bottom) / 2) * scale]
+    return (p: Position | SpacePosition) => [110 + (p[0] - (left + right) / 2) * scale, 120 - (p[1] - (top + bottom) / 2) * scale]
   }, [catalog])
   const trackDots = useMemo(() => catalog.tracks.map(t => {
     const [x, y] = project(t.position)

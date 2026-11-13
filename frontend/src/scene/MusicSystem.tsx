@@ -42,7 +42,7 @@ export function MusicSystem({ reduced }: { reduced: boolean }) {
   const genre = catalog.genreById.get(sub.genreId)!
   const tracks = systemTracks(catalog, sub.id)
   const selected = state.selectedTrackId ?? tracks[0]?.id
-  const position = spacePosition(sub.position, sub.genreId).toArray() as [number, number, number]
+  const position = spacePosition(sub.position).toArray() as [number, number, number]
   return <>
     <SystemDust key={`${sub.id}:${selected}`} id={`${sub.id}:${selected}`} position={position} color={genre.color} reduced={reduced} />
     <group position={position}>

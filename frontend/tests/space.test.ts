@@ -5,16 +5,12 @@ import { PerspectiveCamera } from 'three'
 import { cameraFootprint, frameSpace, spacePosition } from '../src/scene/space.ts'
 import type { MusicData } from '../src/domain/catalog.ts'
 
-test('space staging preserves embedding coordinates and provides stable, bounded depth', () => {
-  const electronic = spacePosition([.12305, 10.8231], 'electronic')
-  assert.equal(electronic.x, .12305)
-  assert.equal(electronic.y, 10.8231)
-  assert.deepEqual(electronic, spacePosition([.12305, 10.8231], 'electronic'))
-  assert.notEqual(electronic.z, spacePosition([.12305, 10.8231], 'rock').z)
-  for (let i = 0; i < 100; i++) {
-    const track = spacePosition([1, 2], 'electronic', String(i))
-    assert.ok(Math.abs(track.z - electronic.z) <= .8)
-  }
+test('space coordinates retain the full data-derived depth without genre offsets', () => {
+  const position: [number, number, number] = [1.23, -4.56, 7.89]
+  assert.deepEqual(spacePosition(position).toArray(), position)
+  const vector = spacePosition(position)
+  vector.z = 0
+  assert.equal(position[2], 7.89)
 })
 
 test('mini-map footprint follows perspective camera translation, dolly and orbit', () => {
@@ -49,7 +45,7 @@ test('home and genre camera framing keeps the actual stars within rectangular vi
   const groups = [catalog.tracks, ...catalog.genres.map(genre => catalog.tracks.filter(track => track.genreId === genre.id))]
   for (const aspect of [660 / 722, 1100 / 822, 1580 / 1002, 390 / 650]) {
     for (const group of groups) {
-      const points = group.map(track => spacePosition(track.position, track.genreId, track.id))
+      const points = group.map(track => spacePosition(track.position))
       const { center, destination } = frameSpace(points, aspect, 45, false)
       const camera = new PerspectiveCamera(45, aspect, .1, 500)
       camera.position.copy(destination)

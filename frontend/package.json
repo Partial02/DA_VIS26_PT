@@ -10,6 +10,7 @@
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "data:prepare": "python3 scripts/prepare_data.py",
+    "data:test": "python3 -m unittest discover -s tests -p '*_test.py'",
     "data:check": "python3 scripts/prepare_data.py --check"
   },
   "dependencies": {
