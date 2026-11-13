@@ -1,4 +1,4 @@
-import { Box3, Plane, Raycaster, Vector2, Vector3 } from 'three'
+import { Box3, CubicBezierCurve3, Plane, Raycaster, Vector2, Vector3 } from 'three'
 import type { Camera } from 'three'
 import type { Position, SpacePosition } from '../domain/catalog.ts'
 
@@ -23,6 +23,14 @@ export function frameSpace(points: Vector3[], aspect: number, fov: number, syste
     })) + 2.4
   const destination = center.clone().addScaledVector(direction, distance)
   return { center, destination, distance }
+}
+
+// A gentle flight arc, with exact endpoints so arrival still matches the map.
+export function spaceFlight(origin: Vector3, destination: Vector3) {
+  const distance = origin.distanceTo(destination)
+  const bend = Math.min(distance * .08, 2)
+  return new CubicBezierCurve3(origin.clone(), origin.clone().lerp(destination, .32).add(new Vector3(bend, bend * .4, 0)),
+    origin.clone().lerp(destination, .72).add(new Vector3(-bend * .4, bend * .2, 0)), destination.clone())
 }
 
 // Project the actual camera frustum onto the embedding plane for the overview map.

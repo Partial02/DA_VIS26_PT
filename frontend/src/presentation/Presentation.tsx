@@ -24,6 +24,7 @@ export function Presentation({ chapter }: { chapter: number }) {
   const lastNavigation = useRef(-Infinity)
   const touch = useRef<[number, number] | null>(null)
   function move(direction: number) {
+    if (stage.current?.closest('[inert]')) return
     if (performance.now() - lastNavigation.current < 650) return
     const next = Math.max(0, chapter + direction)
     if (next === chapter) return

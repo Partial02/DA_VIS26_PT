@@ -1,8 +1,8 @@
 import { strict as assert } from 'node:assert'
 import { test } from 'node:test'
 import { readFileSync } from 'node:fs'
-import { PerspectiveCamera } from 'three'
-import { cameraFootprint, frameSpace, spacePosition } from '../src/scene/space.ts'
+import { PerspectiveCamera, Vector3 } from 'three'
+import { cameraFootprint, frameSpace, spaceFlight, spacePosition } from '../src/scene/space.ts'
 import type { MusicData } from '../src/domain/catalog.ts'
 
 test('space coordinates retain the full data-derived depth without genre offsets', () => {
@@ -11,6 +11,18 @@ test('space coordinates retain the full data-derived depth without genre offsets
   const vector = spacePosition(position)
   vector.z = 0
   assert.equal(position[2], 7.89)
+})
+
+test('camera flights curve between exact destinations without moving the source coordinates', () => {
+  const origin = new Vector3(0, -2, 40), destination = new Vector3(8, 4, 12)
+  const path = spaceFlight(origin, destination)
+  assert.deepEqual(path.getPoint(0), origin)
+  assert.deepEqual(path.getPoint(1), destination)
+  assert.notDeepEqual(path.getPoint(.5), origin.clone().lerp(destination, .5))
+  assert.deepEqual(origin.toArray(), [0, -2, 40])
+  assert.deepEqual(destination.toArray(), [8, 4, 12])
+  for (let i = 0; i <= 100; i++) assert.ok(path.getPoint(i / 100).toArray().every(Number.isFinite))
+  assert.deepEqual(spaceFlight(origin, origin).getPoint(.5), origin)
 })
 
 test('mini-map footprint follows perspective camera translation, dolly and orbit', () => {

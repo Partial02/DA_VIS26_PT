@@ -1,5 +1,5 @@
 .presentation { position: relative; width: 100%; height: 100svh; overflow: hidden; outline: none; touch-action: none; }
-.slide { width: 100%; height: 100%; animation: slideIn .5s var(--ease); }
+.slide { width: 100%; height: 100%; }
 .chapter { position: relative; width: 100%; height: 100%; }
 .chapterCopy { position: relative; z-index: 1; width: min(760px, 100%); height: 100%; padding: 64px 6vw 40px; display: flex; flex-direction: column; justify-content: center; pointer-events: none; }
 .chapterCopy h1 { font-size: clamp(42px, 5.6vw, 100px); font-weight: 300; line-height: 1.25; letter-spacing: -.045em; color: #e6deef; margin: 0; word-break: keep-all; }
@@ -7,7 +7,6 @@
 .bodySlot { margin-top: 30px; color: #b3a5c1; font-size: clamp(15px, 1.3vw, 23px); line-height: 1.9; pointer-events: auto; }
 .visualSlot { position: absolute; inset: 0; width: 100%; height: 100%; }
 .cover { position: relative; width: 100%; height: 100%; overflow: hidden; }
-.coverArt { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
 .coverContent { position: relative; height: 100%; padding: 60px 8vw; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; }
 .coverContent h1 { margin: 0; font-size: clamp(48px, 7.3vw, 140px); font-weight: 300; line-height: 1.25; letter-spacing: -.065em; color: #e9e2ef; word-break: keep-all; }
 .coverContent em { color: #bba8d5; font-style: normal; font-family: inherit; font-weight: 300; }
@@ -17,5 +16,4 @@
 .continueButton:hover svg, .continueButton:focus-visible svg { animation: none; transform: translateX(3px); }
 .continueButton:active { background: #bba8d526; }
 @keyframes continueArrow { 0%, 100% { transform: translateX(-2px); opacity: .6; } 50% { transform: translateX(3px); opacity: 1; } }
-@keyframes slideIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 @media (max-width: 600px) { .coverContent { padding: 60px 24px; } .coverContent h1 { font-size: clamp(38px, 9vw, 54px); } .chapterCopy { padding: 60px 24px 30px; } .chapterCopy h1 { font-size: clamp(32px, 8vw, 48px); } .continueButton { margin-top: 32px; } }
