@@ -12,9 +12,10 @@ import re
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "mtg_jamendo_genre_instrument.csv"
 OUTPUT = ROOT / "frontend/public/data/music-catalog.json"
-COLORS = ["#a999dc", "#bfc8e3", "#809cdb", "#b49dc5", "#91bdbd",
-          "#8495ca", "#b89ac8", "#7eacd2", "#b49ad6", "#d5ae83",
-          "#a99cc6", "#799bd6", "#82b8c6", "#79b3bd", "#b7aecf"]
+# Separate genre hue bands (~24 degrees apart); see docs/design-system.md.
+COLORS = ["#ab73ff", "#ffe373", "#73ffe3", "#e373ff", "#e3ff73",
+          "#73abff", "#ff73e3", "#ffab73", "#7373ff", "#ff7373",
+          "#ff73ab", "#73e3ff", "#73ff73", "#73ffab", "#abff73"]
 RADIUS = 12
 FEATURE_WEIGHTS = (0.15, 0.30, 0.55)  # genre, subgenre, instruments; cosine contributions
 
@@ -88,6 +89,7 @@ def validate(catalog, rows):
     tracks, genres, subgenres = catalog["tracks"], catalog["genres"], catalog["subgenres"]
     assert len(tracks) == len(rows) == 4961
     assert len(genres) == 15 and len(subgenres) == 146
+    assert [genre["color"] for genre in sorted(genres, key=lambda genre: genre["name"])] == COLORS
     by_id = {track["id"]: track for track in tracks}
     assert len(by_id) == len(tracks)
     assert set(by_id) == {row["TRACK_ID"] for row in rows}

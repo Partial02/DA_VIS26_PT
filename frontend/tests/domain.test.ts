@@ -7,8 +7,24 @@ import { recommendGenres, pairKey } from '../src/domain/recommendations.ts'
 import { experienceReducer, initialState } from '../src/state/reducer.ts'
 import { createDemoSignal } from '../src/domain/visualization.ts'
 import { genreVisitAppearance } from '../src/domain/visits.ts'
+import { Color, SRGBColorSpace } from 'three'
 
 const catalog = indexCatalog(JSON.parse(readFileSync(new URL('../public/data/music-catalog.json', import.meta.url), 'utf8')) as MusicData)
+
+test('genre representative colors occupy distinct hue bands, not just different HEX values', () => {
+  const palette = catalog.genres.map(genre => ({
+    name: genre.name,
+    hsl: new Color(genre.color).getHSL({ h: 0, s: 0, l: 0 }, SRGBColorSpace),
+  }))
+  for (const [index, left] of palette.entries()) {
+    assert.ok(left.hsl.s >= .5, `${left.name} needs a recognizable hue`)
+    for (const right of palette.slice(index + 1)) {
+      const difference = Math.abs(left.hsl.h - right.hsl.h)
+      const separation = Math.min(difference, 1 - difference) * 360
+      assert.ok(separation >= 20, `${left.name} and ${right.name} are too similar: ${separation}°`)
+    }
+  }
+})
 
 test('the shipped catalog retains every real track and genre relationship', () => {
   assert.equal(catalog.tracks.length, 4961)
