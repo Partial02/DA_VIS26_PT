@@ -40,21 +40,39 @@
 .utilityPanel .miniMap { position: static; display: block; width: 100%; max-width: none; margin: 0; padding: 0; border: 0; background: none; box-shadow: none; backdrop-filter: none; }
 .utilityPanel .atlasPanel { padding: 0; max-height: none; overflow: visible; }
 .utilityPanel .searchLabel { margin-top: 0; }
-.visitStats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 2px 0 18px; }
-.visitStats dt { color: #9e92ae; font-size: 10px; }
-.visitStats dd { margin: 8px 0 0; color: #eee5f6; font-size: 25px; font-variant-numeric: tabular-nums; }
-.visitStats dd small { color: #8c7f9e; font-size: 10px; margin-left: 3px; }
-.visitDescription { color: #b7a9c7; font-size: 11px; line-height: 1.8; margin: 0 0 12px; }
-.visitList { list-style: none; padding: 0; margin: 0; }
-.visitList li { padding: 13px 0; border-bottom: 1px solid #ffffff0a; }
-.visitRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #cbbfd8; font-size: 12px; }
-.visitRow > span { display: flex; align-items: center; gap: 8px; min-width: 0; }
-.visitRow i { width: 5px; height: 5px; flex-shrink: 0; border-radius: 50%; }
-.visitRow strong { color: #b7a7c8; font-size: 10px; font-weight: 400; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.visitMeter { height: 3px; margin-top: 10px; overflow: hidden; background: #ffffff0a; border-radius: 0; }
-.visitMeter span { display: block; height: 100%; border-radius: inherit; transition: width .4s ease; }
-.visitStrength { display: block; margin-top: 6px; color: #887b98; font-size: 9px; }
-.visitNote { color: #887b98; font-size: 10px; line-height: 1.9; margin: 14px 0 0; }
+.visitOverview { padding: 16px; margin-bottom: 16px; border: 1px solid #ffffff10; background: linear-gradient(135deg, #a999dc08, #ffffff02); }
+.visitOverviewHeader { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
+.visitOverviewHeader > div { display: grid; gap: 8px; }
+.visitOverviewLabel { color: #b9acc9; font-size: 11px; }
+.visitOverviewHeader strong { color: #eee5f6; font-size: 38px; line-height: 1; font-weight: 400; font-variant-numeric: tabular-nums; }
+.visitOverviewHeader strong small { margin-left: 3px; color: #ae9fc1; font-size: 17px; }
+.visitOverviewCount { color: #ded4eb; font-size: 13px; font-variant-numeric: tabular-nums; }
+.visitOverviewCount > span { color: #887b98; font-size: 10px; }
+.visitAtlas { display: grid; grid-template-columns: repeat(23, minmax(0, 1fr)); gap: 3px; }
+.visitAtlas > span { aspect-ratio: 1; background: #ffffff08; transition: background .4s ease; }
+.visitAtlas > span[data-visited='true'] { background: var(--genre-color); box-shadow: 0 0 8px color-mix(in srgb, var(--genre-color) 25%, transparent); }
+.visitList { display: grid; gap: 12px; list-style: none; padding: 0; margin: 0; }
+.visitList > li { padding: 16px; border: 1px solid #ffffff10; border-left: 2px solid var(--genre-color); background: linear-gradient(120deg, color-mix(in srgb, var(--genre-color) 5%, transparent), #ffffff02); }
+.visitRow { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: #e5dcec; font-size: 13px; }
+.visitRow > span { display: flex; align-items: baseline; gap: 10px; min-width: 0; }
+.visitRow b { font-weight: 400; line-height: 1.5; overflow-wrap: anywhere; }
+.visitRank { color: var(--genre-color); font-size: 9px; font-variant-numeric: tabular-nums; }
+.visitRow strong { color: #eee5f6; font-size: 18px; font-weight: 400; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.visitRow strong small { margin-left: 3px; color: #a99bb9; font-size: 10px; }
+.visitBarRow { display: grid; grid-template-columns: minmax(0, 1fr) 36px; align-items: center; gap: 10px; margin-top: 12px; }
+.visitBarRow > span { color: var(--genre-color); font-size: 11px; text-align: right; font-variant-numeric: tabular-nums; }
+.visitBar { height: 20px; overflow: hidden; background: #ffffff08; }
+.visitBar > span { display: block; height: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--genre-color) 50%, transparent), var(--genre-color)); box-shadow: inset 0 1px 0 #ffffff25; transition: width .4s ease; }
+.visitSubgenres { margin-top: 18px; padding-left: 12px; border-left: 1px solid color-mix(in srgb, var(--genre-color) 22%, transparent); }
+.visitSubgenres ul { display: grid; gap: 12px; list-style: none; padding: 0; margin: 0; }
+.visitSubgenreRow { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 5px; color: #c9bed5; font-size: 11px; line-height: 1.5; }
+.visitSubgenreRow > span { overflow-wrap: anywhere; }
+.visitSubgenreRow small { color: #c9bed5; font-size: 10px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.visitSubgenreRow small span { color: #8f809f; }
+.visitSubgenreBar { height: 12px; }
+.visitSubgenreBar > span { opacity: .75; }
+.visitEmpty { display: grid; justify-items: center; gap: 14px; padding: 36px 12px; border: 1px solid var(--line); background: linear-gradient(145deg, #a999dc08, transparent); color: #a999dc; text-align: center; }
+.visitEmpty h3 { margin: 0; color: #ddd3e9; font-size: 13px; font-weight: 400; }
 .atlasPanel { padding: 0 16px 12px; max-height: min(420px, 45svh); overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a999dc55 transparent; }
 .atlasPanel[hidden] { display: none; }
 .panelHeading { display: flex; align-items: center; justify-content: space-between; gap: 10px; color: #c0b3ce; font-size: 9px; letter-spacing: 1.5px; }

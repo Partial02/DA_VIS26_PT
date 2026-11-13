@@ -1,36 +1,69 @@
-import { genreVisitAppearance } from '../domain/visits'
+import type { CSSProperties } from 'react'
 import { useExperience } from '../state/ExperienceContext'
+import { Icon } from './Icon'
 import styles from './Interface.module.css'
 
 export function VisitPanel() {
   const { catalog, state } = useExperience()
-  const genres = catalog.genres.map(genre => ({ genre, visits: state.genreVisits[genre.id] ?? 0 }))
+  const genres = catalog.genres.map(genre => ({
+    genre,
+    visits: state.genreVisits[genre.id] ?? 0,
+    subgenres: genre.subgenreIds.map(id => ({ subgenre: catalog.subgenreById.get(id)!, visits: state.visits[id] ?? 0 }))
+      .filter(item => item.visits > 0)
+      .sort((a, b) => b.visits - a.visits || a.subgenre.name.localeCompare(b.subgenre.name, 'en')),
+  })).filter(item => item.visits > 0)
     .sort((a, b) => b.visits - a.visits || a.genre.name.localeCompare(b.genre.name, 'en'))
   const total = genres.reduce((sum, item) => sum + item.visits, 0)
-  const discovered = genres.filter(item => item.visits > 0).length
+  const discoveredSubgenres = genres.reduce((sum, item) => sum + item.subgenres.length, 0)
+  const explored = genres.length + discoveredSubgenres
+  const regions = catalog.genres.flatMap(genre => [
+    { id: genre.id, visited: (state.genreVisits[genre.id] ?? 0) > 0, color: genre.color },
+    ...genre.subgenreIds.map(id => ({ id, visited: (state.visits[id] ?? 0) > 0, color: genre.color })),
+  ])
+  const coverage = (explored / regions.length * 100).toFixed(1)
   return <div>
-    <dl className={styles.visitStats}>
-      <div><dt>전체 방문</dt><dd>{total}<small>회</small></dd></div>
-      <div><dt>방문한 장르</dt><dd>{discovered}<small> / {genres.length}</small></dd></div>
-      <div><dt>색 완성</dt><dd>{genres.filter(item => item.visits >= 5).length}<small>개</small></dd></div>
-    </dl>
-    <p className={styles.visitDescription}>{total ? '자주 찾은 장르일수록 고유한 색과 빛이 남아요.' : '장르를 방문하면 별에 색과 빛이 쌓이기 시작해요.'}</p>
-    <ol className={styles.visitList} aria-label="장르별 방문 누적">
-      {genres.map(({ genre, visits }) => {
-        const appearance = genreVisitAppearance(visits)
-        return <li key={genre.id} data-genre-id={genre.id}>
+    <div className={styles.visitOverview}>
+      <div className={styles.visitOverviewHeader}>
+        <div><span className={styles.visitOverviewLabel}>탐색률</span><strong>{coverage}<small>%</small></strong></div>
+        <span className={styles.visitOverviewCount}>{explored}<span> / {regions.length}</span></span>
+      </div>
+      <div className={styles.visitAtlas} role="img" aria-label={`탐색률 ${coverage}%, 전체 ${regions.length}개 영역 중 ${explored}개 방문`}>
+        {regions.map(region => <span key={region.id} data-visited={region.visited} aria-hidden="true" style={{ '--genre-color': region.color } as CSSProperties} />)}
+      </div>
+    </div>
+    {total ? <ol className={styles.visitList} aria-label="방문한 장르와 세부장르">
+      {genres.map(({ genre, visits, subgenres }, index) => {
+        const share = visits / total * 100
+        const subgenreTotal = subgenres.reduce((sum, item) => sum + item.visits, 0)
+        return <li key={genre.id} data-genre-id={genre.id} style={{ '--genre-color': genre.color } as CSSProperties}>
           <div className={styles.visitRow}>
-            <span><i style={{ background: visits ? genre.color : '#696777' }} />{genre.name}</span>
-            <strong>{visits ? `${visits}회` : '미방문'}</strong>
+            <span><span className={styles.visitRank}>{String(index + 1).padStart(2, '0')}</span><b>{genre.name}</b></span>
+            <strong>{visits}<small>회</small></strong>
           </div>
-          <div className={styles.visitMeter} role="progressbar" aria-label={`${genre.name} 색 누적`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={Math.round(appearance.colorMix * 100)}>
-            <span style={{ width: `${appearance.colorMix * 100}%`, background: genre.color }} />
+          <div className={styles.visitBarRow}>
+            <div className={styles.visitBar} role="img" aria-label={`${genre.name}: 장르 방문 ${visits}회, 전체의 ${Math.round(share)}%`}>
+              <span style={{ width: `${share}%` }} />
+            </div>
+            <span>{Math.round(share)}%</span>
           </div>
-          <small className={styles.visitStrength}>색 {Math.round(appearance.colorMix * 100)}% · 밝기 +{Math.round((appearance.brightness - 1) * 100)}%</small>
+          {subgenres.length > 0 && <div className={styles.visitSubgenres}>
+            <ul aria-label={`${genre.name}에서 방문한 세부장르`}>
+              {subgenres.map(({ subgenre, visits: count }) => {
+                const percentage = count / subgenreTotal * 100
+                return <li key={subgenre.id} data-subgenre-id={subgenre.id}>
+                  <div className={styles.visitSubgenreRow}><span>{subgenre.name}</span><small>{count}회 <span>· {Math.round(percentage)}%</span></small></div>
+                  <div className={`${styles.visitBar} ${styles.visitSubgenreBar}`} role="img" aria-label={`${subgenre.name}: ${count}회, ${genre.name} 세부장르 방문의 ${Math.round(percentage)}%`}>
+                    <span style={{ width: `${percentage}%` }} />
+                  </div>
+                </li>
+              })}
+            </ul>
+          </div>}
         </li>
       })}
-    </ol>
-    <p className={styles.visitNote}>색은 5회, 밝기는 10회 방문하면 최대가 됩니다. 그 이후에도 방문 횟수는 계속 쌓입니다.</p>
-    <p className={styles.visitNote}>이번 탐색의 기록이며, 새로고침하면 초기화됩니다.</p>
+    </ol> : <div className={styles.visitEmpty}>
+      <Icon name="history" size={26} />
+      <h3>방문 기록이 없습니다.</h3>
+    </div>}
   </div>
 }
