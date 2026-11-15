@@ -43,7 +43,7 @@ function StageNebula({ reduced }: { reduced: boolean }) {
     if (!atlas || !state.stage.length) return null
     const canvas = document.createElement('canvas')
     canvas.width = canvas.height = 512
-    drawStage(canvas, state.stage.map(id => performerSpec(atlas, catalog, id)))
+    drawStage(canvas, state.stage.map(id => performerSpec(atlas, catalog, id)), false)
     const map = new CanvasTexture(canvas)
     map.colorSpace = SRGBColorSpace
     map.center.set(.5, .5)
@@ -55,7 +55,7 @@ function StageNebula({ reduced }: { reduced: boolean }) {
   return <Billboard>
     <mesh raycast={() => {}} renderOrder={-1}>
       <planeGeometry args={[7.2, 7.2]} />
-      <meshBasicMaterial map={texture} transparent opacity={.4} depthWrite={false} blending={AdditiveBlending} toneMapped={false} />
+      <meshBasicMaterial map={texture} transparent opacity={.5} depthWrite={false} blending={AdditiveBlending} toneMapped={false} />
     </mesh>
   </Billboard>
 }

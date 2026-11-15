@@ -5,7 +5,7 @@ import { rankRecommendations } from '../domain/recommendations'
 import type { RecommendationTarget } from '../domain/recommendations'
 import { useExperience } from '../state/ExperienceContext'
 import { Icon } from './Icon'
-import { drawStage, nebulaUrl, performerSpec, SESSION_FORM } from './nebula'
+import { drawStage, nebulaUrl, performerSpec } from './nebula'
 import styles from './Interface.module.css'
 
 const PERFORMER_MIME = 'application/x-innerverse-performer'
@@ -50,7 +50,6 @@ export function StageSystem({ size = 220 }: { size?: number }) {
   return <div className={styles.stageSystem} data-over={over} data-empty={!state.stage.length} style={{ '--stage-size': `${size}px` } as CSSProperties}
     onDragOver={event => { if (event.dataTransfer.types.includes(PERFORMER_MIME)) { event.preventDefault(); setOver(true) } }}
     onDragLeave={() => setOver(false)} onDrop={drop}>
-    <span className={styles.stageOrbit} aria-hidden="true" /><span className={styles.stageOrbit} aria-hidden="true" />
     <canvas ref={canvas} width={size * 2} height={size * 2} role="img" aria-label={label} />
     {!state.stage.length && <p>성운을 눌러 무대에 올리세요<br /><small>끌어다 놓아도 됩니다</small></p>}
   </div>
@@ -64,7 +63,7 @@ export function PerformerBench() {
   return <div className={styles.bench} role="group" aria-label={`벤치: 세션 × 스타일 패밀리 연주자 ${atlas.performers.length}명`}
     style={{ '--sessions': sessions.length } as CSSProperties}>
     <span aria-hidden="true" />
-    {sessions.map((session, index) => <span key={session.key} className={styles.benchSession} aria-hidden="true" title={`${session.name} · ${SESSION_FORM[index]}`}>{session.name}</span>)}
+    {sessions.map(session => <span key={session.key} className={styles.benchSession} aria-hidden="true" title={session.name}>{session.name}</span>)}
     {families.map((family, familyIndex) => <div key={family.name} className={styles.benchRowGroup} role="group" aria-label={`${family.name}: ${family.genreIds.map(id => catalog.genreById.get(id)!.name).join(', ')}`}>
       <span className={styles.benchFamily} title={family.genreIds.map(id => catalog.genreById.get(id)!.name).join(' · ')}>
         <strong>{family.name}</strong>

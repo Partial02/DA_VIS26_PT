@@ -162,7 +162,7 @@ explore  = 1.06 (상위 장르를 아직 방문하지 않음) / 1.00
 | `frontend/src/domain/recommendations.ts` | 전체 추천 순위와 카드용 장르별 상위 3개 |
 | `frontend/src/audio/jamendo.ts` | Jamendo 음원 조회·재생 상태 |
 | `frontend/src/components/StageConsole.tsx` | 무대 패널: 병합 무대·성운 벤치·세부장르 순위 |
-| `frontend/src/components/nebula.ts` | 연주자 성운(패밀리=색·질감, 세션=형태)과 무대 병합 그리기 |
+| `frontend/src/components/nebula.ts` | 연주자 유리 구슬(패밀리=색, 세션=소용돌이 형태)과 무대 병합 그리기 |
 | `frontend/public/data/atlas-model.json` | 장르 아틀라스 v4에서 추출한 세션·패밀리·가중치·곡별 세션 마스크 |
 | `frontend/src/state/reducer.ts` | 탐색 단계·도착·방문 기록·무대 편성 상태 |
 | `frontend/src/scene/` | 구형 음악 지도, 카메라, 화면 라벨, 항성계 및 입자 |

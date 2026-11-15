@@ -176,12 +176,15 @@
 .stageHeader .inlineAction { margin-top: 0; font-size: 10px; }
 .stageSystem { position: relative; width: var(--stage-size); max-width: 100%; aspect-ratio: 1; margin: 0 auto; display: grid; place-items: center; border-radius: 50%; transition: background .3s; }
 .stageSystem[data-over='true'] { background: radial-gradient(circle, #a999dc1f, transparent 70%); }
-.stageSystem canvas { position: absolute; inset: 0; width: 100%; height: 100%; animation: stageSpin 140s linear infinite; }
+.stageSystem canvas { position: absolute; inset: 0; width: 100%; height: 100%; animation: stageSpin 180s linear infinite; filter: drop-shadow(0 10px 30px #0008); }
+.nebulaToken { position: relative; aspect-ratio: 1; width: 100%; display: grid; place-items: center; border-radius: 50%; transition: transform .25s var(--ease); }
+.nebulaToken img { width: 100%; height: 100%; pointer-events: none; opacity: .72; transition: opacity .2s, transform .25s var(--ease); }
+.nebulaToken:hover img, .nebulaToken:focus-visible img { opacity: 1; transform: scale(1.1); }
+.nebulaToken[aria-pressed='true'] img { opacity: 1; transform: scale(1.06); filter: drop-shadow(0 0 6px #ffffff40); }
+.nebulaToken[aria-pressed='true']::after { content: ''; position: absolute; inset: -2px; border: 1px solid #ffffff59; border-radius: 50%; }
+.nebulaToken:focus-visible { outline-offset: 2px; border-radius: 50%; }
 .stageSystem p { position: relative; margin: 0; color: #8f809f; font-size: 11px; line-height: 1.7; text-align: center; }
 .stageSystem p small { color: #6f6380; font-size: 9px; }
-.stageOrbit { position: absolute; inset: 14%; border: 1px solid #b8a9d51c; border-radius: 50%; transform: rotateX(64deg); }
-.stageOrbit + .stageOrbit { inset: 2%; border-color: #b8a9d512; }
-.stageSystem[data-empty='true'] .stageOrbit { border-style: dashed; }
 .bench { display: grid; grid-template-columns: 54px repeat(var(--sessions), minmax(0, 1fr)); gap: 3px; align-items: center; }
 .benchRowGroup { display: contents; }
 .benchSession { color: #8f809f; font-size: 9px; text-align: center; white-space: nowrap; overflow: hidden; }
@@ -190,12 +193,6 @@
 .benchFamily i { display: flex; gap: 2px; }
 .benchFamily b { width: 6px; height: 6px; border-radius: 50%; opacity: .8; }
 .benchVoid { justify-self: center; width: 3px; height: 3px; border-radius: 50%; background: #ffffff10; }
-.nebulaToken { position: relative; aspect-ratio: 1; width: 100%; display: grid; place-items: center; border: 1px solid transparent; transition: border-color .2s, background .2s, transform .2s; }
-.nebulaToken img { width: 132%; height: 132%; max-width: none; pointer-events: none; opacity: .8; filter: saturate(.95); transition: opacity .2s, filter .2s, transform .4s var(--ease); }
-.nebulaToken:hover img, .nebulaToken:focus-visible img { opacity: 1; filter: saturate(1.1); transform: scale(1.08); }
-.nebulaToken[aria-pressed='true'] { border-color: #ffffff2e; background: radial-gradient(circle, #ffffff0c, transparent 70%); }
-.nebulaToken[aria-pressed='true'] img { opacity: 1; filter: saturate(1.15) brightness(1.15); }
-.nebulaToken[aria-pressed='true']::after { content: ''; position: absolute; right: 2px; bottom: 2px; width: 3px; height: 3px; background: #f5ecda; box-shadow: 0 0 5px 1px #f5ecda99; }
 .pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; color: #a997bb; font-size: 11px; font-variant-numeric: tabular-nums; }
 .pager button { width: 30px; height: 28px; border: 1px solid #b8a9d533; color: #c6b9d7; }
 .pager button:hover:not(:disabled) { background: #a999dc1a; }
