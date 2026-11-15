@@ -8,6 +8,7 @@ import { AtlasDialog } from './AtlasDialog'
 import { Icon } from './Icon'
 import { MiniMap } from './MiniMap'
 import { RecommendationJar } from './RecommendationJar'
+import { StagePanel } from './StageConsole'
 import { TrackDock } from './TrackDock'
 import { VisitPanel } from './VisitPanel'
 import styles from './Interface.module.css'
@@ -28,6 +29,9 @@ export function Explore() {
   const reduced = useReducedMotion()
   const [webgl, setWebgl] = useState(hasWebGL)
   const [activePanel, setActivePanel] = useState<'genres' | 'recommendations' | 'map' | 'visits' | null>(null)
+  // Genre Atlas order: arrange the stage first, then pick a subgenre. Open by default.
+  const [stageOpen, setStageOpen] = useState(true)
+  const stageButton = useRef<HTMLButtonElement>(null)
   const [recommendationWidth, setRecommendationWidth] = useState(300)
   const resizeStart = useRef<{ x: number; width: number } | null>(null)
   const [mapBounds, setMapBounds] = useState<Position[] | null>(null)
@@ -59,7 +63,8 @@ export function Explore() {
   ] as const
   const showRecommendations = Boolean(subgenre) || activePanel === 'recommendations'
   const panelLabel = activePanel === 'map' ? '미니맵' : tools.find(tool => tool.id === activePanel)?.label
-  return <main className={styles.explorer} data-recommendations={showRecommendations} data-traveling={transitioning} data-system={Boolean(subgenre)}
+  const showStage = stageOpen && !subgenre
+  return <main className={styles.explorer} data-recommendations={showRecommendations} data-traveling={transitioning} data-system={Boolean(subgenre)} data-stage={showStage}
     style={{ '--recommendation-width': `${recommendationWidth}px` } as CSSProperties}>
     {webgl ? <Suspense fallback={<div className={styles.sceneLoading}>GATHERING THE STARS<span /></div>}><Scene reduced={reduced} onUnavailable={() => setWebgl(false)} onBoundsChange={setMapBounds} onOpenMap={() => setActivePanel(activePanel === 'map' ? null : 'map')} /></Suspense>
       : <div className={styles.sceneFallback}><Icon name="star" size={32} /><h2>소리의 지도를 목록으로 만나보세요.</h2><p>이 브라우저에서 3D 지도를 표시할 수 없습니다.<br />장르 탐색과 추천은 계속 사용할 수 있어요.</p><button className="outlinedButton" onClick={() => setActivePanel('genres')}>장르 목록 열기 <Icon name="arrow" /></button></div>}
@@ -71,6 +76,7 @@ export function Explore() {
       </div>}
     </div>
     {!subgenre && <nav ref={toolbar} className={styles.toolRail} aria-label="탐색 도구">
+      <button ref={stageButton} aria-label="무대 편성" title="무대 편성" aria-pressed={stageOpen} onClick={() => setStageOpen(!stageOpen)}><Icon name="stage" size={20} /></button>
       {tools.map(tool => <button key={tool.id} aria-label={tool.label} title={tool.label} aria-expanded={activePanel === tool.id} aria-controls="exploreTools"
         onClick={() => setActivePanel(activePanel === tool.id ? null : tool.id)}><Icon name={tool.icon} size={20} /></button>)}
     </nav>}
@@ -105,8 +111,9 @@ export function Explore() {
         onPointerUp={() => { resizeStart.current = null }}
         onPointerCancel={() => { resizeStart.current = null }} />
       {subgenre && <TrackDock />}
-      <RecommendationJar onClose={subgenre ? undefined : closePanel} />
+      <RecommendationJar onClose={subgenre ? undefined : closePanel} onEditStage={subgenre ? undefined : () => setStageOpen(true)} />
     </div>}
+    {showStage && <StagePanel onClose={() => { setStageOpen(false); stageButton.current?.focus() }} />}
     <div className="srOnly" role="status" aria-live="polite">{!transitioning && (subgenre ? `${genre!.name}, ${subgenre.name} 항성계. 방문 ${state.visits[subgenre.id] ?? 0}회.` : genre ? `${genre.name}. 방문 ${state.genreVisits[genre.id] ?? 0}회. 세부장르 ${genre.subgenreIds.length}개.` : '전체 음악 지도. 15개 장르, 4961곡.')}</div>
   </main>
 }

@@ -22,7 +22,7 @@
 .toolRail { position: absolute; right: 12px; top: 64px; z-index: 16; display: grid; border: 1px solid var(--line); background: #0b0816bb; backdrop-filter: blur(16px); }
 .toolRail button { width: 36px; height: 44px; display: grid; place-items: center; color: #9d91af; border-bottom: 1px solid var(--line); }
 .toolRail button:last-child { border-bottom: 0; }
-.toolRail button:hover, .toolRail button[aria-expanded='true'] { background: #a999dc18; color: #eee2fa; }
+.toolRail button:hover, .toolRail button[aria-expanded='true'], .toolRail button[aria-pressed='true'] { background: #a999dc18; color: #eee2fa; }
 .worldHeading { position: absolute; top: 64px; left: 24px; z-index: 14; display: flex; align-items: center; gap: 12px; max-width: calc(100% - 200px); pointer-events: none; transition: opacity .4s ease; }
 .explorer[data-traveling='true'] .worldHeading { opacity: 0; transition: opacity .2s ease; }
 .explorer[data-traveling='true'] .worldHeading button { pointer-events: none; }
@@ -155,22 +155,7 @@
 .inlineAction:hover:not(:disabled) { color: #f1e8ff; }
 .lineupChange { margin: 10px 4px 0; color: #c9bed5; font-size: 11px; line-height: 1.6; white-space: pre-wrap; }
 .stageDialog { width: 440px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a999dc55 transparent; }
-.stageDialog h3 { margin: 0 0 12px; color: #d6cce6; font-size: 12px; font-weight: 500; }
-.stageDialog h3 span { color: #8f809f; font-weight: 400; font-size: 11px; }
-.stageBox, .benchBox, .rankBox { padding: 16px 0; border-top: 1px solid var(--line); }
-.stageBoxHeader { display: flex; align-items: baseline; justify-content: space-between; }
-.stageBoxHeader .inlineAction { margin-top: 0; font-size: 10px; }
-.stageRow, .benchRow { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; }
 .stageEmpty { margin: 0; color: #8f809f; font-size: 11px; line-height: 1.8; }
-.stageBox .lineupChange { margin: 12px 0 0; }
-.performerChip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1px solid #b8a9d533; background: linear-gradient(120deg, #a999dc0a, transparent); color: #c6b9d7; font-size: 11px; transition: background .2s, border-color .2s, color .2s; }
-.performerChip small { color: #8f809f; font-size: 9px; }
-.performerChip:hover { background: #a999dc1a; border-color: #b8a9d57a; color: #f1e8ff; }
-.performerChip[aria-pressed='true'] { border-color: #b8a9d58c; background: #a999dc29; color: #f1e8ff; box-shadow: inset 0 1px 0 #ffffff1c; }
-.benchFamily { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; padding: 9px 0; border-bottom: 1px solid #b8a9d512; }
-.benchFamily:last-child { border-bottom: 0; }
-.benchFamilyName strong { display: block; color: #ddd3e9; font-size: 12px; font-weight: 400; }
-.benchFamilyName small { display: block; margin-top: 4px; color: #82708e; font-size: 9px; line-height: 1.5; }
 .rankList { display: grid; list-style: none; padding: 0; margin: 0; }
 .rankList button { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; text-align: left; border-bottom: 1px solid #b8a9d51a; }
 .rankName { color: #ddd5e5; font-size: 13px; overflow-wrap: anywhere; }
@@ -179,6 +164,38 @@
 .rankBar { grid-column: 1 / -1; height: 3px; background: #ffffff0a; }
 .rankBar i { display: block; height: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--genre-color) 45%, transparent), var(--genre-color)); }
 .rankList button:hover .rankName { color: #fff; }
+.stagePanel { position: absolute; left: 24px; top: 64px; bottom: 24px; z-index: 15; display: flex; flex-direction: column; width: min(392px, calc(100% - 96px)); border: 1px solid #ffffff1f; border-radius: 0; background: linear-gradient(135deg, #ffffff09, #ffffff02), #0b0a14c9; backdrop-filter: blur(24px); -webkit-backdrop-filter: blur(24px); box-shadow: 0 12px 40px #0005; }
+.explorer:has(.worldTitleRow) .stagePanel { top: 112px; }
+.stagePanelBody { min-height: 0; overflow-y: auto; padding: 14px 16px 18px; scrollbar-width: thin; scrollbar-color: #a999dc55 transparent; }
+.stageConsole { display: grid; gap: 4px; }
+.stageConsole > section { padding: 12px 0; border-top: 1px solid #ffffff0d; }
+.stageConsole > section:first-child { padding-top: 0; border-top: 0; }
+.stageConsole h3 { margin: 0 0 10px; color: #d6cce6; font-size: 12px; font-weight: 500; }
+.stageConsole h3 span { margin-left: 4px; color: #8f809f; font-size: 10px; font-weight: 400; }
+.stageHeader { display: flex; align-items: baseline; justify-content: space-between; }
+.stageHeader .inlineAction { margin-top: 0; font-size: 10px; }
+.stageSystem { position: relative; width: var(--stage-size); max-width: 100%; aspect-ratio: 1; margin: 0 auto; display: grid; place-items: center; border-radius: 50%; transition: background .3s; }
+.stageSystem[data-over='true'] { background: radial-gradient(circle, #a999dc1f, transparent 70%); }
+.stageSystem canvas { position: absolute; inset: 0; width: 100%; height: 100%; animation: stageSpin 140s linear infinite; }
+.stageSystem p { position: relative; margin: 0; color: #8f809f; font-size: 11px; line-height: 1.7; text-align: center; }
+.stageSystem p small { color: #6f6380; font-size: 9px; }
+.stageOrbit { position: absolute; inset: 14%; border: 1px solid #b8a9d51c; border-radius: 50%; transform: rotateX(64deg); }
+.stageOrbit + .stageOrbit { inset: 2%; border-color: #b8a9d512; }
+.stageSystem[data-empty='true'] .stageOrbit { border-style: dashed; }
+.bench { display: grid; grid-template-columns: 54px repeat(var(--sessions), minmax(0, 1fr)); gap: 3px; align-items: center; }
+.benchRowGroup { display: contents; }
+.benchSession { color: #8f809f; font-size: 9px; text-align: center; white-space: nowrap; overflow: hidden; }
+.benchFamily { display: grid; gap: 4px; min-width: 0; }
+.benchFamily strong { color: #ddd3e9; font-size: 11px; font-weight: 400; white-space: nowrap; }
+.benchFamily i { display: flex; gap: 2px; }
+.benchFamily b { width: 6px; height: 6px; border-radius: 50%; opacity: .8; }
+.benchVoid { justify-self: center; width: 3px; height: 3px; border-radius: 50%; background: #ffffff10; }
+.nebulaToken { position: relative; aspect-ratio: 1; width: 100%; display: grid; place-items: center; border: 1px solid transparent; transition: border-color .2s, background .2s, transform .2s; }
+.nebulaToken img { width: 132%; height: 132%; max-width: none; pointer-events: none; opacity: .8; filter: saturate(.95); transition: opacity .2s, filter .2s, transform .4s var(--ease); }
+.nebulaToken:hover img, .nebulaToken:focus-visible img { opacity: 1; filter: saturate(1.1); transform: scale(1.08); }
+.nebulaToken[aria-pressed='true'] { border-color: #ffffff2e; background: radial-gradient(circle, #ffffff0c, transparent 70%); }
+.nebulaToken[aria-pressed='true'] img { opacity: 1; filter: saturate(1.15) brightness(1.15); }
+.nebulaToken[aria-pressed='true']::after { content: ''; position: absolute; right: 2px; bottom: 2px; width: 3px; height: 3px; background: #f5ecda; box-shadow: 0 0 5px 1px #f5ecda99; }
 .pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; color: #a997bb; font-size: 11px; font-variant-numeric: tabular-nums; }
 .pager button { width: 30px; height: 28px; border: 1px solid #b8a9d533; color: #c6b9d7; }
 .pager button:hover:not(:disabled) { background: #a999dc1a; }
@@ -221,7 +238,7 @@
   .wordmark { font-size: 12px; letter-spacing: 2px; }
   .mixerDialog { inset: 90px 16px auto auto; max-height: calc(100svh - 110px); width: 380px; }
   .stageDialog { width: 440px; }
-  .benchFamily { grid-template-columns: 1fr; gap: 6px; }
+  .stagePanel { left: 12px; bottom: auto; max-height: calc(100% - 140px); }
   .sceneFallback { top: 42%; left: 25px; right: 25px; }
   .sceneFallback h2 { font-size: 14px; }
   .systemSidebar { top: auto; right: 0; bottom: 64px; width: 100%; height: 48%; padding: 16px; overflow-y: auto; gap: 22px; }
@@ -232,6 +249,7 @@
   .explorer[data-system='true'] .utilityPanel { right: 14px; top: 64px; max-height: calc(52% - 144px); }
 }
 @keyframes signal { to { transform: scaleY(1); opacity: .7; } }
+@keyframes stageSpin { to { transform: rotate(360deg); } }
 @keyframes headingIn { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
 .headerActions { display: flex; align-items: center; gap: 16px; pointer-events: auto; flex-shrink: 0; }
