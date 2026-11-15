@@ -103,7 +103,7 @@ export function ParticleField({ view, reduced, suppressed, highlighted, onHover 
     catalog.tracks.forEach((track, index) => mask.setX(index, members.has(track.id) ? 1 : 0))
     mask.needsUpdate = true
   }, [catalog, geometry, regionId])
-  const orbitIds = useMemo(() => view.level === 'system' ? systemTracks(catalog, view.subgenreId, state.selectedTrackId).map(track => track.id) : [], [catalog, view, state.selectedTrackId])
+  const orbitIds = useMemo(() => view.level === 'system' ? systemTracks(catalog, view.subgenreId, state.selectedTrackId, state.stage).map(track => track.id) : [], [catalog, view, state.selectedTrackId, state.stage])
   useEffect(() => {
     const mask = geometry.getAttribute('aOrbit')
     catalog.tracks.forEach((track, index) => mask.setX(index, orbitIds.includes(track.id) ? 1 : 0))

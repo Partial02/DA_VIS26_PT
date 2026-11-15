@@ -95,7 +95,8 @@
 .recommendationPopover { position: absolute; right: 64px; top: 64px; z-index: 17; width: min(var(--recommendation-width, 300px), calc(100% - 88px)); }
 .systemSidebar { position: absolute; top: 64px; right: 0; bottom: 64px; z-index: 16; display: flex; flex-direction: column; gap: 28px; width: var(--system-panel-width); padding: 22px 20px; border-left: 1px solid #ffffff14; border-radius: 0; background: linear-gradient(135deg, #16131eaa, #0b0a1299); backdrop-filter: blur(20px); -webkit-backdrop-filter: blur(20px); transition: opacity .4s ease; }
 .explorer[data-traveling='true'] .systemSidebar { pointer-events: none; }
-.systemSidebar > .trackDock { min-height: 0; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a999dc55 transparent; }
+.systemSidebar > .trackDock { min-height: 0; display: flex; flex-direction: column; }
+.systemSidebar > .trackDock .trackList { flex: 1; min-height: 60px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a999dc55 transparent; }
 .systemSidebar > .recommendation { flex-shrink: 0; margin-top: auto; }
 .systemSidebar .panelHeading, .systemSidebar .panelHeading > span { color: #c0b3ce; font-size: 11px; letter-spacing: 0; }
 .explorer[data-system='true'] .utilityPanel { right: calc(var(--system-panel-width) + 64px); max-height: calc(100% - 80px); }
@@ -149,6 +150,53 @@
 .addPair select { appearance: auto; width: 100%; padding: 10px 5px; border: 1px solid #b8a9d52a; border-radius: 0; color: #d1bddf; background: #100b1b; font-size: 10px; }
 .addPair button { grid-column: 1 / -1; font-size: 11px; margin-top: 4px; }
 .methodNote { font-size: 9px; line-height: 1.9; color: #7c6b8c; margin: 20px 0; }
+.recommendationHeader small { color: #8f809f; font-size: 10px; }
+.inlineAction { display: inline-flex; align-items: center; gap: 6px; margin-top: 10px; padding: 4px 0; color: #b9a7d5; font-size: 11px; }
+.inlineAction:hover:not(:disabled) { color: #f1e8ff; }
+.lineupChange { margin: 10px 4px 0; color: #c9bed5; font-size: 11px; line-height: 1.6; white-space: pre-wrap; }
+.stageDialog { width: 440px; overflow-y: auto; scrollbar-width: thin; scrollbar-color: #a999dc55 transparent; }
+.stageDialog h3 { margin: 0 0 12px; color: #d6cce6; font-size: 12px; font-weight: 500; }
+.stageDialog h3 span { color: #8f809f; font-weight: 400; font-size: 11px; }
+.stageBox, .benchBox, .rankBox { padding: 16px 0; border-top: 1px solid var(--line); }
+.stageBoxHeader { display: flex; align-items: baseline; justify-content: space-between; }
+.stageBoxHeader .inlineAction { margin-top: 0; font-size: 10px; }
+.stageRow, .benchRow { display: flex; flex-wrap: wrap; gap: 6px; list-style: none; padding: 0; margin: 0; }
+.stageEmpty { margin: 0; color: #8f809f; font-size: 11px; line-height: 1.8; }
+.stageBox .lineupChange { margin: 12px 0 0; }
+.performerChip { display: inline-flex; align-items: center; gap: 6px; padding: 7px 10px; border: 1px solid #b8a9d533; background: linear-gradient(120deg, #a999dc0a, transparent); color: #c6b9d7; font-size: 11px; transition: background .2s, border-color .2s, color .2s; }
+.performerChip small { color: #8f809f; font-size: 9px; }
+.performerChip:hover { background: #a999dc1a; border-color: #b8a9d57a; color: #f1e8ff; }
+.performerChip[aria-pressed='true'] { border-color: #b8a9d58c; background: #a999dc29; color: #f1e8ff; box-shadow: inset 0 1px 0 #ffffff1c; }
+.benchFamily { display: grid; grid-template-columns: 92px minmax(0, 1fr); gap: 10px; align-items: start; padding: 9px 0; border-bottom: 1px solid #b8a9d512; }
+.benchFamily:last-child { border-bottom: 0; }
+.benchFamilyName strong { display: block; color: #ddd3e9; font-size: 12px; font-weight: 400; }
+.benchFamilyName small { display: block; margin-top: 4px; color: #82708e; font-size: 9px; line-height: 1.5; }
+.rankList { display: grid; list-style: none; padding: 0; margin: 0; }
+.rankList button { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 10px 0; text-align: left; border-bottom: 1px solid #b8a9d51a; }
+.rankName { color: #ddd5e5; font-size: 13px; overflow-wrap: anywhere; }
+.rankScore { color: var(--genre-color); font-size: 12px; font-variant-numeric: tabular-nums; }
+.rankMeta { grid-column: 1 / -1; color: #8f809f; font-size: 10px; }
+.rankBar { grid-column: 1 / -1; height: 3px; background: #ffffff0a; }
+.rankBar i { display: block; height: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--genre-color) 45%, transparent), var(--genre-color)); }
+.rankList button:hover .rankName { color: #fff; }
+.pager { display: flex; align-items: center; justify-content: center; gap: 14px; margin-top: 12px; color: #a997bb; font-size: 11px; font-variant-numeric: tabular-nums; }
+.pager button { width: 30px; height: 28px; border: 1px solid #b8a9d533; color: #c6b9d7; }
+.pager button:hover:not(:disabled) { background: #a999dc1a; }
+.player { flex-shrink: 0; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--line); }
+.playerRow { display: grid; grid-template-columns: 32px minmax(0, 1fr) 28px 28px; gap: 8px; align-items: center; }
+.playButton { width: 32px; height: 32px; display: grid; place-items: center; border: 1px solid #b8a9d555; background: linear-gradient(120deg, #a999dc14, transparent); color: #e5dcec; transition: background .2s, border-color .2s; }
+.playButton:hover:not(:disabled) { background: #a999dc29; border-color: #b8a9d58c; }
+.playerText { min-width: 0; }
+.playerText strong { display: block; color: #ddd5e5; font-size: 11px; font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.playerText span { display: block; margin-top: 3px; color: #8f809f; font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.playerLink { width: 28px; height: 28px; display: grid; place-items: center; color: #ada3bb; }
+.playerLink:hover, .playerLink[aria-expanded='true'] { color: #f1e8ff; background: #ffffff0c; }
+.keyForm { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: end; margin-top: 10px; }
+.keyForm label { display: grid; gap: 6px; color: #8e7b9e; font-size: 9px; }
+.keyForm input { width: 100%; padding: 8px; border: 1px solid #b8a9d533; background: #03020766; color: #e0d2ec; font-size: 11px; }
+.keyForm .outlinedButton { padding: 8px 12px; font-size: 11px; }
+.playerNote { margin: 10px 0 0; color: #6f6380; font-size: 9px; line-height: 1.6; }
+.playerNote a { color: #a997bb; text-decoration: underline; }
 .dialogInner > button:last-child { width: 100%; }
 .searchLabel { display: block; margin: 20px 0 10px; }
 .searchLabel input { width: 100%; background: #03020766; border: 1px solid #b8a9d533; color: #e0d2ec; padding: 12px; font-size: 11px; }
@@ -172,6 +220,8 @@
   .header { padding: 0 22px; }
   .wordmark { font-size: 12px; letter-spacing: 2px; }
   .mixerDialog { inset: 90px 16px auto auto; max-height: calc(100svh - 110px); width: 380px; }
+  .stageDialog { width: 440px; }
+  .benchFamily { grid-template-columns: 1fr; gap: 6px; }
   .sceneFallback { top: 42%; left: 25px; right: 25px; }
   .sceneFallback h2 { font-size: 14px; }
   .systemSidebar { top: auto; right: 0; bottom: 64px; width: 100%; height: 48%; padding: 16px; overflow-y: auto; gap: 22px; }

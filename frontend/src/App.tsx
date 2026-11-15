@@ -2,6 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import type { Catalog, MusicData } from './domain/catalog'
 import { indexCatalog } from './domain/catalog'
+import type { AtlasModel } from './domain/atlas'
 import { ExperienceProvider } from './state/ExperienceContext'
 import { AmbientBackground } from './components/AmbientBackground'
 import { Header } from './components/Header'
@@ -64,9 +65,10 @@ export default function App() {
   }, [])
   useEffect(() => {
     const controller = new AbortController()
-    fetch(`${import.meta.env.BASE_URL}data/music-catalog.json`, { signal: controller.signal })
-      .then(response => { if (!response.ok) throw new Error('Catalog unavailable'); return response.json() as Promise<MusicData> })
-      .then(data => setCatalog(indexCatalog(data)))
+    const load = <T,>(file: string) => fetch(`${import.meta.env.BASE_URL}data/${file}`, { signal: controller.signal })
+      .then(response => { if (!response.ok) throw new Error(`${file} unavailable`); return response.json() as Promise<T> })
+    Promise.all([load<MusicData>('music-catalog.json'), load<AtlasModel>('atlas-model.json')])
+      .then(([data, atlas]) => setCatalog(indexCatalog(data, atlas)))
       .catch(reason => { if (reason.name !== 'AbortError') setError(true) })
     return () => controller.abort()
   }, [])

@@ -42,7 +42,7 @@ export function MusicSystem({ view, reduced, orbitScale, suppressed }: {
   useFrame(() => { root.current?.scale.setScalar(orbitScale()) })
   if (view.level !== 'system') return null
   const sub = catalog.subgenreById.get(view.subgenreId)!
-  const tracks = systemTracks(catalog, sub.id, state.selectedTrackId)
+  const tracks = systemTracks(catalog, sub.id, state.selectedTrackId, state.stage)
   const selected = state.selectedTrackId ?? tracks[0]?.id
   const color = catalog.genreById.get(view.genreId)!.color
   return <group ref={root} position={sub.position}>
