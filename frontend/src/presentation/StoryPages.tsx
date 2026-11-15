@@ -11,7 +11,7 @@ export const storyPages = [
   { title: '추천 알고리즘의 한계', anchor: '#recommendation-position' },
 ]
 
-/** 발표 페이지를 전체 화면으로 띄웁니다. `page`는 목차에서 고른 페이지 번호(1–5)이고 0은 처음입니다. */
+/** 발표 페이지를 전체 화면으로 띄웁니다. `page`는 목차에서 고른 페이지 번호(1–5)입니다. 0(표지)은 `Presentation`이 그립니다. */
 export function StoryPages({ page }: { page: number }) {
   const frame = useRef<HTMLIFrameElement>(null)
   const first = useRef(page)
