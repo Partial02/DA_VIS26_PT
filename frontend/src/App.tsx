@@ -8,12 +8,13 @@ import { AmbientBackground } from './components/AmbientBackground'
 import { Header } from './components/Header'
 import { Explore } from './components/Explore'
 import { Presentation } from './presentation/Presentation'
+import { StoryPages } from './presentation/StoryPages'
 import { useReducedMotion } from './state/useReducedMotion'
 import { journeyMotion } from './state/motion'
 
 function parseHash() {
   if (location.hash === '#/explore') return { story: false, chapter: 0 }
-  const match = location.hash.match(/^#\/story\/([1-6])$/)
+  const match = location.hash.match(/^#\/story\/([1-5])$/)
   return { story: true, chapter: match ? Number(match[1]) : 0 }
 }
 
@@ -49,7 +50,7 @@ function Experience({ route }: { route: ReturnType<typeof parseHash> }) {
     <AmbientBackground cover={displayed.story && displayed.chapter === 0} exploring={!displayed.story} drift={drift} />
     <Header story={displayed.story} chapter={displayed.chapter} />
     <div ref={stage} className="routeStage" inert={changing} aria-busy={changing}>
-      {displayed.story ? <Presentation chapter={displayed.chapter} /> : <Explore />}
+      {displayed.story ? displayed.chapter === 0 ? <Presentation chapter={0} /> : <StoryPages page={displayed.chapter} /> : <Explore />}
     </div>
   </div>
 }
