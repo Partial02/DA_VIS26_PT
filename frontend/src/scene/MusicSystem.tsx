@@ -1,8 +1,9 @@
-import { useMemo, useRef } from 'react'
+import { useEffect, useMemo, useRef } from 'react'
 import { Billboard, Line } from '@react-three/drei'
 import { useFrame } from '@react-three/fiber'
-import { AdditiveBlending, Color } from 'three'
+import { AdditiveBlending, CanvasTexture, Color, SRGBColorSpace } from 'three'
 import type { Group } from 'three'
+import { drawStage, performerSpec } from '../components/nebula'
 import { systemTracks } from '../domain/catalog'
 import type { Track } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
@@ -34,6 +35,31 @@ function TrackOrbit({ track, index, selected, color, reduced, onSelect }: {
   </>
 }
 
+/** The performers on stage, merged into one nebula that cradles the subgenre system. */
+function StageNebula({ reduced }: { reduced: boolean }) {
+  const { catalog, state } = useExperience()
+  const atlas = catalog.atlas
+  const texture = useMemo(() => {
+    if (!atlas || !state.stage.length) return null
+    const canvas = document.createElement('canvas')
+    canvas.width = canvas.height = 512
+    drawStage(canvas, state.stage.map(id => performerSpec(atlas, catalog, id)), false)
+    const map = new CanvasTexture(canvas)
+    map.colorSpace = SRGBColorSpace
+    map.center.set(.5, .5)
+    return map
+  }, [atlas, catalog, state.stage])
+  useEffect(() => () => texture?.dispose(), [texture])
+  useFrame((_, delta) => { if (texture && !reduced) texture.rotation += delta * .02 })
+  if (!texture) return null
+  return <Billboard>
+    <mesh raycast={() => {}} renderOrder={-1}>
+      <planeGeometry args={[7.2, 7.2]} />
+      <meshBasicMaterial map={texture} transparent opacity={.5} depthWrite={false} blending={AdditiveBlending} toneMapped={false} />
+    </mesh>
+  </Billboard>
+}
+
 export function MusicSystem({ view, reduced, orbitScale, suppressed }: {
   view: Destination; reduced: boolean; orbitScale: () => number; suppressed: () => boolean
 }) {
@@ -42,10 +68,11 @@ export function MusicSystem({ view, reduced, orbitScale, suppressed }: {
   useFrame(() => { root.current?.scale.setScalar(orbitScale()) })
   if (view.level !== 'system') return null
   const sub = catalog.subgenreById.get(view.subgenreId)!
-  const tracks = systemTracks(catalog, sub.id, state.selectedTrackId)
+  const tracks = systemTracks(catalog, sub.id, state.selectedTrackId, state.stage)
   const selected = state.selectedTrackId ?? tracks[0]?.id
   const color = catalog.genreById.get(view.genreId)!.color
   return <group ref={root} position={sub.position}>
+    <StageNebula reduced={reduced} />
     {tracks.map((track, index) => <TrackOrbit key={track.id} track={track} index={index} selected={track.id === selected}
       color={color} reduced={reduced} onSelect={() => { if (!suppressed()) dispatch({ type: 'selectTrack', id: track.id }) }} />)}
   </group>

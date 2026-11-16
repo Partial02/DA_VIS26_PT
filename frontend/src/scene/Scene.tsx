@@ -7,7 +7,7 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { cameraFootprint, frameSpace, spaceFlight, spacePosition } from './space'
 import type { Position } from '../domain/catalog'
 import gsap from 'gsap'
-import { systemTracks } from '../domain/catalog'
+import { subgenrePlaylist, systemTracks } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
 import type { Destination } from '../state/reducer'
 import { journeyMotion } from '../state/motion'
@@ -273,8 +273,8 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
   const labels = useMemo((): Label[] => {
     if (sceneView.level === 'system') {
       const sub = catalog.subgenreById.get(sceneView.subgenreId)!
-      const tracks = systemTracks(catalog, sub.id, state.selectedTrackId)
-      const ordered = sub.trackIds.toSorted()
+      const ordered = subgenrePlaylist(catalog, sub.id, state.stage).map(track => track.id)
+      const tracks = systemTracks(catalog, sub.id, state.selectedTrackId, state.stage)
       return tracks.map((track, index) => ({ id: track.id, name: track.title, detail: String(ordered.indexOf(track.id) + 1).padStart(2, '0'),
         position: track.position, track: true, orbit: index, orbitCenter: sub.position, visited: false,
         selected: (state.selectedTrackId ?? tracks[0].id) === track.id,
@@ -288,7 +288,7 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
         color: 'color' in item ? item.color : catalog.genreById.get(item.genreId)!.color, visited: 'color' in item ? Boolean(state.genreVisits[item.id]) : Boolean(state.visits[item.id]),
         navigate: () => { if (!suppressed()) dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id } : { level: 'system', genreId: item.genreId, subgenreId: item.id } }) },
       }))
-  }, [catalog, dispatch, hovered, state.selectedTrackId, sceneView, state.visits, state.genreVisits])
+  }, [catalog, dispatch, hovered, state.selectedTrackId, state.stage, sceneView, state.visits, state.genreVisits])
   return <div ref={viewport} className={`${styles.viewport} ${sceneView.level === 'universe' ? styles.universe : ''}`} data-system={state.view.level === 'system'} data-hovered={sceneView.level !== 'system' && hovered !== null} tabIndex={0} role="region" aria-busy={traveling} aria-label="장르 우주 지도. 드래그로 회전, 우클릭 드래그 또는 두 손가락으로 이동, 휠로 접근하거나 물러납니다. 방향키로 회전하고 0으로 원래 보기를 복원합니다."
     onKeyDown={event => {
       if (event.target !== event.currentTarget) return

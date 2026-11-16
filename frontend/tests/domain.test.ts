@@ -3,7 +3,6 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { adjacentSubgenre, indexCatalog, systemTracks } from '../src/domain/catalog.ts'
 import type { MusicData, Track } from '../src/domain/catalog.ts'
-import { recommendGenres, pairKey } from '../src/domain/recommendations.ts'
 import { experienceReducer, initialState } from '../src/state/reducer.ts'
 import { createDemoSignal } from '../src/domain/visualization.ts'
 import { genreVisitAppearance } from '../src/domain/visits.ts'
@@ -93,60 +92,19 @@ test('density balancing retains more tag affinity among neighbors than unrelated
   assert.ok((nearby - baseline) / 64 > .3)
 })
 
-function scoringCatalog() {
-  const makeTrack = (id: string, genreId: string, subgenreId: string, instruments: string[]): Track => ({
-    id, genreId, subgenreIds: [subgenreId], instruments, title: id, artist: 'Test', duration: 180, path: '', position: [0, 0, 0],
-  })
-  return indexCatalog({
-    meta: catalog.meta, links: [],
-    tracks: [makeTrack('01', 'jazz', 'jazz--a', ['Piano']), makeTrack('02', 'jazz', 'jazz--a', ['Guitar']),
-      makeTrack('03', 'jazz', 'jazz--b', ['Piano']), makeTrack('04', 'pop', 'pop--c', ['Piano'])],
-    genres: [
-      { id: 'jazz', name: 'Jazz', trackIds: ['01', '02', '03'], subgenreIds: ['jazz--a', 'jazz--b'], instruments: ['Piano', 'Guitar'], color: '#fff', position: [0, 0, 0] },
-      { id: 'pop', name: 'Pop', trackIds: ['04'], subgenreIds: ['pop--c'], instruments: ['Piano'], color: '#fff', position: [1, 1, 0] },
-    ],
-    subgenres: [
-      { id: 'jazz--a', name: 'Acid Jazz', genreId: 'jazz', trackIds: ['01', '02'], position: [0, 0, 0] },
-      { id: 'jazz--b', name: 'Bebop', genreId: 'jazz', trackIds: ['03'], position: [0, 0, 0] },
-      { id: 'pop--c', name: 'Chanson', genreId: 'pop', trackIds: ['04'], position: [1, 1, 0] },
-    ],
-  })
-}
-
-test('recommendations normalize weights and combine actual instrument frequencies', () => {
-  const fixture = scoringCatalog()
-  const results = recommendGenres(fixture, [
-    { genreId: 'jazz', instrument: 'Piano', weight: 75 }, { genreId: 'pop', instrument: 'Piano', weight: 25 },
-  ])
-  assert.deepEqual(results.map(r => [r.subgenreId, r.score]), [['jazz--b', .75], ['pop--c', .25]])
-  assert.deepEqual(results[0].instruments, ['Piano'])
-  const combined = recommendGenres(fixture, [
-    { genreId: 'jazz', instrument: 'Piano', weight: 50 }, { genreId: 'jazz', instrument: 'Guitar', weight: 50 },
-  ])
-  assert.equal(combined[0].subgenreId, 'jazz--a') // .25 + .25; alphabetical tie break.
-  assert.equal(combined[0].score, .5)
-  assert.equal(combined.length, 1)
-})
-
-test('weight changes alter destinations; empty, zero and nonexistent pairs yield no results', () => {
-  const fixture = scoringCatalog()
-  assert.deepEqual(recommendGenres(fixture, []), [])
-  assert.deepEqual(recommendGenres(fixture, [{ genreId: 'jazz', instrument: 'Piano', weight: 0 }]), [])
-  assert.deepEqual(recommendGenres(fixture, [{ genreId: 'jazz', instrument: 'Unknown', weight: 100 }]), [])
-  assert.deepEqual(recommendGenres(fixture, [{ genreId: 'pop', instrument: 'Piano', weight: 100 }]).map(r => r.subgenreId), ['pop--c'])
-  const actual = recommendGenres(catalog, initialState.preferences)
-  assert.equal(actual.length, 3)
-  assert.equal(new Set(actual.map(r => r.genreId)).size, 3)
-  assert.ok(actual.every(r => catalog.subgenreById.has(r.subgenreId) && r.score > 0))
-})
-
-test('pairs cannot be duplicated and removing all input leaves a valid empty mix', () => {
-  const duplicate = experienceReducer(initialState, { type: 'addPair', pair: initialState.preferences[0] })
-  assert.equal(duplicate, initialState)
-  let state = experienceReducer(initialState, { type: 'addPair', pair: { genreId: 'jazz', instrument: 'Guitar', weight: 25 } })
-  assert.equal(state.preferences.length, 4)
-  for (const pair of [...state.preferences]) state = experienceReducer(state, { type: 'removePair', key: pairKey(pair) })
-  assert.equal(state.preferences.length, 0)
+test('the stage toggles performers, clears, and records automatic lineup changes', () => {
+  let state = experienceReducer(initialState, { type: 'togglePerformer', id: 3 })
+  state = experienceReducer(state, { type: 'togglePerformer', id: 7 })
+  assert.deepEqual(state.stage, [3, 7])
+  state = experienceReducer(state, { type: 'setLineup', stage: [7, 1], change: { need: [0], drop: [3] } })
+  assert.deepEqual(state.stage, [7, 1])
+  assert.deepEqual(state.lineupChange, { need: [0], drop: [3] })
+  state = experienceReducer(state, { type: 'togglePerformer', id: 7 })
+  assert.deepEqual(state.stage, [1])
+  assert.equal(state.lineupChange, null)
+  state = experienceReducer(state, { type: 'clearStage' })
+  assert.deepEqual(state.stage, [])
+  assert.equal(experienceReducer(state, { type: 'clearStage' }), state)
 })
 
 test('only arrival at the current destination increments visits, including rapid retargeting', () => {

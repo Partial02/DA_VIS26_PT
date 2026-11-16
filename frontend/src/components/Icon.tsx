@@ -11,6 +11,11 @@ const paths = {
   star: 'm12 3 2.3 6.7L21 12l-6.7 2.3L12 21l-2.3-6.7L3 12l6.7-2.3Z',
   history: 'M3 11a9 9 0 1 1 2.6 7M3 4v7h7m2-4v5l3 2',
   plus: 'M12 5v14M5 12h14',
+  stage: 'M12 12m-2.2 0a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0-4.4 0M3 12c0-2.5 4-4.5 9-4.5s9 2 9 4.5-4 4.5-9 4.5-9-2-9-4.5ZM6.5 5.5l.01 0M18 18.5l.01 0',
+  play: 'M8 5.5v13l10-6.5Z',
+  pause: 'M9 5v14M15 5v14',
+  key: 'M14.5 9.5a4 4 0 1 0-3.2 3.9L13 15h2v2h2v2h3v-3l-5.6-5.6c.07-.3.1-.6.1-.9ZM8.5 8.5h.01',
+  external: 'M14 4h6v6M20 4l-9 9M18 14v5H5V6h5',
 }
 export function Icon({ name, size = 18 }: { name: keyof typeof paths; size?: number }) {
   return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d={paths[name]} /></svg>

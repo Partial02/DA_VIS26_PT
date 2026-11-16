@@ -1,3 +1,6 @@
+import { indexAtlas, orderSubgenreTracks } from './atlas.ts'
+import type { Atlas, AtlasModel } from './atlas.ts'
+
 export type Position = [number, number]
 export type SpacePosition = [number, number, number]
 
@@ -52,21 +55,31 @@ export interface Catalog extends MusicData {
   trackById: Map<string, Track>
   genreById: Map<string, Genre>
   subgenreById: Map<string, Subgenre>
+  /** Genre Atlas v4 recommendation model; absent only in small test fixtures. */
+  atlas?: Atlas
 }
 
-export function indexCatalog(data: MusicData): Catalog {
-  return {
+export function indexCatalog(data: MusicData, atlasModel?: AtlasModel): Catalog {
+  const catalog: Catalog = {
     ...data,
     trackById: new Map(data.tracks.map(t => [t.id, t])),
     genreById: new Map(data.genres.map(g => [g.id, g])),
     subgenreById: new Map(data.subgenres.map(s => [s.id, s])),
   }
+  if (atlasModel) catalog.atlas = indexAtlas(atlasModel, catalog)
+  return catalog
 }
 
-export function systemTracks(catalog: Catalog, subgenreId: string, selectedId?: string | null): Track[] {
+/** Playlist order of a subgenre: Genre Atlas stage ordering, or track ID order without the model. */
+export function subgenrePlaylist(catalog: Catalog, subgenreId: string, stage: readonly number[] = []): Track[] {
+  if (catalog.atlas) return orderSubgenreTracks(catalog.atlas, catalog, subgenreId, stage)
+  return (catalog.subgenreById.get(subgenreId)?.trackIds ?? []).toSorted().map(id => catalog.trackById.get(id)!)
+}
+
+/** The first three playlist songs orbit; a selected member outside them takes the first slot. */
+export function systemTracks(catalog: Catalog, subgenreId: string, selectedId?: string | null, stage: readonly number[] = []): Track[] {
   const members = catalog.subgenreById.get(subgenreId)?.trackIds ?? []
-  const tracks = members
-    .toSorted().slice(0, 3).map(id => catalog.trackById.get(id)!)
+  const tracks = subgenrePlaylist(catalog, subgenreId, stage).slice(0, 3)
   if (selectedId && members.includes(selectedId) && !tracks.some(track => track.id === selectedId)) {
     tracks[0] = catalog.trackById.get(selectedId)!
   }
