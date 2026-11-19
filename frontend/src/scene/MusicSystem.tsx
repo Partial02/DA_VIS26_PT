@@ -182,7 +182,7 @@ export function MusicSystem({ view, reduced, suppressed, hovered, onHover }: {
     }
     if (nebula.current) {
       nebula.current.scale.setScalar(nebulaSize * (1 + pulse.current * .06))
-      materials.nebula.uniforms.uOpacity.value = fade.current * (.34 + pulse.current * .16)
+      materials.nebula.uniforms.uOpacity.value = fade.current * (.20 + pulse.current * .16)
       if (!reduced) materials.nebula.uniforms.uTime.value = t
     }
     if (beacon.current) {
