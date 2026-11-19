@@ -222,10 +222,10 @@ if __name__ == "__main__":
     with SOURCE.open(newline="", encoding="utf-8-sig") as source:
         source_rows = list(csv.DictReader(source))
     if args.check:
-        validate(json.loads(OUTPUT.read_text()), source_rows)
+        validate(json.loads(OUTPUT.read_text(encoding="utf-8")), source_rows)
     else:
         data = build(source_rows)
         validate(data, source_rows)
         OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-        OUTPUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n")
+        OUTPUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
         print(f"Saved {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes).")
