@@ -196,17 +196,65 @@ export function scoreSubgenreTracks(index: CategoryIndex, catalog: Catalog, subg
         : IDLE_WEIGHTS.typical * typical + IDLE_WEIGHTS.length * length
       return { track, match, score: Math.min(1, base + hash(index.trackOrder.get(track.id)!, subOrder, 31) * .008) }
     })
+  return spreadArtists(pool)
+}
+
+/**
+ * Greedy listening order: always the song with the highest score − ARTIST_PENALTY × (songs
+ * of its artist already placed); ties go to the earlier title, then the earlier song.
+ * The penalty is shared by an artist's songs, so only each artist's best remaining song
+ * can win: those heads sit in a max-heap and only the winner's artist is re-queued,
+ * O(n log artists) instead of rescanning every song for every slot.
+ */
+function spreadArtists(pool: ScoredTrack[]): ScoredTrack[] {
+  // One integer tie rank per song: title order (locale aware), then pool order.
+  const tie = new Map<ScoredTrack, number>()
+  pool.map((item, i) => ({ item, i }))
+    .sort((a, b) => a.item.track.title.localeCompare(b.item.track.title) || a.i - b.i)
+    .forEach(({ item }, rank) => tie.set(item, rank))
+  const queues = new Map<string, ScoredTrack[]>()
+  for (const item of pool) {
+    const queue = queues.get(item.track.artist)
+    if (queue) queue.push(item); else queues.set(item.track.artist, [item])
+  }
+  interface Head { queue: ScoredTrack[]; next: number; value: number; tie: number }
+  const head = (queue: ScoredTrack[], next: number): Head => ({ queue, next, value: queue[next].score - ARTIST_PENALTY * next, tie: tie.get(queue[next])! })
+  const before = (a: Head, b: Head) => a.value > b.value || (a.value === b.value && a.tie < b.tie)
+  const heap: Head[] = []
+  const push = (item: Head) => {
+    let i = heap.push(item) - 1
+    while (i) {
+      const parent = (i - 1) >> 1
+      if (!before(heap[i], heap[parent])) break
+      ;[heap[i], heap[parent]] = [heap[parent], heap[i]]
+      i = parent
+    }
+  }
+  const pop = () => {
+    const top = heap[0], last = heap.pop()!
+    if (heap.length) {
+      heap[0] = last
+      for (let i = 0; ;) {
+        const l = 2 * i + 1, r = l + 1
+        let best = i
+        if (l < heap.length && before(heap[l], heap[best])) best = l
+        if (r < heap.length && before(heap[r], heap[best])) best = r
+        if (best === i) break
+        ;[heap[i], heap[best]] = [heap[best], heap[i]]
+        i = best
+      }
+    }
+    return top
+  }
+  for (const queue of queues.values()) {
+    queue.sort((a, b) => b.score - a.score || tie.get(a)! - tie.get(b)!)
+    push(head(queue, 0))
+  }
   const ordered: ScoredTrack[] = []
-  const plays = new Map<string, number>()
-  while (pool.length) {
-    let best = 0, bestValue = -Infinity
-    pool.forEach((item, i) => {
-      const value = item.score - ARTIST_PENALTY * (plays.get(item.track.artist) ?? 0)
-      if (value > bestValue || (value === bestValue && item.track.title.localeCompare(pool[best].track.title) < 0)) { best = i; bestValue = value }
-    })
-    const [item] = pool.splice(best, 1)
-    plays.set(item.track.artist, (plays.get(item.track.artist) ?? 0) + 1)
-    ordered.push(item)
+  while (heap.length) {
+    const { queue, next } = pop()
+    ordered.push(queue[next])
+    if (next + 1 < queue.length) push(head(queue, next + 1))
   }
   return ordered
 }

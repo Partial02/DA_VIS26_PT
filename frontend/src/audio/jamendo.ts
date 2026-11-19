@@ -1,5 +1,6 @@
 // Jamendo playback ported from Genre Atlas v4. Songs are CC-licensed Jamendo tracks
 // addressed by the MTG-Jamendo TRACK_ID; the CSV's relative MP3 path is not used.
+import { bandLevels, createLevelState, loudness } from './levels'
 
 export interface JamendoState {
   trackId: string | null
@@ -70,8 +71,10 @@ type Listener = () => void
 class LiveMeter {
   private context: AudioContext | null = null
   private analyser: AnalyserNode | null = null
-  private bins: Uint8Array<ArrayBuffer> | null = null
-  private wave: Uint8Array<ArrayBuffer> | null = null
+  private bins: Float32Array<ArrayBuffer> | null = null
+  private wave: Float32Array<ArrayBuffer> | null = null
+  private gain = createLevelState()
+  private last = 0
 
   attach(audio: HTMLAudioElement) {
     if (this.context) return
@@ -84,42 +87,32 @@ class LiveMeter {
       analyser.connect(context.destination)
       this.context = context
       this.analyser = analyser
-      this.bins = new Uint8Array(analyser.frequencyBinCount)
-      this.wave = new Uint8Array(analyser.fftSize)
+      this.bins = new Float32Array(analyser.frequencyBinCount)
+      this.wave = new Float32Array(analyser.fftSize)
     } catch { /* Web Audio unavailable: levels stay empty, playback continues. */ }
   }
 
   resume() { void this.context?.resume().catch(() => {}) }
 
-  /**
-   * Fill `out` with band levels in [0, 1], low to high frequency; false when nothing is
-   * measurable. Bands widen quadratically (≈40 Hz … 16 kHz) and never share an FFT bin.
-   */
+  /** A new song starts from a neutral gain instead of the last song's peak. */
+  reset() { this.gain = createLevelState(); this.last = 0 }
+
+  /** Fill `out` with bar levels in [0, 1], low to high frequency (see levels.ts); false when silent. */
   levels(out: Float32Array): boolean {
     if (!this.analyser || !this.bins || this.context?.state !== 'running') return false
-    this.analyser.getByteFrequencyData(this.bins)
-    const n = this.bins.length, bands = out.length, top = n * .72
-    let any = false, to = 1
-    for (let band = 0; band < bands; band++) {
-      const from = to
-      to = Math.max(from + 1, Math.round(1 + (top - 1) * ((band + 1) / bands) ** 2))
-      let sum = 0
-      for (let i = from; i < to && i < n; i++) sum += this.bins[i]
-      // Music loses energy toward the treble; tilt it back up, then a gamma spreads the loud range.
-      const mean = sum / (to - from) / 255 * (1 + 1.3 * band / bands)
-      out[band] = Math.min(1, Math.max(0, (mean - .2) / .65) ** 1.4)
-      if (sum) any = true
-    }
-    return any
+    this.analyser.getFloatFrequencyData(this.bins)
+    const now = performance.now(), dt = this.last ? (now - this.last) / 1000 : 1 / 60
+    this.last = now
+    return bandLevels(this.bins, this.context.sampleRate / this.analyser.fftSize, out, this.gain, dt)
   }
 
-  /** Overall loudness (RMS of the waveform) in [0, 1]. */
+  /** Overall loudness (soft-limited RMS of the waveform) in [0, 1]. */
   volume(): number {
     if (!this.analyser || !this.wave || this.context?.state !== 'running') return 0
-    this.analyser.getByteTimeDomainData(this.wave)
+    this.analyser.getFloatTimeDomainData(this.wave)
     let sum = 0
-    for (const value of this.wave) { const x = (value - 128) / 128; sum += x * x }
-    return Math.min(1, Math.sqrt(sum / this.wave.length) * 3)
+    for (const x of this.wave) sum += x * x
+    return loudness(Math.sqrt(sum / this.wave.length))
   }
 }
 
@@ -214,6 +207,7 @@ class JamendoPlayer {
     this.triedDirect = source.direct
     this.usingPlain = false
     const audio = this.element()
+    this.meter.reset()
     this.meter.resume()
     audio.src = source.src
     this.set({ license: source.license })

@@ -59,7 +59,10 @@ test('the playlist follows the picks, is deterministic, and spreads artists', ()
   const picks = [cell(sub.genreId, 'drums'), cell(sub.genreId, 'electric_guitar')]
   const list = scoredPlaylist(catalog, sub.id, picks)
   assert.equal(list.length, sub.trackIds.length)
-  assert.deepEqual(scoredPlaylist(catalog, sub.id, picks), list)
+  assert.equal(scoredPlaylist(catalog, sub.id, picks), list) // Same selection array: reused, not recomputed.
+  const again = scoredPlaylist(catalog, sub.id, [...picks]) // A new array is computed afresh, with the same result.
+  assert.notEqual(again, list)
+  assert.deepEqual(again, list)
   // The top songs answer the picks better than the bottom ones.
   const mean = (items: typeof list) => items.reduce((sum, item) => sum + item.match, 0) / items.length
   assert.ok(mean(list.slice(0, 10)) > mean(list.slice(-10)))

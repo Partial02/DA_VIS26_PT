@@ -70,10 +70,24 @@ export function indexCatalog(data: MusicData, categoryModel?: CategoryModel): Ca
   return catalog
 }
 
-/** Scored playlist of a subgenre for the picked cells, or track ID order without the model. */
+// The playlist panel and the subgenre stars ask for the same ordering; the reducer
+// replaces `selection` on every change, so the array itself is a safe cache key.
+const playlistCache = new WeakMap<Catalog, WeakMap<readonly number[], Map<string, ScoredTrack[]>>>()
+
+/** Scored playlist of a subgenre for the picked cells, or track ID order without the model. Treat the result as read-only. */
 export function scoredPlaylist(catalog: Catalog, subgenreId: string, selection: readonly number[] = []): ScoredTrack[] {
-  if (catalog.categories) return scoreSubgenreTracks(catalog.categories, catalog, subgenreId, selection)
-  return (catalog.subgenreById.get(subgenreId)?.trackIds ?? []).toSorted().map(id => ({ track: catalog.trackById.get(id)!, score: 0, match: 0 }))
+  let bySelection = playlistCache.get(catalog)
+  if (!bySelection) playlistCache.set(catalog, bySelection = new WeakMap())
+  let bySubgenre = bySelection.get(selection)
+  if (!bySubgenre) bySelection.set(selection, bySubgenre = new Map())
+  let list = bySubgenre.get(subgenreId)
+  if (!list) {
+    list = catalog.categories
+      ? scoreSubgenreTracks(catalog.categories, catalog, subgenreId, selection)
+      : (catalog.subgenreById.get(subgenreId)?.trackIds ?? []).toSorted().map(id => ({ track: catalog.trackById.get(id)!, score: 0, match: 0 }))
+    bySubgenre.set(subgenreId, list)
+  }
+  return list
 }
 
 export function subgenrePlaylist(catalog: Catalog, subgenreId: string, selection: readonly number[] = []): Track[] {

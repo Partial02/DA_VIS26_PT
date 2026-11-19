@@ -15,15 +15,17 @@ export function SignalBars({ color }: { color?: string }) {
   const reduced = useReducedMotion()
   useEffect(() => {
     const bars = [...(root.current?.children ?? [])] as HTMLElement[]
-    const levels = new Float32Array(BAR_COUNT), shown = new Float32Array(BAR_COUNT)
+    const levels = new Float32Array(BAR_COUNT), shown = new Float32Array(BAR_COUNT).fill(-1)
     let frame = 0
     const tick = () => {
       const live = jamendoPlayer.levels(levels)
       for (let i = 0; i < BAR_COUNT; i++) {
         const target = live ? .06 + levels[i] * .94 : .06
-        // Fast attack, slower release, like a VU meter.
-        shown[i] += (target - shown[i]) * (target > shown[i] ? .6 : .18)
-        bars[i].style.transform = `scaleY(${shown[i].toFixed(3)})`
+        // Fast attack, slower release, like a VU meter; snap once close to skip invisible writes.
+        const next = shown[i] < 0 ? target : shown[i] + (target - shown[i]) * (target > shown[i] ? .6 : .18)
+        const value = Math.abs(next - target) < .002 ? target : next
+        if (value !== shown[i]) bars[i].style.transform = `scaleY(${value.toFixed(3)})`
+        shown[i] = value
       }
       frame = requestAnimationFrame(tick)
     }
