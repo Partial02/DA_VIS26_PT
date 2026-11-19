@@ -1,5 +1,7 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import { useExperience } from '../state/ExperienceContext'
+import { Icon } from './Icon'
+import { LiquidGlass } from './LiquidGlass'
 import type { Position, SpacePosition } from '../domain/catalog'
 import styles from './Interface.module.css'
 
@@ -52,4 +54,16 @@ export function MiniMap({ bounds }: { bounds: Position[] | null }) {
       {current && <g fill="none" stroke="#f3ecff" pointerEvents="none"><circle cx={project(current)[0]} cy={project(current)[1]} r="6" strokeWidth=".8" /><circle cx={project(current)[0]} cy={project(current)[1]} r="8" strokeWidth=".4" opacity=".4" /></g>}
     </svg>
   </aside>
+}
+
+/** The overview map, docked at the lower right of the star map; folds into a small tab. */
+export function MiniMapDock({ bounds }: { bounds: Position[] | null }) {
+  const [open, setOpen] = useState(true)
+  return <LiquidGlass as="section" className={styles.miniMapDock} data-open={open} aria-label="전체 지도">
+    <button className={styles.miniMapToggle} aria-expanded={open} aria-controls="miniMapBody" onClick={() => setOpen(!open)}
+      title={open ? '미니맵 접기' : '미니맵 펼치기'}>
+      <Icon name="map" size={14} /><span>전체 지도</span><Icon name="chevron" size={14} />
+    </button>
+    <div id="miniMapBody" className={styles.miniMapBody} hidden={!open}><MiniMap bounds={bounds} /></div>
+  </LiquidGlass>
 }

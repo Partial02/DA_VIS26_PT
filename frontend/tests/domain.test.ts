@@ -1,28 +1,17 @@
 import { strict as assert } from 'node:assert'
 import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
-import { adjacentSubgenre, indexCatalog, systemTracks } from '../src/domain/catalog.ts'
+import { adjacentSubgenre, indexCatalog, subgenrePlaylist } from '../src/domain/catalog.ts'
 import type { MusicData, Track } from '../src/domain/catalog.ts'
 import { experienceReducer, initialState } from '../src/state/reducer.ts'
-import { createDemoSignal } from '../src/domain/visualization.ts'
 import { genreVisitAppearance } from '../src/domain/visits.ts'
-import { Color, SRGBColorSpace } from 'three'
 
 const catalog = indexCatalog(JSON.parse(readFileSync(new URL('../public/data/music-catalog.json', import.meta.url), 'utf8')) as MusicData)
 
-test('genre representative colors occupy distinct hue bands, not just different HEX values', () => {
-  const palette = catalog.genres.map(genre => ({
-    name: genre.name,
-    hsl: new Color(genre.color).getHSL({ h: 0, s: 0, l: 0 }, SRGBColorSpace),
-  }))
-  for (const [index, left] of palette.entries()) {
-    assert.ok(left.hsl.s >= .5, `${left.name} needs a recognizable hue`)
-    for (const right of palette.slice(index + 1)) {
-      const difference = Math.abs(left.hsl.h - right.hsl.h)
-      const separation = Math.min(difference, 1 - difference) * 360
-      assert.ok(separation >= 20, `${left.name} and ${right.name} are too similar: ${separation}°`)
-    }
-  }
+test('genre colors match genre_color.csv', () => {
+  const rows = readFileSync(new URL('../../genre_color.csv', import.meta.url), 'utf8').trim().split(String.fromCharCode(10)).slice(1).map(line => line.trim().split(','))
+  assert.equal(rows.length, 15)
+  for (const [name, color] of rows) assert.equal(catalog.genres.find(g => g.name === name)?.color, color.toLowerCase(), name)
 })
 
 test('the shipped catalog retains every real track and genre relationship', () => {
@@ -38,7 +27,7 @@ test('the shipped catalog retains every real track and genre relationship', () =
   assert.ok(catalog.genres.some(g => g.name === 'Folk / Country'))
   for (const sub of catalog.subgenres) {
     assert.ok(catalog.genreById.get(sub.genreId)!.subgenreIds.includes(sub.id))
-    assert.equal(systemTracks(catalog, sub.id).length, 3)
+    assert.equal(subgenrePlaylist(catalog, sub.id).length, sub.trackIds.length)
     for (const id of sub.trackIds) {
       assert.ok(catalog.trackById.get(id)!.subgenreIds.includes(sub.id))
     }
@@ -92,19 +81,20 @@ test('density balancing retains more tag affinity among neighbors than unrelated
   assert.ok((nearby - baseline) / 64 > .3)
 })
 
-test('the stage toggles performers, clears, and records automatic lineup changes', () => {
-  let state = experienceReducer(initialState, { type: 'togglePerformer', id: 3 })
-  state = experienceReducer(state, { type: 'togglePerformer', id: 7 })
-  assert.deepEqual(state.stage, [3, 7])
-  state = experienceReducer(state, { type: 'setLineup', stage: [7, 1], change: { need: [0], drop: [3] } })
-  assert.deepEqual(state.stage, [7, 1])
-  assert.deepEqual(state.lineupChange, { need: [0], drop: [3] })
-  state = experienceReducer(state, { type: 'togglePerformer', id: 7 })
-  assert.deepEqual(state.stage, [1])
-  assert.equal(state.lineupChange, null)
-  state = experienceReducer(state, { type: 'clearStage' })
-  assert.deepEqual(state.stage, [])
-  assert.equal(experienceReducer(state, { type: 'clearStage' }), state)
+test('the selection toggles cells, whole rows or columns, and clears', () => {
+  let state = experienceReducer(initialState, { type: 'toggleCell', id: 3 })
+  state = experienceReducer(state, { type: 'toggleCell', id: 7 })
+  assert.deepEqual(state.selection, [3, 7])
+  state = experienceReducer(state, { type: 'toggleCell', id: 3 })
+  assert.deepEqual(state.selection, [7])
+  // A line with an unpicked cell picks the rest; a fully picked line is dropped.
+  state = experienceReducer(state, { type: 'toggleCells', ids: [7, 8, 9] })
+  assert.deepEqual(state.selection, [7, 8, 9])
+  state = experienceReducer(state, { type: 'toggleCells', ids: [8, 9] })
+  assert.deepEqual(state.selection, [7])
+  state = experienceReducer(state, { type: 'clearSelection' })
+  assert.deepEqual(state.selection, [])
+  assert.equal(experienceReducer(state, { type: 'clearSelection' }), state)
 })
 
 test('only arrival at the current destination increments visits, including rapid retargeting', () => {
@@ -184,8 +174,3 @@ test('swiping wraps through alphabetic siblings, without crossing parent genres'
   assert.equal(adjacentSubgenre(catalog, siblings[0].id, 1).genreId, 'jazz')
 })
 
-test('visualization signals are stable for each track and explicitly marked as demos', () => {
-  assert.deepEqual(createDemoSignal('0007391'), createDemoSignal('0007391'))
-  assert.notDeepEqual(createDemoSignal('0007391').levels, createDemoSignal('0008561').levels)
-  assert.equal(createDemoSignal('0007391').source, 'demo')
-})

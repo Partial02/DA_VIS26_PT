@@ -1,79 +1,94 @@
-import { useEffect, useMemo, useRef } from 'react'
-import { Billboard, Line } from '@react-three/drei'
+import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react'
 import { useFrame } from '@react-three/fiber'
-import { AdditiveBlending, CanvasTexture, Color, SRGBColorSpace } from 'three'
-import type { Group } from 'three'
-import { drawStage, performerSpec } from '../components/nebula'
-import { systemTracks } from '../domain/catalog'
+import { AdditiveBlending, Color, PlaneGeometry, ShaderMaterial } from 'three'
+import type { Mesh } from 'three'
+import { jamendoPlayer } from '../audio/jamendo'
+import { scoredPlaylist } from '../domain/catalog'
 import type { Track } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
 import type { Destination } from '../state/reducer'
-import { trackOrbitPosition } from './orbits'
+import { spacePosition } from './space'
 
-function TrackOrbit({ track, index, selected, color, reduced, onSelect }: {
-  track: Track; index: number; selected: boolean; color: string; reduced: boolean; onSelect: () => void
-}) {
-  const group = useRef<Group>(null)
-  useFrame(({ clock }) => {
-    if (group.current) trackOrbitPosition(track.id, index, reduced ? 0 : clock.elapsedTime, 1, group.current.position)
+const vertexShader = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }'
+// Soft core + halo; uFlare adds a four-point sparkle for the playing song.
+const fragmentShader = `
+  varying vec2 vUv;
+  uniform vec3 uColor;
+  uniform float uAlpha, uFlare;
+  void main() {
+    vec2 p = vUv - .5;
+    float d = length(p) * 2.;
+    float core = exp(-d * d * 38.);
+    float halo = exp(-d * d * 6.) * .38;
+    float rays = (exp(-abs(p.x) * 70.) * exp(-abs(p.y) * 5.) + exp(-abs(p.y) * 70.) * exp(-abs(p.x) * 5.)) * uFlare;
+    vec3 color = mix(uColor, vec3(1.), core * .55 + rays * .4);
+    gl_FragColor = vec4(color, (core + halo + rays) * uAlpha * (1. - smoothstep(.92, 1., d)));
+  }
+`
+
+function starMaterial(color: string, alpha: number, flare = 0) {
+  return new ShaderMaterial({
+    transparent: true, depthWrite: false, blending: AdditiveBlending, vertexShader, fragmentShader,
+    // Like the star field, the shader writes display RGB directly.
+    uniforms: { uColor: { value: new Color(color).convertLinearToSRGB() }, uAlpha: { value: alpha }, uFlare: { value: flare } },
   })
-  const line = useMemo(() => Array.from({ length: 97 }, (_, step): [number, number, number] => {
-    const angle = step / 96 * Math.PI * 2, radius = 1.25 + index * .76
-    return [Math.cos(angle) * radius, Math.sin(angle) * radius * .65, .5]
-  }), [index])
-  return <>
-    <Line points={line} color={color} transparent opacity={selected ? .25 : .1} lineWidth={.6} raycast={() => {}} />
-    <group ref={group} userData={{ trackId: track.id }}>
-      <Billboard><mesh userData={{ orbitTrack: true }} onClick={event => { event.stopPropagation(); onSelect() }}>
-        <planeGeometry args={[selected ? .42 : .3, selected ? .42 : .3]} />
-        <shaderMaterial transparent depthWrite={false} blending={AdditiveBlending}
-          uniforms={{ uColor: { value: new Color(selected ? '#f5ecda' : color) } }}
-          vertexShader="varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.); }"
-          fragmentShader="varying vec2 vUv; uniform vec3 uColor; void main() { float d = length(vUv - .5) * 2.; float core = exp(-d*d*45.); float halo = exp(-d*d*7.)*.35; gl_FragColor = vec4(uColor, core + halo); }" />
-      </mesh></Billboard>
-    </group>
-  </>
 }
 
-/** The performers on stage, merged into one nebula that cradles the subgenre system. */
-function StageNebula({ reduced }: { reduced: boolean }) {
-  const { catalog, state } = useExperience()
-  const atlas = catalog.atlas
-  const texture = useMemo(() => {
-    if (!atlas || !state.stage.length) return null
-    const canvas = document.createElement('canvas')
-    canvas.width = canvas.height = 512
-    drawStage(canvas, state.stage.map(id => performerSpec(atlas, catalog, id)), false)
-    const map = new CanvasTexture(canvas)
-    map.colorSpace = SRGBColorSpace
-    map.center.set(.5, .5)
-    return map
-  }, [atlas, catalog, state.stage])
-  useEffect(() => () => texture?.dispose(), [texture])
-  useFrame((_, delta) => { if (texture && !reduced) texture.rotation += delta * .02 })
-  if (!texture) return null
-  return <Billboard>
-    <mesh raycast={() => {}} renderOrder={-1}>
-      <planeGeometry args={[7.2, 7.2]} />
-      <meshBasicMaterial map={texture} transparent opacity={.5} depthWrite={false} blending={AdditiveBlending} toneMapped={false} />
-    </mesh>
-  </Billboard>
-}
-
-export function MusicSystem({ view, reduced, orbitScale, suppressed }: {
-  view: Destination; reduced: boolean; orbitScale: () => number; suppressed: () => boolean
+/**
+ * Every song of the subgenre as a still star at its map position. Size follows the
+ * song's score for the picked categories; the playing song twinkles and swells with
+ * the live loudness. Hover grows a star slightly; click selects and plays it.
+ */
+export function MusicSystem({ view, reduced, suppressed, hovered, onHover }: {
+  view: Destination; reduced: boolean; suppressed: () => boolean; hovered: string | null; onHover: (id: string | null) => void
 }) {
   const { catalog, state, dispatch } = useExperience()
-  const root = useRef<Group>(null)
-  useFrame(() => { root.current?.scale.setScalar(orbitScale()) })
-  if (view.level !== 'system') return null
-  const sub = catalog.subgenreById.get(view.subgenreId)!
-  const tracks = systemTracks(catalog, sub.id, state.selectedTrackId, state.stage)
-  const selected = state.selectedTrackId ?? tracks[0]?.id
-  const color = catalog.genreById.get(view.genreId)!.color
-  return <group ref={root} position={sub.position}>
-    <StageNebula reduced={reduced} />
-    {tracks.map((track, index) => <TrackOrbit key={track.id} track={track} index={index} selected={track.id === selected}
-      color={color} reduced={reduced} onSelect={() => { if (!suppressed()) dispatch({ type: 'selectTrack', id: track.id }) }} />)}
+  const player = useSyncExternalStore(jamendoPlayer.subscribe, jamendoPlayer.getSnapshot)
+  const subgenreId = view.level === 'system' ? view.subgenreId : null
+  const color = view.level === 'system' ? catalog.genreById.get(view.genreId)!.color : '#ffffff'
+  const stars = useMemo(() => subgenreId ? scoredPlaylist(catalog, subgenreId, state.selection).map(({ track, score }) => ({
+    track, position: spacePosition(track.position).toArray() as [number, number, number], size: .2 + score * .16,
+  })) : [], [catalog, subgenreId, state.selection])
+  const geometry = useMemo(() => new PlaneGeometry(1, 1), [])
+  const materials = useMemo(() => ({ idle: starMaterial(color, .85), selected: starMaterial(color, 1, .5), playing: starMaterial(color, 1, 1) }), [color])
+  useEffect(() => () => { geometry.dispose(); Object.values(materials).forEach(m => m.dispose()) }, [geometry, materials])
+  const meshes = useRef(new Map<string, Mesh>())
+  const scales = useRef(new Map<string, number>())
+  const pulse = useRef(0)
+  const playingId = player.playing ? player.trackId : null
+  useFrame(({ camera, clock }, delta) => {
+    const volume = jamendoPlayer.volume()
+    pulse.current += (volume - pulse.current) * (volume > pulse.current ? .5 : .12)
+    const blend = reduced ? 1 : 1 - Math.exp(-Math.min(delta, .05) * 12)
+    for (const { track, size } of stars) {
+      const mesh = meshes.current.get(track.id)
+      if (!mesh) continue
+      mesh.quaternion.copy(camera.quaternion)
+      let target = size * (hovered === track.id ? 1.18 : 1)
+      if (track.id === playingId) {
+        const twinkle = reduced ? 0 : .08 * Math.sin(clock.elapsedTime * 7) + .05 * Math.sin(clock.elapsedTime * 13.3)
+        target = Math.max(target, .36) * (1.15 + pulse.current * 1.1 + twinkle)
+      } else if (track.id === state.selectedTrackId) target = Math.max(target, .32)
+      const current = scales.current.get(track.id) ?? target
+      const next = current + (target - current) * blend
+      scales.current.set(track.id, next)
+      mesh.scale.setScalar(next)
+    }
+    if (!reduced) materials.playing.uniforms.uFlare.value = .7 + pulse.current * 1.6 + .2 * Math.sin(clock.elapsedTime * 5)
+  })
+  if (!subgenreId) return null
+  const select = (track: Track) => {
+    if (suppressed()) return
+    dispatch({ type: 'selectTrack', id: track.id })
+    void jamendoPlayer.play(track)
+  }
+  return <group>
+    {stars.map(({ track, position }) => <mesh key={track.id} position={position} geometry={geometry} userData={{ musicStar: true }}
+      material={track.id === playingId ? materials.playing : track.id === state.selectedTrackId ? materials.selected : materials.idle}
+      renderOrder={track.id === playingId ? 2 : 1}
+      ref={mesh => { if (mesh) meshes.current.set(track.id, mesh); else meshes.current.delete(track.id) }}
+      onPointerOver={event => { event.stopPropagation(); onHover(track.id); document.body.style.cursor = 'pointer' }}
+      onPointerOut={() => { onHover(null); document.body.style.cursor = '' }}
+      onClick={event => { event.stopPropagation(); select(track) }} />)}
   </group>
 }

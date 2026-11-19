@@ -3,7 +3,7 @@ import { useFrame, useThree } from '@react-three/fiber'
 import type { ThreeEvent } from '@react-three/fiber'
 import { AdditiveBlending, BufferAttribute, BufferGeometry, Color, Raycaster, ShaderMaterial, Vector2 } from 'three'
 import type { Points } from 'three'
-import { seededRandom, seedOf, systemTracks } from '../domain/catalog'
+import { seededRandom, seedOf } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
 import type { Destination } from '../state/reducer'
 import { spacePosition } from './space'
@@ -103,10 +103,11 @@ export function ParticleField({ view, reduced, suppressed, highlighted, onHover 
     catalog.tracks.forEach((track, index) => mask.setX(index, members.has(track.id) ? 1 : 0))
     mask.needsUpdate = true
   }, [catalog, geometry, regionId])
-  const orbitIds = useMemo(() => view.level === 'system' ? systemTracks(catalog, view.subgenreId, state.selectedTrackId, state.stage).map(track => track.id) : [], [catalog, view, state.selectedTrackId, state.stage])
+  // In a subgenre its songs are drawn as clickable stars by MusicSystem; hide their field points.
+  const orbitIds = useMemo(() => new Set(view.level === 'system' ? catalog.subgenreById.get(view.subgenreId)!.trackIds : []), [catalog, view])
   useEffect(() => {
     const mask = geometry.getAttribute('aOrbit')
-    catalog.tracks.forEach((track, index) => mask.setX(index, orbitIds.includes(track.id) ? 1 : 0))
+    catalog.tracks.forEach((track, index) => mask.setX(index, orbitIds.has(track.id) ? 1 : 0))
     mask.needsUpdate = true
   }, [catalog, geometry, orbitIds])
   const selectedIndex = useMemo(() => view.level === 'universe' ? -1 : catalog.tracks.findIndex(track => track.id === state.selectedTrackId), [catalog, state.selectedTrackId, view.level])
@@ -145,11 +146,7 @@ export function ParticleField({ view, reduced, suppressed, highlighted, onHover 
     const track = catalog.tracks[event.index]
     const hits = event.intersections.filter(hit => hit.object === event.object)
     if (view.level === 'system') {
-      if (event.intersections.some(hit => hit.object.userData.orbitTrack)) return
-      const selected = hits.map(hit => catalog.tracks[hit.index!]).find(candidate => candidate?.genreId === view.genreId && candidate.subgenreIds.includes(view.subgenreId) && !orbitIds.includes(candidate.id))
-      if (!selected) return
-      event.stopPropagation()
-      dispatch({ type: 'selectTrack', id: selected.id })
+      return // The subgenre's songs are MusicSystem stars; other field points are scenery here.
     } else if (view.level === 'genre') {
       const subgenreId = hoveredSubgenre(hits, catalog.tracks, view.genreId, highlighted)
       if (!subgenreId) return

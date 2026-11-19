@@ -1,86 +1,77 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CSSProperties, DragEvent } from 'react'
-import { applyLineup } from '../domain/atlas'
+import { useEffect, useMemo, useState } from 'react'
+import type { CSSProperties } from 'react'
+import { cellKey } from '../domain/category'
 import { rankRecommendations } from '../domain/recommendations'
 import type { RecommendationTarget } from '../domain/recommendations'
 import { useExperience } from '../state/ExperienceContext'
-import { Icon } from './Icon'
-import { drawStage, nebulaUrl, performerSpec } from './nebula'
+import { SessionGlyph } from './SessionGlyph'
 import styles from './Interface.module.css'
 
-const PERFORMER_MIME = 'application/x-innerverse-performer'
-
 export function useChooseRecommendation() {
-  const { catalog, state, dispatch } = useExperience()
-  return (result: RecommendationTarget) => {
-    const { stage, need, drop } = applyLineup(catalog.atlas!, result.subgenreId, state.stage)
-    dispatch({ type: 'setLineup', stage, change: { need, drop } })
+  const { dispatch } = useExperience()
+  return (result: RecommendationTarget) =>
     dispatch({ type: 'navigate', destination: { level: 'system', genreId: result.genreId, subgenreId: result.subgenreId } })
-  }
 }
 
-export function useLineupText() {
-  const { catalog, state } = useExperience()
-  const atlas = catalog.atlas!
-  const change = state.lineupChange
-  if (!change) return ''
-  if (!change.need.length && !change.drop.length) return '편성 그대로 갑니다'
-  return [
-    change.need.length ? `+ ${change.need.map(session => atlas.model.sessions[session].name).join(', ')} 등판` : '',
-    change.drop.length ? `− ${change.drop.map(id => `${atlas.model.families[atlas.performers[id].family].name} ${atlas.model.sessions[atlas.performers[id].session].name}`).join(', ')} 퇴장` : '',
-  ].filter(Boolean).join('   ')
+export function shortGenreName(name: string) {
+  return name.replace('Easy Listening / Chill', 'Easy · Chill').replace(' / New Age', '').replace(' / Soul / R&B', ' · Soul')
+    .replace(' / Caribbean', '').replace(' / Country', ' · Country')
 }
 
-/** The staged performer nebulae merged into one system. */
-export function StageSystem({ size = 220 }: { size?: number }) {
+/**
+ * Rows: 15 genres, drawn in their colors. Columns: 16 sessions, drawn as patterns.
+ * Each of the 231 existing cells is genre color × session pattern. Row and column
+ * headers pick (or drop) the whole line.
+ */
+export function CategoryTable() {
   const { catalog, state, dispatch } = useExperience()
-  const atlas = catalog.atlas!
-  const canvas = useRef<HTMLCanvasElement>(null)
-  const [over, setOver] = useState(false)
-  const specs = useMemo(() => state.stage.map(id => performerSpec(atlas, catalog, id)), [atlas, catalog, state.stage])
-  useEffect(() => { if (canvas.current) drawStage(canvas.current, specs) }, [specs])
-  const drop = (event: DragEvent) => {
-    event.preventDefault(); setOver(false)
-    const id = Number(event.dataTransfer.getData(PERFORMER_MIME))
-    if (Number.isInteger(id) && atlas.performers[id] && !state.stage.includes(id)) dispatch({ type: 'togglePerformer', id })
-  }
-  const label = state.stage.length
-    ? `무대의 성운: ${state.stage.map(id => `${atlas.model.families[atlas.performers[id].family].name} ${atlas.model.sessions[atlas.performers[id].session].name}`).join(', ')}`
-    : '빈 무대'
-  return <div className={styles.stageSystem} data-over={over} data-empty={!state.stage.length} style={{ '--stage-size': `${size}px` } as CSSProperties}
-    onDragOver={event => { if (event.dataTransfer.types.includes(PERFORMER_MIME)) { event.preventDefault(); setOver(true) } }}
-    onDragLeave={() => setOver(false)} onDrop={drop}>
-    <canvas ref={canvas} width={size * 2} height={size * 2} role="img" aria-label={label} />
-    {!state.stage.length && <p>성운을 눌러 무대에 올리세요<br /><small>끌어다 놓아도 됩니다</small></p>}
-  </div>
-}
-
-/** Rows: style families. Columns: sessions. 22 of the 45 cells hold a performer nebula. */
-export function PerformerBench() {
-  const { catalog, state, dispatch } = useExperience()
-  const atlas = catalog.atlas!
-  const { sessions, families } = atlas.model
-  return <div className={styles.bench} role="group" aria-label={`벤치: 세션 × 스타일 패밀리 연주자 ${atlas.performers.length}명`}
-    style={{ '--sessions': sessions.length } as CSSProperties}>
-    <span aria-hidden="true" />
-    {sessions.map(session => <span key={session.key} className={styles.benchSession} aria-hidden="true" title={session.name}>{session.name}</span>)}
-    {families.map((family, familyIndex) => <div key={family.name} className={styles.benchRowGroup} role="group" aria-label={`${family.name}: ${family.genreIds.map(id => catalog.genreById.get(id)!.name).join(', ')}`}>
-      <span className={styles.benchFamily} title={family.genreIds.map(id => catalog.genreById.get(id)!.name).join(' · ')}>
-        <strong>{family.name}</strong>
-        <i aria-hidden="true">{family.genreIds.map(id => <b key={id} style={{ background: catalog.genreById.get(id)!.color }} />)}</i>
-      </span>
-      {sessions.map((session, sessionIndex) => {
-        const performer = atlas.performers.find(p => p.family === familyIndex && p.session === sessionIndex)
-        if (!performer) return <span key={session.key} className={styles.benchVoid} aria-hidden="true" />
-        const on = state.stage.includes(performer.id)
-        return <button key={session.key} className={styles.nebulaToken} aria-pressed={on} draggable={!on}
-          aria-label={`${family.name} ${session.name} ${on ? '무대에서 내리기' : '무대에 올리기'}`} title={`${family.name} ${session.name}`}
-          onDragStart={event => { event.dataTransfer.setData(PERFORMER_MIME, String(performer.id)); event.dataTransfer.effectAllowed = 'copy' }}
-          onClick={() => dispatch({ type: 'togglePerformer', id: performer.id })}>
-          <img src={nebulaUrl(performerSpec(atlas, catalog, performer.id))} alt="" draggable={false} />
+  const index = catalog.categories!
+  const { sessions, genres, categories } = index.model
+  const [hover, setHover] = useState<number | null>(null)
+  const picked = useMemo(() => new Set(state.selection), [state.selection])
+  const rowIds = (genreId: string) => sessions.map((_, s) => index.cellOf.get(cellKey(genreId, s))).filter((id): id is number => id !== undefined)
+  const columnIds = (session: number) => genres.map(g => index.cellOf.get(cellKey(g.id, session))).filter((id): id is number => id !== undefined)
+  const info = hover !== null ? categories[hover] : null
+  const infoGenre = info ? catalog.genreById.get(info.genreId)! : null
+  return <div className={styles.categoryTableWrap}>
+    <div className={styles.categoryTable} role="group" aria-label={`장르 ${genres.length}개 × 세션 ${sessions.length}개 범주 선택표`}
+      style={{ '--sessions': sessions.length } as CSSProperties} onPointerLeave={() => setHover(null)}>
+      <span className={styles.tableCorner} aria-hidden="true">장르 \ 세션</span>
+      {sessions.map((session, s) => {
+        const ids = columnIds(s)
+        const on = ids.every(id => picked.has(id))
+        return <button key={session.key} className={styles.sessionHead} aria-pressed={on} title={`${session.name} 열 전체 ${on ? '해제' : '선택'}`}
+          aria-label={`${session.name} 세션 전체 ${on ? '해제' : '선택'}`} onClick={() => dispatch({ type: 'toggleCells', ids })}>
+          <SessionGlyph session={session.key} size={14} />
         </button>
       })}
-    </div>)}
+      {genres.map(genre => {
+        const ids = rowIds(genre.id)
+        const rowOn = ids.every(id => picked.has(id))
+        return <div key={genre.id} className={styles.tableRow} style={{ '--genre-color': genre.color } as CSSProperties}>
+          <button className={styles.genreHead} aria-pressed={rowOn} title={`${genre.name} 행 전체 ${rowOn ? '해제' : '선택'}`}
+            aria-label={`${genre.name} 장르 전체 ${rowOn ? '해제' : '선택'}`} onClick={() => dispatch({ type: 'toggleCells', ids })}>
+            <i aria-hidden="true" /><span>{shortGenreName(genre.name)}</span>
+          </button>
+          {sessions.map((session, s) => {
+            const id = index.cellOf.get(cellKey(genre.id, s))
+            if (id === undefined) return <span key={session.key} className={styles.cellVoid} aria-hidden="true" />
+            const category = categories[id]
+            const on = picked.has(id)
+            return <button key={session.key} className={styles.cell} aria-pressed={on}
+              style={{ '--rate': .3 + .7 * Math.min(1, category.rate / .6) } as CSSProperties}
+              aria-label={`${genre.name} × ${session.name}, ${category.tracks}곡, ${on ? '선택됨' : '선택 안 됨'}`}
+              onPointerEnter={() => setHover(id)} onFocus={() => setHover(id)} onBlur={() => setHover(null)}
+              onClick={() => dispatch({ type: 'toggleCell', id })}>
+              <SessionGlyph session={session.key} size={13} />
+            </button>
+          })}
+        </div>
+      })}
+    </div>
+    <p className={styles.cellInfo} aria-live="polite">{info && infoGenre
+      ? <><b style={{ color: infoGenre.color }}>{shortGenreName(infoGenre.name)}</b> × {sessions[info.session].name} · {info.tracks}곡 · 장르 안 {Math.round(info.rate * 100)}% · 특이도 {info.lift.toFixed(2)}<small>{info.instruments.join(', ')}</small></>
+      : <>칸을 누르면 그 장르 색 × 세션 무늬의 범주가 담깁니다. 행·열 머리는 한 줄 전체를 담습니다.</>}</p>
   </div>
 }
 
@@ -88,21 +79,21 @@ export function SubgenreRanking({ perPage = 6, onChoose }: { perPage?: number; o
   const { catalog, state } = useExperience()
   const choose = useChooseRecommendation()
   const [page, setPage] = useState(0)
-  const ranked = useMemo(() => rankRecommendations(catalog, state.stage, state.genreVisits), [catalog, state.stage, state.genreVisits])
-  const stageKey = state.stage.toSorted((a, b) => a - b).join(',')
-  useEffect(() => { setPage(0) }, [stageKey])
+  const ranked = useMemo(() => rankRecommendations(catalog, state.selection, state.genreVisits), [catalog, state.selection, state.genreVisits])
+  const selectionKey = state.selection.toSorted((a, b) => a - b).join(',')
+  useEffect(() => { setPage(0) }, [selectionKey])
   const pages = Math.max(1, Math.ceil(ranked.length / perPage))
   const current = Math.min(page, pages - 1)
-  if (!ranked.length) return <p className={styles.stageEmpty}>연주자를 무대에 올리면 그 편성으로 연주할 수 있는 세부장르가 순위로 뜹니다.</p>
+  if (!ranked.length) return <p className={styles.stageEmpty}>표에서 범주를 고르면 그 조합에 어울리는 세부장르가 점수 순으로 뜹니다.</p>
   return <>
-    <ol className={styles.rankList} start={current * perPage + 1}>{ranked.slice(current * perPage, (current + 1) * perPage).map(result => {
+    <ol className={styles.rankList} start={current * perPage + 1}>{ranked.slice(current * perPage, (current + 1) * perPage).map((result, i) => {
       const genre = catalog.genreById.get(result.genreId)!
       const subgenre = catalog.subgenreById.get(result.subgenreId)!
       const percent = Math.round(result.score * 100)
       return <li key={result.subgenreId}>
         <button style={{ '--genre-color': genre.color } as CSSProperties} onClick={() => { choose(result); onChoose?.() }}
-          aria-label={`${subgenre.name}, ${genre.name}, ${subgenre.trackIds.length}곡, 적합도 ${percent}%. 이 세부장르로 이동`}>
-          <span className={styles.rankName}>{subgenre.name}</span><span className={styles.rankScore}>{percent}%</span>
+          aria-label={`${current * perPage + i + 1}위 ${subgenre.name}, ${genre.name}, ${subgenre.trackIds.length}곡, 점수 ${percent}. 이 세부장르로 이동`}>
+          <span className={styles.rankName}><i className={styles.rankDot} aria-hidden="true" />{subgenre.name}</span><span className={styles.rankScore}>{percent}</span>
           <span className={styles.rankMeta}>{genre.name} · {subgenre.trackIds.length}곡{!state.genreVisits[genre.id] && ' · 미방문'}</span>
           <span className={styles.rankBar} aria-hidden="true"><i style={{ width: `${Math.max(3, percent)}%` }} /></span>
         </button>
@@ -116,33 +107,18 @@ export function SubgenreRanking({ perPage = 6, onChoose }: { perPage?: number; o
   </>
 }
 
-/** Stage → bench → ranking, the Genre Atlas order of work. */
-export function StageConsole({ onChoose, stageSize = 200, perPage = 6 }: { onChoose?: () => void; stageSize?: number; perPage?: number }) {
+/** Pick cells → see the subgenre ranking. */
+export function StageConsole({ onChoose, perPage = 6 }: { onChoose?: () => void; perPage?: number }) {
   const { state, dispatch } = useExperience()
-  const lineup = useLineupText()
   return <div className={styles.stageConsole}>
-    <section aria-labelledby="stageHeading">
-      <div className={styles.stageHeader}><h3 id="stageHeading">무대 <span>{state.stage.length ? `${state.stage.length}명` : ''}</span></h3>
-        <button className={styles.inlineAction} onClick={() => dispatch({ type: 'clearStage' })} disabled={!state.stage.length}>무대 비우기</button></div>
-      <StageSystem size={stageSize} />
-      {lineup && <p className={styles.lineupChange} role="status">{lineup}</p>}
-    </section>
-    <section aria-labelledby="benchHeading">
-      <h3 id="benchHeading">벤치 <span>세션 × 스타일 패밀리</span></h3>
-      <PerformerBench />
+    <section aria-labelledby="tableHeading">
+      <div className={styles.stageHeader}><h3 id="tableHeading">범주 고르기 <span>{state.selection.length ? `${state.selection.length}칸` : '장르 색 × 세션 무늬'}</span></h3>
+        <button className={styles.inlineAction} onClick={() => dispatch({ type: 'clearSelection' })} disabled={!state.selection.length}>비우기</button></div>
+      <CategoryTable />
     </section>
     <section aria-labelledby="rankHeading">
       <h3 id="rankHeading">세부장르 추천</h3>
       <SubgenreRanking perPage={perPage} onChoose={onChoose} />
     </section>
   </div>
-}
-
-export function StagePanel({ onClose }: { onClose: () => void }) {
-  return <section className={styles.stagePanel} aria-label="무대 편성과 세부장르 추천"
-    onKeyDown={event => { if (event.key === 'Escape' && !(event.target as Element).closest('dialog')) { event.stopPropagation(); onClose() } }}>
-    <div className={styles.utilityPanelHeader}><span>STAGE · 연주자를 무대에 올려 세부장르 찾기</span>
-      <button onClick={onClose} aria-label="무대 패널 닫기"><Icon name="close" size={18} /></button></div>
-    <div className={styles.stagePanelBody}><StageConsole /></div>
-  </section>
 }

@@ -1,0 +1,232 @@
+category,genre,family,rank_in_genre,n_tracks,family_rate,lift,instruments_in_genre
+ambient_new_age_synth,Ambient / New Age,synth,1,59,0.45,1.26,Pad|Synthesizer|Theremin|Vocoder
+ambient_new_age_electric_guitar,Ambient / New Age,electric_guitar,2,58,0.443,0.82,Electric Guitar|Guitar
+ambient_new_age_strings,Ambient / New Age,strings,3,58,0.443,1.95,Cello|Harp|Orchestra|Strings|Viola|Violin
+ambient_new_age_piano,Ambient / New Age,piano,4,41,0.313,1.05,CVP-509|Celesta|Piano
+ambient_new_age_drums,Ambient / New Age,drums,5,39,0.298,0.51,Cymbal|Drums
+ambient_new_age_bass,Ambient / New Age,bass,6,39,0.298,0.48,Acoustic Bass Guitar|Bass|Double Bass
+ambient_new_age_acoustic_guitar,Ambient / New Age,acoustic_guitar,7,37,0.282,1.57,Acoustic Guitar|Classical Guitar
+ambient_new_age_beats,Ambient / New Age,beats,8,36,0.275,1.2,Computer|Drum Machine|Sampler
+ambient_new_age_woodwind,Ambient / New Age,woodwind,9,26,0.198,1.87,Bagpipes|Bassoon|Clarinet|Flute|Oboe|Pan Flute
+ambient_new_age_keys,Ambient / New Age,keys,10,25,0.191,0.61,Electric Piano|Keyboard|Organ|Pipe Organ|Rhodes
+ambient_new_age_percussion,Ambient / New Age,percussion,11,17,0.13,0.71,Bongo|Cabasa|Goblet Drum|Percussion|Shekere|Taiko|Tambourine|Timpani|Wood Block
+ambient_new_age_mallets,Ambient / New Age,mallets,12,9,0.069,1.13,Bell|Glockenspiel|Vibraphone|Xylophone
+ambient_new_age_vocal,Ambient / New Age,vocal,13,7,0.053,0.4,Choir|Voice
+ambient_new_age_brass,Ambient / New Age,brass,14,7,0.053,0.31,Horn|Saxophone|Trombone
+ambient_new_age_folk_reed,Ambient / New Age,folk_reed,15,3,0.023,0.4,Accordion|Harmonica
+ambient_new_age_ethnic,Ambient / New Age,ethnic,16,1,0.008,0.6,Sitar
+classical_strings,Classical,strings,1,400,0.885,3.9,Cello|Harp|Orchestra|Strings|Viola|Violin
+classical_piano,Classical,piano,2,227,0.502,1.68,CVP-509|Celesta|Harpsichord|Piano
+classical_brass,Classical,brass,3,164,0.363,2.12,Brass|Euphonium|Flugelhorn|Horn|Saxophone|Trombone|Trumpet|Tuba
+classical_bass,Classical,bass,4,142,0.314,0.51,Acoustic Bass Guitar|Bass|Double Bass
+classical_woodwind,Classical,woodwind,5,139,0.308,2.9,Bassoon|Clarinet|Flute|Oboe|Pan Flute|Piccolo|Woodwind
+classical_percussion,Classical,percussion,6,118,0.261,1.43,Bongo|Castanets|Conga|Djembe|Pandeiro|Percussion|Taiko|Tam-Tam|Tambourine|Timpani|Triangle|Udu
+classical_drums,Classical,drums,7,116,0.257,0.44,Cymbal|Drums
+classical_electric_guitar,Classical,electric_guitar,8,81,0.179,0.33,Electric Guitar|Guitar
+classical_mallets,Classical,mallets,9,63,0.139,2.28,Bell|Carillon|Glockenspiel|Marimba|Metallophone|Tubular Bell|Vibraphone|Xylophone
+classical_synth,Classical,synth,10,57,0.126,0.35,EWI|Pad|Synthesizer
+classical_acoustic_guitar,Classical,acoustic_guitar,11,51,0.113,0.63,Acoustic Guitar|Classical Guitar|Ukulele
+classical_beats,Classical,beats,12,49,0.108,0.47,Beat|Computer|Drum Machine|Sampler
+classical_keys,Classical,keys,13,38,0.084,0.27,Electric Piano|Electronic Organ|Hammond|Keyboard|Mellotron|Pipe Organ|Rhodes
+classical_vocal,Classical,vocal,14,32,0.071,0.53,Choir|Voice
+classical_ethnic,Classical,ethnic,15,7,0.015,1.21,Cimbalom|Kalimba|Santur|Sitar
+classical_folk_reed,Classical,folk_reed,16,5,0.011,0.19,Accordion
+easy_listening_chill_synth,Easy Listening / Chill,synth,1,420,0.719,2.02,EWI|Kaoss Pad|Pad|Synthesizer
+easy_listening_chill_drums,Easy Listening / Chill,drums,2,400,0.685,1.18,Drums
+easy_listening_chill_bass,Easy Listening / Chill,bass,3,379,0.649,1.06,Acoustic Bass Guitar|Bass|Double Bass
+easy_listening_chill_keys,Easy Listening / Chill,keys,4,349,0.598,1.92,Electric Piano|Electronic Organ|Hammond|Keyboard|Organ|Pipe Organ|Rhodes
+easy_listening_chill_percussion,Easy Listening / Chill,percussion,5,245,0.42,2.3,Bongo|Conga|Cowbell|Djembe|Percussion|Taiko|Timpani
+easy_listening_chill_electric_guitar,Easy Listening / Chill,electric_guitar,6,186,0.318,0.59,Electric Guitar|Guitar
+easy_listening_chill_piano,Easy Listening / Chill,piano,7,163,0.279,0.93,CVP-509|Celesta|Piano
+easy_listening_chill_beats,Easy Listening / Chill,beats,8,101,0.173,0.76,Beat|Computer|Drum Machine|Sampler
+easy_listening_chill_strings,Easy Listening / Chill,strings,9,100,0.171,0.75,Cello|Harp|Orchestra|Strings|Viola|Violin
+easy_listening_chill_acoustic_guitar,Easy Listening / Chill,acoustic_guitar,10,62,0.106,0.59,Acoustic Guitar|Classical Guitar|Ukulele
+easy_listening_chill_brass,Easy Listening / Chill,brass,11,62,0.106,0.62,Brass|Horn|Saxophone|Trombone|Trumpet|Tuba
+easy_listening_chill_woodwind,Easy Listening / Chill,woodwind,12,52,0.089,0.84,Clarinet|Flute|Oboe|Pan Flute|Woodwind
+easy_listening_chill_mallets,Easy Listening / Chill,mallets,13,32,0.055,0.9,Bell|Marimba|Xylophone
+easy_listening_chill_vocal,Easy Listening / Chill,vocal,14,25,0.043,0.32,Choir|Voice
+easy_listening_chill_folk_reed,Easy Listening / Chill,folk_reed,15,7,0.012,0.21,Accordion|Harmonica
+easy_listening_chill_ethnic,Easy Listening / Chill,ethnic,16,1,0.002,0.13,Sitar
+electronic_synth,Electronic,synth,1,564,0.709,1.99,EWI|Kaoss Pad|Pad|Synthesizer
+electronic_beats,Electronic,beats,2,447,0.562,2.46,Beat|Computer|Drum Machine|Sampler
+electronic_bass,Electronic,bass,3,403,0.507,0.83,Acoustic Bass Guitar|Bass|Double Bass
+electronic_drums,Electronic,drums,4,377,0.474,0.82,Cymbal|Drums
+electronic_keys,Electronic,keys,5,309,0.389,1.25,Electric Piano|Electronic Organ|Hammond|Keyboard|Mellotron|Organ|Pipe Organ|Rhodes
+electronic_electric_guitar,Electronic,electric_guitar,6,263,0.331,0.61,Electric Guitar|Guitar|Slide Guitar
+electronic_piano,Electronic,piano,7,260,0.327,1.09,CVP-509|Celesta|Clavichord|Piano
+electronic_strings,Electronic,strings,8,167,0.21,0.93,Cello|Harp|Orchestra|Strings|Viola|Violin
+electronic_percussion,Electronic,percussion,9,150,0.189,1.04,Bongo|Conga|Djembe|Goblet Drum|Guiro|Pandeiro|Percussion|Shekere|Tabla|Taiko|Tam-Tam|Tambourine|Timpani|Udu|Wood Block
+electronic_brass,Electronic,brass,10,102,0.128,0.75,Brass|Horn|Saxophone|Trombone|Trumpet
+electronic_woodwind,Electronic,woodwind,11,63,0.079,0.75,Bassoon|Clarinet|Flute|Oboe|Pan Flute|Piccolo|Woodwind
+electronic_mallets,Electronic,mallets,12,63,0.079,1.3,Bell|Carillon|Glass Harmonica|Glockenspiel|Marimba|Singing Bowl|Steel Pan|Tubular Bell|Vibraphone|Xylophone
+electronic_vocal,Electronic,vocal,13,53,0.067,0.5,Voice
+electronic_acoustic_guitar,Electronic,acoustic_guitar,14,46,0.058,0.32,Acoustic Guitar|Banjo|Classical Guitar|Mandolin
+electronic_folk_reed,Electronic,folk_reed,15,14,0.018,0.3,Accordion|Fiddle|Harmonica
+electronic_ethnic,Electronic,ethnic,16,8,0.01,0.79,Didgeridoo|Gimbri|Koto|Santur|Shamisen|Sitar
+experimental_electric_guitar,Experimental,electric_guitar,1,7,0.538,1.0,Electric Guitar|Guitar
+experimental_drums,Experimental,drums,2,6,0.462,0.8,Cymbal|Drums
+experimental_bass,Experimental,bass,3,6,0.462,0.75,Acoustic Bass Guitar|Bass|Double Bass
+experimental_synth,Experimental,synth,4,6,0.462,1.29,Synthesizer
+experimental_piano,Experimental,piano,5,3,0.231,0.77,Piano
+experimental_beats,Experimental,beats,6,3,0.231,1.01,Computer|Drum Machine|Sampler
+experimental_percussion,Experimental,percussion,7,3,0.231,1.27,Percussion|Taiko
+experimental_keys,Experimental,keys,8,2,0.154,0.49,Keyboard|Pipe Organ
+experimental_strings,Experimental,strings,9,2,0.154,0.68,Cello|Violin
+experimental_woodwind,Experimental,woodwind,10,2,0.154,1.45,Flute|Oboe|Pan Flute|Piccolo
+experimental_mallets,Experimental,mallets,11,2,0.154,2.52,Bell
+experimental_vocal,Experimental,vocal,12,1,0.077,0.58,Voice
+experimental_acoustic_guitar,Experimental,acoustic_guitar,13,1,0.077,0.43,Classical Guitar
+experimental_brass,Experimental,brass,14,1,0.077,0.45,Brass
+folk_country_acoustic_guitar,Folk / Country,acoustic_guitar,1,233,0.625,3.48,Acoustic Guitar|Balalaika|Banjo|Charango|Classical Guitar|Mandolin|Ukulele
+folk_country_electric_guitar,Folk / Country,electric_guitar,2,232,0.622,1.15,Electric Guitar|Guitar|Lap Steel Guitar|Slide Guitar
+folk_country_bass,Folk / Country,bass,3,204,0.547,0.89,Acoustic Bass Guitar|Bass|Double Bass
+folk_country_drums,Folk / Country,drums,4,165,0.442,0.76,Drums
+folk_country_vocal,Folk / Country,vocal,5,118,0.316,2.38,Choir|Voice
+folk_country_piano,Folk / Country,piano,6,115,0.308,1.03,Harpsichord|Piano
+folk_country_strings,Folk / Country,strings,7,93,0.249,1.1,Cello|Harp|Orchestra|Strings|Viola|Violin
+folk_country_folk_reed,Folk / Country,folk_reed,8,87,0.233,4.02,Accordion|Concertina|Fiddle|Harmonica
+folk_country_keys,Folk / Country,keys,9,86,0.231,0.74,Electric Piano|Electronic Organ|Keyboard|Mellotron|Organ|Pipe Organ|Rhodes
+folk_country_woodwind,Folk / Country,woodwind,10,54,0.145,1.36,Bagpipes|Flute|Oboe|Tin Whistle
+folk_country_synth,Folk / Country,synth,11,48,0.129,0.36,EWI|Pad|Synthesizer
+folk_country_percussion,Folk / Country,percussion,12,45,0.121,0.66,Bongo|Cabasa|Cajon|Conga|Djembe|Goblet Drum|Guiro|Percussion|Taiko|Tam-Tam|Tambourine|Timpani
+folk_country_beats,Folk / Country,beats,13,33,0.088,0.39,Beat|Computer|Drum Machine|Sampler
+folk_country_mallets,Folk / Country,mallets,14,25,0.067,1.1,Bell|Glockenspiel|Marimba|Vibraphone
+folk_country_brass,Folk / Country,brass,15,6,0.016,0.09,Horn|Saxophone|Trombone|Trumpet
+folk_country_ethnic,Folk / Country,ethnic,16,2,0.005,0.42,Jew's Harp|Tambura
+funk_soul_rnb_drums,Funk / Soul / R&B,drums,1,204,0.823,1.42,Cymbal|Drums
+funk_soul_rnb_bass,Funk / Soul / R&B,bass,2,196,0.79,1.29,Acoustic Bass Guitar|Bass|Chapman Stick|Double Bass
+funk_soul_rnb_electric_guitar,Funk / Soul / R&B,electric_guitar,3,171,0.69,1.28,Electric Guitar|Guitar|Slide Guitar
+funk_soul_rnb_keys,Funk / Soul / R&B,keys,4,138,0.556,1.79,Electric Piano|Electronic Organ|Hammond|Keyboard|Organ|Pipe Organ|Rhodes
+funk_soul_rnb_piano,Funk / Soul / R&B,piano,5,85,0.343,1.15,Clavichord|Piano
+funk_soul_rnb_beats,Funk / Soul / R&B,beats,6,77,0.31,1.36,Beat|Computer|Drum Machine|Sampler
+funk_soul_rnb_brass,Funk / Soul / R&B,brass,7,72,0.29,1.7,Brass|Horn|Saxophone|Trombone|Trumpet
+funk_soul_rnb_percussion,Funk / Soul / R&B,percussion,8,41,0.165,0.91,Bongo|Cajon|Castanets|Conga|Cowbell|Djembe|Goblet Drum|Percussion|Shekere|Timpani|Udu
+funk_soul_rnb_acoustic_guitar,Funk / Soul / R&B,acoustic_guitar,9,40,0.161,0.9,Acoustic Guitar|Banjo|Classical Guitar|Ukulele
+funk_soul_rnb_synth,Funk / Soul / R&B,synth,10,39,0.157,0.44,Kaoss Pad|Pad|Synthesizer
+funk_soul_rnb_strings,Funk / Soul / R&B,strings,11,34,0.137,0.6,Cello|Harp|Orchestra|Strings|Violin
+funk_soul_rnb_woodwind,Funk / Soul / R&B,woodwind,12,34,0.137,1.29,Clarinet|Flute|Oboe|Woodwind
+funk_soul_rnb_mallets,Funk / Soul / R&B,mallets,13,30,0.121,1.98,Bell|Marimba|Vibraphone
+funk_soul_rnb_vocal,Funk / Soul / R&B,vocal,14,27,0.109,0.82,Choir|Voice
+funk_soul_rnb_folk_reed,Funk / Soul / R&B,folk_reed,15,2,0.008,0.14,Harmonica
+funk_soul_rnb_ethnic,Funk / Soul / R&B,ethnic,16,2,0.008,0.63,Koto|Oud
+hiphop_beats,Hip-Hop,beats,1,107,0.899,3.94,Beat|Computer|Drum Machine|Sampler
+hiphop_synth,Hip-Hop,synth,2,80,0.672,1.88,EWI|Synthesizer
+hiphop_bass,Hip-Hop,bass,3,72,0.605,0.98,Acoustic Bass Guitar|Bass|Double Bass
+hiphop_piano,Hip-Hop,piano,4,72,0.605,2.02,Piano
+hiphop_drums,Hip-Hop,drums,5,59,0.496,0.86,Cymbal|Drums
+hiphop_keys,Hip-Hop,keys,6,55,0.462,1.48,Electric Piano|Electronic Organ|Hammond|Keyboard|Pipe Organ|Rhodes
+hiphop_strings,Hip-Hop,strings,7,50,0.42,1.85,Cello|Harp|Orchestra|Strings|Violin
+hiphop_electric_guitar,Hip-Hop,electric_guitar,8,48,0.403,0.75,Electric Guitar|Guitar
+hiphop_acoustic_guitar,Hip-Hop,acoustic_guitar,9,38,0.319,1.78,Acoustic Guitar|Classical Guitar
+hiphop_brass,Hip-Hop,brass,10,29,0.244,1.42,Brass|Horn|Saxophone|Trumpet
+hiphop_percussion,Hip-Hop,percussion,11,24,0.202,1.11,Percussion|Wood Block
+hiphop_vocal,Hip-Hop,vocal,12,18,0.151,1.14,Voice
+hiphop_folk_reed,Hip-Hop,folk_reed,13,14,0.118,2.03,Accordion
+hiphop_woodwind,Hip-Hop,woodwind,14,4,0.034,0.32,Flute|Pan Flute
+hiphop_mallets,Hip-Hop,mallets,15,3,0.025,0.41,Bell|Tubular Bell
+hiphop_ethnic,Hip-Hop,ethnic,16,2,0.017,1.32,Gimbri|Jew's Harp|Sitar
+jazz_bass,Jazz,bass,1,194,0.764,1.24,Acoustic Bass Guitar|Bass|Double Bass
+jazz_drums,Jazz,drums,2,193,0.76,1.31,Drums
+jazz_electric_guitar,Jazz,electric_guitar,3,135,0.531,0.98,Electric Guitar|Guitar|Lap Steel Guitar
+jazz_piano,Jazz,piano,4,116,0.457,1.53,Piano
+jazz_brass,Jazz,brass,5,96,0.378,2.21,Brass|Horn|Saxophone|Trombone|Trumpet|Tuba
+jazz_keys,Jazz,keys,6,85,0.335,1.07,Electric Piano|Electronic Organ|Hammond|Keyboard|Organ|Pipe Organ|Rhodes
+jazz_synth,Jazz,synth,7,48,0.189,0.53,EWI|Kaoss Pad|Synthesizer
+jazz_beats,Jazz,beats,8,33,0.13,0.57,Beat|Computer|Drum Machine|Sampler
+jazz_percussion,Jazz,percussion,9,28,0.11,0.6,Bongo|Cabasa|Conga|Percussion|Tabla|Tambourine|Wood Block
+jazz_acoustic_guitar,Jazz,acoustic_guitar,10,27,0.106,0.59,Acoustic Guitar|Banjo|Classical Guitar|Mandolin
+jazz_vocal,Jazz,vocal,11,22,0.087,0.65,Voice
+jazz_mallets,Jazz,mallets,12,13,0.051,0.84,Bell|Vibraphone
+jazz_woodwind,Jazz,woodwind,13,10,0.039,0.37,Clarinet|Flute|Piccolo
+jazz_strings,Jazz,strings,14,9,0.035,0.16,Cello|Strings|Viola|Violin
+jazz_folk_reed,Jazz,folk_reed,15,9,0.035,0.61,Accordion|Harmonica
+jazz_ethnic,Jazz,ethnic,16,2,0.008,0.62,Kalimba|Sitar
+latin_electric_guitar,Latin,electric_guitar,1,20,0.5,0.93,Electric Guitar|Guitar
+latin_drums,Latin,drums,2,17,0.425,0.73,Drums
+latin_acoustic_guitar,Latin,acoustic_guitar,3,16,0.4,2.23,Acoustic Guitar|Banjo|Classical Guitar
+latin_bass,Latin,bass,4,14,0.35,0.57,Acoustic Bass Guitar|Bass|Double Bass
+latin_piano,Latin,piano,5,13,0.325,1.09,Piano
+latin_keys,Latin,keys,6,12,0.3,0.96,Electric Piano|Electronic Organ|Keyboard|Organ|Pipe Organ|Rhodes
+latin_woodwind,Latin,woodwind,7,9,0.225,2.12,Bagpipes|Clarinet|Flute
+latin_percussion,Latin,percussion,8,9,0.225,1.23,Bodhran|Bongo|Cajon|Castanets|Conga|Percussion|Tambourine
+latin_synth,Latin,synth,9,8,0.2,0.56,Synthesizer
+latin_beats,Latin,beats,10,6,0.15,0.66,Beat|Computer|Drum Machine|Sampler
+latin_brass,Latin,brass,11,6,0.15,0.88,Saxophone|Trumpet
+latin_vocal,Latin,vocal,12,5,0.125,0.94,Voice
+latin_strings,Latin,strings,13,5,0.125,0.55,Cello|Strings|Violin
+latin_folk_reed,Latin,folk_reed,14,5,0.125,2.16,Accordion|Bandoneon|Harmonica
+latin_ethnic,Latin,ethnic,15,1,0.025,1.96,Tambura
+metal_bass,Metal,bass,1,82,0.965,1.57,Acoustic Bass Guitar|Bass
+metal_electric_guitar,Metal,electric_guitar,2,79,0.929,1.72,Electric Guitar|Guitar
+metal_drums,Metal,drums,3,76,0.894,1.55,Drums
+metal_vocal,Metal,vocal,4,22,0.259,1.94,Voice
+metal_keys,Metal,keys,5,20,0.235,0.76,Electric Piano|Keyboard|Organ
+metal_synth,Metal,synth,6,9,0.106,0.3,Synthesizer
+metal_beats,Metal,beats,7,5,0.059,0.26,Computer|Drum Machine
+metal_strings,Metal,strings,8,4,0.047,0.21,Cello|Orchestra|Strings
+metal_acoustic_guitar,Metal,acoustic_guitar,9,2,0.024,0.13,Acoustic Guitar|Classical Guitar
+metal_piano,Metal,piano,10,2,0.024,0.08,Piano
+metal_brass,Metal,brass,11,2,0.024,0.14,Brass
+pop_bass,Pop,bass,1,454,0.731,1.19,Acoustic Bass Guitar|Bass|Double Bass
+pop_electric_guitar,Pop,electric_guitar,2,450,0.725,1.34,Electric Guitar|Guitar|Lap Steel Guitar|Slide Guitar
+pop_drums,Pop,drums,3,439,0.707,1.22,Drums
+pop_synth,Pop,synth,4,246,0.396,1.11,EWI|Kaoss Pad|Pad|Synthesizer
+pop_keys,Pop,keys,5,195,0.314,1.01,Electric Piano|Electronic Organ|Hammond|Keyboard|Mellotron|Organ|Pipe Organ|Rhodes
+pop_piano,Pop,piano,6,174,0.28,0.94,CVP-509|Clavier|Harpsichord|Piano
+pop_acoustic_guitar,Pop,acoustic_guitar,7,153,0.246,1.37,Acoustic Guitar|Banjo|Classical Guitar|Mandolin|Ukulele
+pop_strings,Pop,strings,8,91,0.147,0.65,Cello|Orchestra|Strings|Viola|Violin
+pop_beats,Pop,beats,9,78,0.126,0.55,Beat|Computer|Drum Machine|Sampler
+pop_vocal,Pop,vocal,10,77,0.124,0.93,Choir|Voice
+pop_brass,Pop,brass,11,45,0.072,0.42,Brass|Flugelhorn|Horn|Saxophone|Trombone|Trumpet|Tuba
+pop_folk_reed,Pop,folk_reed,12,25,0.04,0.69,Accordion|Harmonica|Melodica
+pop_mallets,Pop,mallets,13,24,0.039,0.63,Bell|Marimba|Vibraphone
+pop_woodwind,Pop,woodwind,14,18,0.029,0.27,Bagpipes|Bombarde|Clarinet|Flute|Oboe|Pan Flute|Piccolo|Tin Whistle
+pop_percussion,Pop,percussion,15,17,0.027,0.15,Bongo|Cajon|Conga|Guiro|Percussion|Triangle|Washboard
+pop_ethnic,Pop,ethnic,16,2,0.003,0.25,Cimbalom|Sitar
+reggae_caribbean_bass,Reggae / Caribbean,bass,1,123,0.939,1.53,Bass
+reggae_caribbean_drums,Reggae / Caribbean,drums,2,101,0.771,1.33,Drums
+reggae_caribbean_electric_guitar,Reggae / Caribbean,electric_guitar,3,78,0.595,1.1,Electric Guitar|Guitar
+reggae_caribbean_keys,Reggae / Caribbean,keys,4,73,0.557,1.79,Electric Piano|Electronic Organ|Keyboard|Organ|Pipe Organ|Rhodes
+reggae_caribbean_synth,Reggae / Caribbean,synth,5,56,0.427,1.2,Synthesizer
+reggae_caribbean_percussion,Reggae / Caribbean,percussion,6,52,0.397,2.18,Percussion
+reggae_caribbean_brass,Reggae / Caribbean,brass,7,28,0.214,1.25,Brass|Horn|Saxophone|Trombone|Trumpet
+reggae_caribbean_piano,Reggae / Caribbean,piano,8,25,0.191,0.64,Piano
+reggae_caribbean_vocal,Reggae / Caribbean,vocal,9,13,0.099,0.75,Choir|Voice
+reggae_caribbean_beats,Reggae / Caribbean,beats,10,12,0.092,0.4,Beat|Computer|Drum Machine|Sampler
+reggae_caribbean_folk_reed,Reggae / Caribbean,folk_reed,11,3,0.023,0.4,Accordion|Harmonica
+reggae_caribbean_strings,Reggae / Caribbean,strings,12,2,0.015,0.07,Strings
+reggae_caribbean_acoustic_guitar,Reggae / Caribbean,acoustic_guitar,13,1,0.008,0.04,Ukulele
+reggae_caribbean_woodwind,Reggae / Caribbean,woodwind,14,1,0.008,0.07,Flute
+reggae_caribbean_mallets,Reggae / Caribbean,mallets,15,1,0.008,0.13,Metallophone|Xylophone
+rock_electric_guitar,Rock,electric_guitar,1,859,0.823,1.52,Electric Guitar|Guitar|Slide Guitar
+rock_drums,Rock,drums,2,823,0.788,1.36,Cymbal|Drums
+rock_bass,Rock,bass,3,822,0.787,1.28,Acoustic Bass Guitar|Bass|Bass Guitar|Double Bass
+rock_synth,Rock,synth,4,311,0.298,0.84,Pad|Synthesizer
+rock_keys,Rock,keys,5,222,0.213,0.68,Electric Piano|Electronic Organ|Hammond|Keyboard|Mellotron|Organ|Pipe Organ|Rhodes
+rock_vocal,Rock,vocal,6,215,0.206,1.55,Choir|Voice
+rock_beats,Rock,beats,7,159,0.152,0.67,Beat|Computer|Drum Machine|Sampler
+rock_piano,Rock,piano,8,154,0.148,0.49,Clavier|Piano
+rock_acoustic_guitar,Rock,acoustic_guitar,9,146,0.14,0.78,Acoustic Guitar|Banjo|Classical Guitar|Ukulele
+rock_strings,Rock,strings,10,74,0.071,0.31,Cello|Harp|Orchestra|Strings|Viola|Violin
+rock_brass,Rock,brass,11,47,0.045,0.26,Brass|Horn|Mellophone|Saxophone|Sousaphone|Trombone|Trumpet|Tuba
+rock_folk_reed,Rock,folk_reed,12,42,0.04,0.69,Accordion|Harmonica|Kazoo
+rock_mallets,Rock,mallets,13,40,0.038,0.63,Bell|Glockenspiel|Metallophone|Musical Saw|Xylophone
+rock_percussion,Rock,percussion,14,33,0.032,0.17,Bongo|Cajon|Conga|Goblet Drum|Percussion|Tambourine|Triangle|Wood Block
+rock_woodwind,Rock,woodwind,15,22,0.021,0.2,Clarinet|Flute|Tin Whistle
+rock_ethnic,Rock,ethnic,16,6,0.006,0.45,Cimbalom|Didgeridoo|Sitar
+world_bass,World,bass,1,36,0.507,0.83,Acoustic Bass Guitar|Bass|Double Bass
+world_electric_guitar,World,electric_guitar,2,34,0.479,0.89,Electric Guitar|Guitar
+world_brass,World,brass,3,29,0.408,2.38,Saxophone|Trombone|Trumpet
+world_drums,World,drums,4,28,0.394,0.68,Cymbal|Drums
+world_synth,World,synth,5,22,0.31,0.87,Synthesizer
+world_strings,World,strings,6,21,0.296,1.3,Cello|Harp|Orchestra|Strings|Viola|Violin
+world_percussion,World,percussion,7,16,0.225,1.24,Bongo|Castanets|Cowbell|Cuica|Djembe|Dunun|Goblet Drum|Pandeiro|Percussion|Surdo|Tabla|Taiko|Tambourine|Triangle|Udu
+world_vocal,World,vocal,8,15,0.211,1.59,Choir|Voice
+world_folk_reed,World,folk_reed,9,13,0.183,3.16,Accordion
+world_piano,World,piano,10,11,0.155,0.52,Harpsichord|Piano
+world_woodwind,World,woodwind,11,9,0.127,1.19,Flute|Pan Flute
+world_ethnic,World,ethnic,12,6,0.085,6.62,Didgeridoo|Koto|Oud|Shamisen|Sitar
+world_beats,World,beats,13,5,0.07,0.31,Computer|Drum Machine|Sampler
+world_mallets,World,mallets,14,5,0.07,1.15,Bell|Glockenspiel|Marimba|Vibraphone|Xylophone
+world_keys,World,keys,15,4,0.056,0.18,Keyboard|Mellotron|Pipe Organ
+world_acoustic_guitar,World,acoustic_guitar,16,2,0.028,0.16,Acoustic Guitar
