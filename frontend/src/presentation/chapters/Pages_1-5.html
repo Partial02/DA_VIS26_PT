@@ -148,6 +148,31 @@
     color: #9cf4db;
   }
   .year[aria-pressed="true"] strong { color: #a7ffe1; }
+
+  .hero .revenue-view-controls { display:flex; flex-wrap:wrap; gap:9px; margin-top:20px; max-width:330px; position:relative; z-index:5; pointer-events:auto; }
+  .hero .liquid-glass { position:relative; overflow:hidden; min-height:42px; padding:10px 15px; border:1px solid #e5efff4d; border-radius:24px; color:#edf5f4; font:13px/1.3 var(--sans); cursor:pointer; background:linear-gradient(135deg,#e6f2ff20,#c7d6ee08 55%,#9df5db12); backdrop-filter:blur(18px) saturate(155%); -webkit-backdrop-filter:blur(18px) saturate(155%); box-shadow:inset 0 1px 1px #fff5,inset 0 -1px 1px #0005,0 5px 20px #0003; transition:background .2s,border-color .2s,transform .2s; }
+  .hero .liquid-glass::before { content:""; position:absolute; inset:0 0 50%; border-radius:inherit; background:linear-gradient(#ffffff18,transparent); pointer-events:none; }
+  .hero .liquid-glass:hover,.hero .liquid-glass[aria-pressed="true"] { border-color:#9df5dbb3; background:linear-gradient(135deg,#dcefff2b,#9df5db16); }
+  .hero .liquid-glass[aria-pressed="true"], .hero .liquid-glass:active {
+    border-color:#b7a0e4; background:linear-gradient(135deg,#dbcdff29,#a493d41b);
+  }
+  .hero .liquid-glass:active { transform:translateY(1px); }
+  .revenue-composition-legend { display:flex; gap:15px; color:var(--muted); font-size:12px; margin:12px 0 0; }
+  .revenue-composition-legend[hidden],.revenue-stream-detail[hidden],.revenue-line-panel[hidden] { display:none; }
+  .revenue-composition-legend span::before { content:""; display:inline-block; width:6px; height:6px; border-radius:50%; margin-right:6px; background:#C6DCFF; }
+  .revenue-composition-legend span+span::before { background:#A493D4; }
+  .revenue-stream-detail { margin:10px 0 0; color:#C6DCFF; font:12px/1.6 var(--mono); }
+  .revenue-line-panel {
+    width:min(24vw, 340px); margin-top:12px; color:#e2dfef;
+    font: 12px/1.4 var(--sans); font-variant-numeric:tabular-nums;
+  }
+  .revenue-line-panel svg { width:100%; display:block; height:auto; }
+  .revenue-line-panel text { font:12px var(--mono); fill:#c7c3d3; }
+  .revenue-line-panel .share-value { fill:#C6DCFF; font-weight:bold; }
+  @media(max-height:700px) and (min-width:701px) {
+    .hero:has(.revenue-line-panel:not([hidden])) .intro { padding-top:4vh; }
+  }
+
   .hero-footer {
     position: relative;
     z-index: 2;
@@ -208,6 +233,9 @@
     .hero-footer { grid-template-columns: 156px 190px; }
   }
   @media (max-width: 700px) {
+    .revenue-line-panel { width:min(100%, 280px); margin-top:6px; }
+    .story-stage .hero:has(.revenue-line-panel:not([hidden])) .intro { padding-top:16px; }
+    .story-stage .hero:has(.revenue-line-panel:not([hidden])) .chart { height:clamp(215px,60vw,300px); }
     .hero { min-height: 100svh; display: flex; flex-direction: column; padding: 0 var(--gutter); }
     .intro { padding-top: 88px; }
     .eyebrow { font-size: 10px; margin-bottom: 12px; }
@@ -359,14 +387,14 @@
     pointer-events: none;
   }
   .market-marker::before {
-    background: radial-gradient(circle at 36% 30%, #e5e8ef, #9395a5 41%, #363640 77%, #1b1b24);
+    background: radial-gradient(circle at 36% 30%, #f7f7fd, #c9b9f4 41%, #665c83 77%, #252032);
     box-shadow: 0 0 10px #c5c4df45;
   }
   .has-surface .market-marker::before { content: none; }
   .market-marker[aria-pressed="true"]::after {
     width: calc(2 * var(--radius) + 8px);
     height: calc(2 * var(--radius) + 8px);
-    border: 1px solid #91eed67f;
+    border: 1px solid #d4c7f590;
   }
   .has-surface .market-marker[aria-pressed="true"]::after { content: none; }
   .market-marker.is-active, .market-marker[aria-pressed="true"] { z-index: 3; }
@@ -718,6 +746,13 @@
   .source-link { color: var(--mint); white-space: nowrap; padding: 10px 0; }
   .source-link:hover { color: var(--paper); }
   #stars { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  .sphere-control {
+    position:absolute; z-index:1; transform:translate(-50%, -50%);
+    border:0; border-radius:50%; background:transparent; padding:0;
+    touch-action:none; user-select:none; cursor:grab; -webkit-tap-highlight-color:transparent;
+  }
+  .sphere-control:active { cursor:grabbing; }
+  .sphere-control:focus-visible { outline:1px dashed #ddd9ec; outline-offset:3px; }
   .shade {
     position: absolute;
     z-index: 1;
@@ -1005,6 +1040,22 @@
   }
   .story-static .catalog-runway { display: none; }
 
+
+  .catalog-genre-targets { position:absolute; inset:0; z-index:7; pointer-events:none; }
+  .catalog-genre-targets[hidden] { display:none; }
+  .catalog-genre-target { position:absolute; transform:translate(-50%,-50%); border:0; border-radius:50%; background:transparent; opacity:.95; padding:0; cursor:help; pointer-events:auto; }
+  .catalog-genre-target::before {
+    content:""; position:absolute; left:50%; top:50%; width:24px; height:24px;
+    transform:translate(-50%,-50%); background:#f2f3ff; pointer-events:none;
+    clip-path:polygon(50% 0,57% 41%,95% 50%,57% 57%,50% 100%,43% 57%,5% 50%,43% 43%);
+  }
+  .catalog-genre-target:hover::before, .catalog-genre-target:focus-visible::before {
+    background:#fff;
+  }
+  .catalog-genre-target:focus-visible { outline:1px dotted #dadbe5; outline-offset:2px; }
+  .catalog-genre-tooltip { position:absolute; z-index:8; transform:translate(-50%,-100%); padding:4px 7px; border-radius:4px; color:#edf5f4; background:#080c14bb; border:1px solid #b7c6df35; font:12px/1.4 var(--mono); white-space:nowrap; pointer-events:none; }
+  .catalog-genre-tooltip[hidden] { display:none; }
+
   .hex-story { position: relative; }
   .hex-scene {
     position: relative;
@@ -1081,7 +1132,7 @@
     display: grid;
     grid-template-rows: 0fr;
     opacity: 0;
-    transition: grid-template-rows .32s cubic-bezier(.22,.7,.27,1), opacity .25s ease;
+    transition: grid-template-rows .64s cubic-bezier(.22,.7,.27,1), opacity .5s ease;
   }
   .hex-bar-row.is-visible { grid-template-rows: 1fr; opacity: 1; }
   .hex-bar-inner {
@@ -1149,6 +1200,51 @@
     cursor: pointer;
   }
   .hex-target:focus-visible { outline: none; background: #c7bdd94a; }
+  .hex-band-button {
+    width: 100%;
+    align-self: stretch;
+    border: 0;
+    padding: 0;
+    background: none;
+    color: inherit;
+    font-family: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+  .hex-band-button:hover { color: var(--mint); }
+  .hex-detail {
+    position: absolute;
+    z-index: 10;
+    right: max(1px, 3%);
+    bottom: 2px;
+    width: min(202px, 100%);
+    height: 65px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 11px;
+    padding: 6px 9px;
+    border: 1px solid #9df5db5c;
+    background: #11171de8;
+    color: var(--paper);
+    text-align: left;
+    cursor: pointer;
+    opacity: var(--hex-plot-alpha, 1);
+  }
+  .hex-detail[hidden] { display: none; }
+  .hex-detail:focus-visible { outline-color: var(--mint); }
+  .hex-detail canvas {
+    position: static;
+    display: block;
+    flex: 0 0 52px;
+    width: 52px;
+    height: 46px;
+    border: 1px solid #9df5db60;
+    background: #152129;
+  }
+  .hex-detail-copy { min-width: 0; display: grid; gap: 3px; }
+  .hex-detail-copy span { color: var(--muted); font: 10px/1.15 var(--mono); white-space: nowrap; }
+  .hex-detail-copy strong { color: var(--mint); font: 500 17px/1 var(--sans); }
   .hex-notice { position: absolute; inset: 0; display: grid; place-items: center; color: var(--muted); }
   .hex-footer { display: flex; justify-content: space-between; align-items: center; gap: 24px; color: var(--muted); }
   .hex-guide { display: flex; align-items: center; gap: 12px; margin: 0; font-size: 12px; }
@@ -1170,6 +1266,9 @@
     .hex-track { height: 8px; }
     .hex-bar-inner { grid-template-columns: 94px minmax(0,1fr) 48px; }
     .hex-axis { margin-right: 57px; margin-left: 103px; }
+    .hex-detail { right: 1px; width: 162px; height: 48px; gap: 7px; }
+    .hex-detail canvas { flex-basis: 41px; width: 41px; height: 34px; }
+    .hex-detail-copy strong { font-size: 14px; }
   }
   @media (max-height: 740px) and (min-width: 761px) {
     .hex-copy { padding-top: clamp(41px, 12vh, 90px); }
@@ -1180,6 +1279,62 @@
   @media (prefers-reduced-motion: reduce) {
     .hex-chart, .hex-bar-row, .hex-mark { transition: none; }
   }
+
+
+  /* Powers of Ten: scoped to the distribution chapter. */
+  .hex-scene, .hex-plot, .hex-targets { overflow:clip; }
+  .hex-zoom-panel { position:absolute; left:0; right:0; bottom:0; z-index:12; display:flex; align-items:end; justify-content:space-between; gap:16px; padding:12px 3px 0; background:linear-gradient(transparent,#080b12b8); }
+  .hex-zoom-caption { display:grid; gap:5px; font-variant-numeric:tabular-nums; }
+  .hex-zoom-label { color:var(--mint); font-size:14px; }
+  .hex-zoom-value { color:var(--paper); font:400 clamp(20px,2.1vw,32px)/1.2 var(--sans); letter-spacing:-.04em; }
+  .hex-zoom-scale { color:var(--muted); font:12px/1.4 var(--mono); }
+  .hex-zoom-controls { display:flex; align-items:center; gap:12px; padding-bottom:4px; }
+  .hex-zoom-controls button { appearance:none; border:1px solid #a5b9c33b; border-radius:3px; background:#111720c9; color:var(--paper); font:14px/1.4 var(--sans); min-height:40px; padding:7px 12px; cursor:pointer; }
+  .hex-zoom-controls button:hover { border-color:var(--mint); }
+  .hex-zoom-controls button:disabled { opacity:.28; cursor:default; }
+  .hex-zoom-controls button:focus-visible { outline:2px solid var(--mint); outline-offset:3px; }
+  .hex-zoom-stops { display:flex; gap:8px; }
+  .hex-zoom-stops button { width:10px; min-height:30px; padding:0; border:0; border-radius:0; background:transparent; position:relative; }
+  .hex-zoom-stops button::after { content:""; position:absolute; left:0; right:0; top:11px; height:8px; border:1px solid #a5b9c36b; }
+  .hex-zoom-stops button[aria-pressed="true"]::after { background:var(--mint); border-color:var(--mint); }
+  .hex-count { font-size:11px; }
+  .hex-bar-inner { grid-template-columns:100px minmax(0,1fr) 84px; }
+  .hex-axis { margin-right:93px; }
+  @media(max-width:760px) {
+    .hex-zoom-panel { gap:8px; }
+    .hex-zoom-value { font-size:20px; }
+    .hex-zoom-controls { gap:8px; }
+    .hex-zoom-controls button { min-height:36px; padding:6px 9px; }
+    .hex-zoom-stops { gap:5px; }
+    .hex-zoom-stops button { width:8px; padding:0; }
+    .hex-zoom-scale { font-size:11px; }
+    .hex-bar-inner { grid-template-columns:94px minmax(0,1fr) 80px; }
+    .hex-axis { margin-right:89px; }
+  }
+
+
+  /* P1 material and interaction, scoped to the existing distribution layout. */
+  .hex-plot { background:radial-gradient(ellipse at 42% 38%,#8d67ec0a,transparent 67%); }
+  .hex-target:focus-visible { background:#d9dcea1c; }
+  .hex-zoom-panel { background:linear-gradient(transparent,#080b129c); }
+  .hex-zoom-caption { border:1px solid transparent; border-radius:3px; padding:4px 7px; margin-left:-7px; transition:background .2s,border-color .2s; }
+  .hex-zoom-panel[data-preview="true"] .hex-zoom-caption { border-color:#91eed654; background:#071919eb; }
+  .hex-zoom-label { color:#b8cacc; font-family:var(--mono); }
+  .hex-zoom-value { color:#edf5f4; }
+  .hex-zoom-panel[data-preview="true"] .hex-zoom-label,
+  .hex-zoom-panel[data-preview="true"] .hex-zoom-value { color:#a7ffe1; }
+  .hex-motion { color:var(--mint); text-decoration:underline; text-decoration-color:#8aedd165; text-underline-offset:3px; }
+  @media(prefers-reduced-motion:reduce) { .hex-zoom-caption { transition:none; } }
+
+
+  /* Per-stage keyboard navigation with a top-to-bottom bar entrance. */
+  .hex-bar-row.is-visible .hex-bar-inner { animation:hex-bar-descend .58s cubic-bezier(.22,.7,.27,1) both; }
+  @keyframes hex-bar-descend { from { opacity:0; transform:translateY(-16px); } to { opacity:1; transform:translateY(0); } }
+  .hex-zoom-stops button { width:22px; padding:0; font:12px/30px var(--mono); color:var(--muted); }
+  .hex-zoom-stops button::after { top:auto; bottom:0; height:2px; border:0; background:#a5b9c34d; }
+  .hex-zoom-stops button[aria-pressed="true"] { color:var(--mint); }
+  @media(max-width:760px) { .hex-zoom-stops button { width:18px; } }
+  @media(prefers-reduced-motion:reduce) { .hex-bar-row.is-visible .hex-bar-inner { animation:none; } }
 
   #revenue-story {
     --exit-length: clamp(880px, 148svh, 1600px);
@@ -1528,6 +1683,11 @@
       <p class="eyebrow">2018–2025 Global revenue</p>
       <h1 id="headline">Global record<br><span>industry revenues</span></h1>
       <p class="subtitle">세계 음반 산업의 연도별 총매출</p>
+      <div class="revenue-view-controls" role="group" aria-label="매출 차트 보기">
+        <button type="button" class="liquid-glass" id="revenue-rose-toggle" aria-pressed="false">전체 로즈 차트</button>
+        <button type="button" class="liquid-glass" id="revenue-line-toggle" aria-pressed="false">스트리밍 비율</button>
+      </div>
+      <p class="revenue-composition-legend" id="revenue-composition-legend" hidden><span>스트리밍</span><span>기타 매출</span></p>
     </div>
 
     <figure class="chart">
@@ -1541,11 +1701,11 @@
     <div class="hero-footer">
       <div class="snapshot" aria-live="polite" aria-atomic="true">
         <p class="snapshot-title"><span id="selected-year">2025</span>년 총매출</p>
-        <p class="snapshot-value"><strong id="selected-value">31.7</strong><span aria-label="10억 미국 달러">US$ bn</span></p>
+        <p class="snapshot-value"><strong id="selected-value">31.7</strong><span aria-label="10억 미국 달러">US$ bn</span></p><p id="revenue-stream-detail" class="revenue-stream-detail" hidden></p>
       </div>
       <div class="read-chart">
-        <p>중심 원에서 시작하는 막대 길이가 매출을 나타냅니다.</p>
-        <p class="chart-options"><span>단위 · 10억 미국 달러</span><button class="motion-toggle" id="motion-toggle" type="button" hidden>모션 정지</button></p>
+        <p id="revenue-chart-guide">중심 원에서 시작하는 막대 길이가 매출을 나타냅니다.</p>
+        <p class="chart-options"><span id="revenue-chart-unit">단위 · 10억 미국 달러</span><button class="motion-toggle" id="motion-toggle" type="button" hidden>모션 정지</button></p>
         <a class="story-next" href="#market-position">국가별 성장률 보기 <span aria-hidden="true">↓</span></a>
         <p class="source" id="source">출처 · IFPI <cite>Global Music Report 2026</cite></p>
       </div>
@@ -1626,6 +1786,7 @@
       </header>
       <canvas id="stars" aria-hidden="true"></canvas>
       <div class="shade" aria-hidden="true"></div>
+      <button class="sphere-control" type="button" aria-label="별 구체에 파동 보내기" hidden></button>
       <div class="catalog-intro">
         <p class="catalog-eyebrow" id="eyebrow">TRACKS · 2022–2025</p>
         <h2 id="catalog-title" lang="en">More<br><span id="title-word">Music.</span></h2>
@@ -1637,7 +1798,7 @@
           <p class="metric-heading"><span>곡 수 증가</span><span id="track-year">2022년 말</span></p>
           <p class="value"><span id="track-approximation">약</span><strong id="track-value">1.58</strong><span>억 곡</span></p>
           <p class="metric-change" id="track-change">2022년 집계 기준</p>
-          <p class="metric-legend">별 1개 ≈ 2만 5천 곡</p>
+          <p class="metric-legend">별 1개 ≈ 2만 5천 곡<br>드래그로 회전 · 클릭으로 파동</p>
         </div>
         <div id="genre-metric" hidden>
           <p class="metric-heading"><span>장르 수 증가</span><span id="genre-year">2021년 조사</span></p>
@@ -1677,17 +1838,21 @@
             <h1 class="hex-title" id="hex-title" lang="en">Music streaming<br><span>distribution</span></h1>
             <p class="hex-subtitle">전 세계 오디오 스트리밍 곡의 연간 재생횟수 분포</p>
           </header>
-          <section class="hex-chart" aria-label="재생횟수 구간별 곡 수" aria-hidden="true">
-            <header class="hex-chart-heading"><span>연간 재생횟수</span><span>곡 수</span></header>
+          <section class="hex-chart" aria-label="재생횟수 기준 이상의 누적 곡 수" aria-hidden="true">
+            <header class="hex-chart-heading"><span>연간 재생횟수</span><span>기준 이상 곡 수</span></header>
             <ul class="hex-bars"></ul>
             <div class="hex-axis" aria-hidden="true"></div>
           </section>
           <p class="sr-only" role="status" aria-live="polite"></p>
         </div>
-        <figure class="hex-plot" aria-label="재생횟수 구간별 3D 육각 타일">
+        <figure class="hex-plot" aria-label="왼쪽 아래 모서리를 맞춘 직사각형 안의 입체 조각. 확대 1은 ㄴ자 네 개와 정사각형 하나, 확대 2는 잘린 조각을 포함한 ㄴ자 네 개와 정사각형 하나, 확대 3은 ㄴ자 세 개와 정사각형 하나, 확대 4는 잘린 ㄴ자 하나와 정사각형 하나로 보입니다. 작은 정사각형을 확대하면 안쪽 구간이 드러납니다. 각 조각은 틈을 유지하며 독립적으로 부유하고 화면상의 두께는 동일합니다. 재생횟수가 높은 조각의 별일수록 빠르게 움직입니다. 각 ㄴ자 조각의 면적은 바깥 정사각형에서 안쪽 정사각형을 뺀 값이며 해당 재생횟수 기준 이상의 누적 곡 수에 비례합니다. 마지막 29곡 조각은 정사각형입니다. 마우스를 올리면 곡 수를 미리 보여주며 클릭하면 선택하고 해당 막대의 표시를 전환합니다. 좌우 방향키 또는 확대 버튼을 한 번 누를 때마다 전체 보기부터 네 확대 단계 사이를 이동하며 좌측 막대가 위에서부터 순서대로 내려옵니다.">
           <canvas aria-hidden="true"></canvas>
-          <div class="hex-targets" role="group" aria-label="재생횟수 구간 선택"></div>
-          <p class="hex-notice" hidden>이 브라우저에서는 타일을 표시할 수 없습니다.</p>
+          <div class="hex-targets" role="group" aria-label="누적 재생횟수 기준 선택"></div>
+          <button class="hex-detail" type="button" aria-label="10억 회 이상 · 29곡 칸 확대 보기, 막대 표시 전환" hidden>
+            <canvas width="104" height="92" aria-hidden="true"></canvas>
+            <span class="hex-detail-copy"><span>10억 회 이상 · 확대</span><strong>29곡</strong></span>
+          </button>
+          <p class="hex-notice" hidden>이 브라우저에서는 면적 조각을 표시할 수 없습니다.</p>
         </figure>
       </div>
       <footer class="hex-footer">
@@ -1724,7 +1889,7 @@
       <button type="button" data-direction="1" aria-keyshortcuts="ArrowUp W"><span aria-hidden="true">↑</span> 앞으로</button>
       <button type="button" data-direction="-1" aria-keyshortcuts="ArrowDown S"><span aria-hidden="true">↓</span> 뒤로</button>
     </div>
-    <p class="guide" id="move-guide">스크롤 ↓ 자동 재생 · ↑ ↓ 키로 앞뒤 이동</p>
+    <p class="guide" id="move-guide">입장 후 앞뒤로 한 번씩 충돌</p>
   </div>
   <section class="closing" aria-labelledby="closing-title" aria-hidden="true">
     <h2 id="closing-title">기존 추천은 탐색 지원에 약하다</h2>
@@ -1767,6 +1932,11 @@
         </table>
         <p class="note">2023년 응답자가 듣는 장르는 1인 평균 약 8개였습니다. 전체 장르 수는 각 연도 조사에서 한 명 이상이 언급한 장르를 합산한 값이며, 조사에 포함된 국가 수가 해마다 다릅니다.</p>
         <p class="note">성단 하나는 장르 하나를 나타냅니다. 300·500·700개의 성단은 각 보고서가 공개한 장르 수의 하한을 보여줍니다.</p>
+        <p class="note">표시된 성단은 그해 Spotify에서 청취 증가, 주요 플레이리스트 진입, 새 청취층 유입 또는 재유행이 보고된 장르 사례입니다. 연도마다 다섯 사례를 중복 없이 골랐습니다. 순위와 시장점유율은 표시하지 않습니다.</p>
+        <p class="note">장르 사례 출처 · 2021
+          <a href="https://newsroom.spotify.com/2021-07-07/the-state-of-dance-music-according-to-spotify-editors/">댄스 장면</a> · <a href="https://newsroom.spotify.com/2021-06-28/how-body-became-the-first-u-k-drill-track-to-land-todays-top-hits/">UK 드릴</a> ·
+          2022 <a href="https://newsroom.spotify.com/2022-05-31/how-the-world-is-reimagining-amapiano-south-africas-hottest-music-export/">아마피아노</a> · <a href="https://newsroom.spotify.com/2022-09-16/a-new-generation-of-artists-is-reinventing-mexican-music-and-captivating-listeners-around-the-world/">멕시코 음악</a> · <a href="https://newsroom.spotify.com/2022-10-06/brazils-urban-culture-is-thriving-and-so-is-its-music/">브라질 트랩</a> · <a href="https://newsroom.spotify.com/2022-02-28/the-state-of-indie-music-according-to-spotifys-editors/">포스트펑크</a> · <a href="https://newsroom.spotify.com/2023-02-14/get-to-know-dxrk-%E3%83%80%E3%83%BC%E3%82%AF-the-phonk-artist-taking-electronic-music-by-storm/">퐁크</a> ·
+          <a href="https://newsroom.spotify.com/2023-11-29/music-editorial-playlists-genres-trends/">2023 연말 결산</a></p>
         <p class="note">IFPI <i>Engaging with Music</i> ·
           <a href="https://www.ifpi.org/wp-content/uploads/2021/10/IFPI-Engaging-with-Music-report.pdf">2021년</a> ·
           <a href="https://www.ifpi.org/wp-content/uploads/2022/11/Engaging-with-Music-2022_full-report-1.pdf">2022년</a> ·
@@ -1781,6 +1951,7 @@
   // Silver used by the revenue bars and market particles.
   const starColors = [[217, 220, 234], [199, 201, 222], [230, 229, 246]];
   const starInk = starColors.map(color => "rgb(" + color.join(",") + ")");
+  const revenueBarFadeEnd = .177;
   const story = (() => {
     const root = document.getElementById('revenue-story');
     const stage = root.querySelector('.story-stage');
@@ -1809,6 +1980,7 @@
       return d * d * (3 - 2 * d);
     };
     const blend = (a, b, t) => a + (b - a) * t;
+    const mapGatherStart = .351;
     let queued = 0;
     let geometry = null;
     let ratio = 1;
@@ -1981,7 +2153,7 @@
       for (const entry of geometry.particles) {
         const { point, tile, delay, arc, light, leader } = entry;
         const impulse = launchProgress(progress, delay);
-        const join = ease(.351 + delay * .58, .911 + delay * .34, progress);
+        const join = ease(mapGatherStart + delay * .58, .911 + delay * .34, progress);
         const flight = throwParticle(entry, impulse, 1 - join);
         const x = blend(flight.x, tile.x, join);
         const y = blend(flight.y, tile.y, join) + Math.sin(Math.PI * join) * arc;
@@ -2118,43 +2290,33 @@
 
     function makeExitGeometry() {
       const sources = api.captureCatalogExit?.();
-      const targets = api.captureHexStars?.();
-      if (!sources?.length || !targets?.length) return null;
-      const pool = sources.slice();
-      let seed = 406129;
-      const random = () => {
-        seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
-        return seed / 4294967296;
+      const assembly = api.captureHexAssembly?.();
+      if (!sources?.length || !assembly?.targets.length) return null;
+
+      // Use the same spatial ordering for the wide panorama and the flat square.
+      const rank = (x, y, left, top, w, h) => {
+        const column = Math.floor(12 * clamp((x - left) / w));
+        const vertical = clamp((y - top) / h);
+        return column + (column % 2 ? 1 - vertical : vertical);
       };
-      for (let i = pool.length - 1; i > 0; i--) {
-        const j = Math.floor(random() * (i + 1));
-        [pool[i], pool[j]] = [pool[j], pool[i]];
-      }
-      const entries = targets.map((target, index) => {
-        const source = pool[Math.floor(index * pool.length / targets.length)];
-        const dx = target.x - source.x;
-        const dy = target.y - source.y;
-        const travel = Math.max(1, Math.hypot(dx, dy));
-        const arc = Math.min(height * .135, travel * .34) * (.28 + random() * .72);
-        return {
-          source, target,
-          arcX: -dy / travel * arc, arcY: dx / travel * arc,
-          delay: random() * .10
-        };
-      });
-      const dust = Array.from({length: 145}, () => ({
-        x: random() * width, y: random() * height,
-        size: .25 + random() ** 3 * .92,
-        light: .13 + random() ** 2 * .37
+      const orderedSources = sources.map(point => ({point, rank: rank(point.x, point.y, 0, 0, width, height)}))
+        .sort((a, b) => a.rank - b.rank);
+      const {left, top, side} = assembly;
+      const orderedTargets = assembly.targets.map(point => ({point, rank: rank(point.flatX, point.flatY, left, top, side, side)}))
+        .sort((a, b) => a.rank - b.rank);
+      const entries = orderedTargets.map(({point: target}, index) => ({
+        source: orderedSources[Math.floor(index * orderedSources.length / orderedTargets.length)].point,
+        target,
+        delay: ((index * 79) % 101) / 101 * .075
       }));
-      return {entries, dust};
+      return {...assembly, entries};
     }
 
     function paintExit(progress) {
       measure();
       ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
       ctx.clearRect(0, 0, width, height);
-      if (progress <= .39 || progress >= 1) return;
+      if (progress <= .022 || progress >= 1) return;
       const revision = api.hexRevision?.() ?? 0;
       if (!exitGeometry || revision !== exitRevision) {
         exitGeometry = makeExitGeometry();
@@ -2162,38 +2324,28 @@
       }
       if (!exitGeometry) return;
 
-      const opacity = ease(.40, .53, progress) * (1 - ease(.88, .996, progress));
-      const clarity = ease(.48, .67, progress) * (1 - ease(.79, .96, progress));
-      const trail = ease(.49, .60, progress) * (1 - ease(.74, .91, progress));
+      const {entries} = exitGeometry;
+      const split = ease(.64, .91, progress);
+      const reveal = ease(.025, .19, progress) * (1 - ease(.84, .996, progress));
       ctx.globalCompositeOperation = 'lighter';
-      const ambient = ease(.43, .67, progress) * (1 - ease(.77, .99, progress));
-      ctx.fillStyle = starInk[1];
-      for (const star of exitGeometry.dust) {
-        ctx.globalAlpha = star.light * ambient;
-        ctx.fillRect(star.x, star.y, star.size, star.size);
-      }
-      for (const entry of exitGeometry.entries) {
-        const { source, target, arcX, arcY, delay } = entry;
-        const flight = ease(.46 + delay * .58, .91 + delay * .52, progress);
-        const sweep = Math.sin(flight * Math.PI);
-        const x = blend(source.x, target.x, flight) + arcX * sweep;
-        const y = blend(source.y, target.y, flight) + arcY * sweep;
-        const size = blend(source.size, target.size, flight) * (1 + .58 * clarity);
-        const intensity = blend(source.opacity, target.opacity, flight);
-        const alpha = Math.min(1, (intensity * (1 + .52 * clarity) + .10 * clarity) * opacity);
-        if (alpha < .009) continue;
-        if (trail > .02 && delay < .016) {
-          const before = ease(.482 + delay * .58, .932 + delay * .52, progress);
-          const curve = Math.sin(before * Math.PI);
-          ctx.globalAlpha = alpha * trail * .28;
+      for (const {source, target, delay} of entries) {
+        const transfer = ease(.045 + delay, .53 + delay * .39, progress);
+        const x = blend(source.x, blend(target.flatX, target.x, split), transfer);
+        const y = blend(source.y, blend(target.flatY, target.y, split), transfer);
+        const size = blend(source.size, target.size, transfer);
+        const alpha = blend(source.opacity, target.opacity, transfer) * reveal;
+        if (alpha <= .012 || x < -15 || y < -15 || x > width + 15 || y > height + 15) continue;
+        const tail = .10 * Math.sin(transfer * Math.PI) * (1 - split);
+        if (tail > .024 && size > 1.05) {
+          ctx.globalAlpha = alpha * .27;
           ctx.strokeStyle = source.color;
-          ctx.lineWidth = Math.max(.5, size * .64);
+          ctx.lineWidth = Math.min(.82, size * .62);
           ctx.beginPath();
           ctx.moveTo(x, y);
-          ctx.lineTo(blend(source.x, target.x, before) + arcX * curve, blend(source.y, target.y, before) + arcY * curve);
+          ctx.lineTo(blend(x, source.x, tail), blend(y, source.y, tail));
           ctx.stroke();
         }
-        ctx.fillStyle = flight < .58 ? source.color : target.color;
+        ctx.fillStyle = transfer < .62 ? source.color : target.color;
         ctx.globalAlpha = alpha;
         ctx.fillRect(x - size / 2, y - size / 2, size, size);
       }
@@ -2213,6 +2365,11 @@
       return anchor;
     }
 
+    function beginTileFlight(destination, time) {
+      tileFlight = {destination, start: time, duration: destination ? 1620 : 1230};
+      queue();
+    }
+
     function followTileFlight(top, time, staticMode) {
       if (staticMode) {
         tileFlight = null;
@@ -2227,7 +2384,7 @@
         if (side !== tileScene && lastTileScroll !== null &&
             Math.min(top, lastTileScroll) >= hexStart.offsetTop &&
             Math.abs(top - lastTileScroll) < innerHeight * 2.2) {
-          tileFlight = {destination: side, start: time, duration: side ? 1620 : 1230};
+          beginTileFlight(side, time);
         } else {
           tileScene = side;
         }
@@ -2256,21 +2413,205 @@
       return {top, dive: destination ? progress : 1 - progress};
     }
 
+    const mapStop = 1;
+    const marketStop = 2;
+    const firstCatalogStop = 3;
+    const catalogKeyframes = [0, 1, 2, 3, 4, 5, 6];
+    const tilesStop = firstCatalogStop + catalogKeyframes.length;
+    const barsStop = tilesStop + 1;
+    const roomStop = barsStop + 1;
+    const arrivalTimes = [0, 1500, 750, 1850, 2200, 2200, 2200, 1650, 3375, 3375, 1900, 6800];
+    const mapPhaseDuration = 1500;
+    const staticScenes = [hero, atlas, catalog, hex, recommendation];
+    let keyboardMove = null;
+    let staticMapGrowth = 1;
+
+    function followKeyboardMove(top, time) {
+      if (!keyboardMove) return top;
+      const frameTime = Math.max(0, time - keyboardMove.lastFrame);
+      keyboardMove.elapsed += frameTime;
+      keyboardMove.lastFrame = time;
+      const progress = clamp(keyboardMove.elapsed / keyboardMove.duration);
+      const target = keyboardMove.to;
+      if (keyboardMove.mapStartPhase !== null) {
+        if (progress >= 1) {
+          keyboardMove = null;
+          return alignScroll(top, target);
+        }
+        const phase = blend(keyboardMove.mapStartPhase, 2, progress);
+        const morph = phase < 1
+          ? mapGatherStart * phase
+          : blend(mapGatherStart, 1, phase - 1);
+        queue();
+        return alignScroll(top, blend(launch.offsetTop, target, morph));
+      }
+      const position = blend(keyboardMove.from, target, ease(0, 1, progress));
+      const limit = keyboardMove.maxTravel;
+      const frame = Math.max(keyboardMove.position - limit, Math.min(keyboardMove.position + limit, position));
+      keyboardMove.position = frame;
+      if (Math.abs(frame - target) <= 2) {
+        keyboardMove = null;
+        return alignScroll(top, target);
+      }
+      queue();
+      return keyboardMove.barRoute ? frame : alignScroll(top, frame);
+    }
+
+    function cancelKeyboardMove() {
+      if (keyboardMove?.barRoute) {
+        alignScroll(-root.getBoundingClientRect().top, keyboardMove.position);
+      }
+      keyboardMove = null;
+    }
+
+    function keyboardPositions() {
+      const catalogOffsets = api.catalogOffsets?.() ?? [];
+      if (catalogOffsets.length <= catalogKeyframes.at(-1)) return [];
+      return [0, landing.offsetTop, marketEnd.offsetTop,
+        ...catalogKeyframes.map(index => catalogStart.offsetTop + catalogOffsets[index] + 1),
+        hexStart.offsetTop + 1, tileDive.offsetTop - 1, recommendationStart.offsetTop];
+    }
+
+    function adjacentStop(positions, top, direction) {
+      const tolerance = 1.25;
+      if (direction > 0) return positions.findIndex(position => position > top + tolerance);
+      for (let index = positions.length - 1; index >= 0; index--) {
+        if (positions[index] < top - tolerance) return index;
+      }
+      return -1;
+    }
+
+    function moveWithKeyboard(top, direction) {
+      const stops = keyboardPositions();
+      if (!stops.length) return;
+      if (top > tileDive.offsetTop) {
+        if (direction > 0) api.advanceRecommendation?.();
+        else if (api.rewindRecommendation?.()) {
+          alignScroll(top, recommendationStart.offsetTop);
+          queue();
+        } else {
+          api.resetHexSelection?.();
+          beginTileFlight(0, performance.now());
+        }
+        return;
+      }
+
+      if (top >= hexStart.offsetTop && top <= tileDive.offsetTop && api.moveHexZoom?.(direction)) return;
+
+      // The complete bar chart occupies a range of scroll positions.
+      const fullBarsFrom = hexStart.offsetTop + (api.hexLastBarOffset?.() ?? Infinity);
+      const position = top >= fullBarsFrom - 2 ? stops[barsStop] : top;
+      const destination = adjacentStop(stops, position, direction);
+      if (destination < 0) return;
+      if (destination === roomStop) {
+        beginTileFlight(1, performance.now());
+        return;
+      }
+      if (destination === 0) api.showLatestRevenue?.();
+      if (destination === tilesStop || destination === barsStop) api.resetHexSelection?.();
+
+      const to = stops[destination];
+      const interval = direction > 0 ? destination : destination + 1;
+      // The chart is visually still before the burst, so time the animated route.
+      const from = destination === mapStop && top < launch.offsetTop ? launch.offsetTop : top;
+      const intervalStart = interval === mapStop ? launch.offsetTop : stops[interval - 1];
+      const span = Math.max(1, stops[interval] - intervalStart);
+      const fraction = Math.min(1, Math.abs(to - from) / span);
+      let mapStartPhase = null;
+      if (destination === mapStop && direction > 0) {
+        const morph = 1 - fraction;
+        // Resume the corresponding phase when starting from a partial scroll.
+        mapStartPhase = morph < mapGatherStart
+          ? morph / mapGatherStart
+          : 1 + (morph - mapGatherStart) / (1 - mapGatherStart);
+      }
+      keyboardMove = {
+        from, to, elapsed: 0, lastFrame: performance.now(),
+        mapStartPhase,
+        barRoute: interval === barsStop,
+        // Cross at most one bar threshold per rendered frame.
+        position: from, maxTravel: interval === barsStop ? (api.hexBarSpacing?.() ?? Infinity) - 1 : Infinity,
+        duration: mapStartPhase === null
+          ? Math.max(220, arrivalTimes[interval] * fraction ** .65)
+          : (2 - mapStartPhase) * mapPhaseDuration
+      };
+      queue();
+    }
+
+    function moveWithReducedMotion(direction) {
+      const sightline = Math.min(300, innerHeight * .36);
+      const section = staticScenes.findIndex(scene => {
+        const rect = scene.getBoundingClientRect();
+        return rect.top <= sightline && rect.bottom > sightline;
+      });
+      if (section < 0) return;
+
+      const selectedYear = api.currentCatalogStop?.() ?? 0;
+      const yearIndex = catalogKeyframes.findIndex(index => index >= selectedYear);
+      const yearStop = firstCatalogStop + yearIndex - (catalogKeyframes[yearIndex] === selectedYear ? 0 : .5);
+      const panelStop = [0, staticMapGrowth ? marketStop : mapStop, yearStop,
+        api.staticHexBarsVisible?.() ? barsStop : tilesStop, roomStop][section];
+      if (panelStop === roomStop) {
+        if (direction > 0) {
+          api.advanceRecommendation?.();
+          return;
+        }
+        if (api.rewindRecommendation?.()) return;
+        api.resetRecommendation?.();
+      }
+
+      const destination = direction > 0 ? Math.floor(panelStop) + 1 : Math.ceil(panelStop) - 1;
+      if (destination < 0 || destination > roomStop) return;
+      if (destination >= firstCatalogStop && destination < tilesStop) {
+        api.goToCatalogStop?.(catalogKeyframes[destination - firstCatalogStop]);
+      } else {
+        const panel = destination === 0 ? hero
+          : destination < firstCatalogStop ? atlas
+          : destination < roomStop ? hex : recommendation;
+        if (destination === 0) api.showLatestRevenue?.();
+        if (panel === atlas) staticMapGrowth = destination === marketStop ? 1 : 0;
+        if (panel === hex) api.showStaticHexBars?.(destination === barsStop);
+        panel.scrollIntoView({block: 'start', behavior: 'instant'});
+        if (panel === recommendation) api.startRecommendation?.();
+      }
+      api.syncRecommendationScroll?.();
+      queue();
+    }
+
+    function navigateWithArrow(event) {
+      if (event.defaultPrevented || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) return;
+      if (event.ctrlKey || event.metaKey || event.altKey || event.shiftKey ||
+          event.target?.closest?.('input, textarea, select, [contenteditable]')) return;
+      const bounds = stage.getBoundingClientRect();
+      if (bounds.top > innerHeight * .35 || bounds.bottom < innerHeight * .36) return;
+      event.preventDefault();
+      if (event.repeat || keyboardMove || tileFlight) return;
+      const direction = event.key === 'ArrowRight' ? 1 : -1;
+      if (api.staticMode) moveWithReducedMotion(direction);
+      else moveWithKeyboard(-root.getBoundingClientRect().top, direction);
+    }
+
     function render(time) {
       queued = 0;
-      if ((!stageSeen && !tileFlight) || document.hidden) return;
+      if ((!stageSeen && !tileFlight && !keyboardMove) || document.hidden) return;
       const staticMode = reduce.matches || !ctx;
       root.classList.toggle('story-static', staticMode);
-      const {top, dive} = followTileFlight(-root.getBoundingClientRect().top, time, staticMode);
+      if (staticMode) keyboardMove = null;
+      const position = followKeyboardMove(-root.getBoundingClientRect().top, time);
+      if (keyboardMove?.barRoute) {
+        api.paintHex?.(position - hexStart.offsetTop, true, 1, false, 0);
+        return;
+      }
+      const {top, dive} = followTileFlight(position, time, staticMode);
       const morph = staticMode ? 0 : clamp((top - launch.offsetTop) / Math.max(1, landing.offsetTop - launch.offsetTop));
-      const growth = staticMode ? 1 : clamp((top - landing.offsetTop) / Math.max(1, marketEnd.offsetTop - landing.offsetTop));
+      const growth = staticMode ? staticMapGrowth : clamp((top - landing.offsetTop) / Math.max(1, marketEnd.offsetTop - landing.offsetTop));
       const bridge = staticMode ? 0 : clamp((top - marketEnd.offsetTop) / Math.max(1, catalogStart.offsetTop - marketEnd.offsetTop));
       const exiting = !staticMode && top > exitStart.offsetTop;
       const exit = exiting ? clamp((top - exitStart.offsetTop) / Math.max(1, hexStart.offsetTop - exitStart.offsetTop)) : 0;
       const recommendationVisible = staticMode || dive > .62;
       const recommendationLive = staticMode || (dive >= 1 && !tileFlight);
       const hexLive = staticMode || (exit >= 1 && dive < 1);
-      const catalogAlpha = ease(.87, 1, bridge) * (1 - ease(.47, .72, exit));
+      const catalogAlpha = ease(.87, 1, bridge) * (1 - ease(.055, .40, exit));
       const flatten = 1 - .918 * ease(.019, .345, bridge);
       catalog.inert = !staticMode && (bridge < .94 || exit > .07);
       hex.inert = !hexLive || (!staticMode && (dive > 0 || Boolean(tileFlight)));
@@ -2299,47 +2640,50 @@
       stage.style.setProperty('--markers-alpha', String(1 - ease(0, .16, bridge)));
       stage.style.setProperty('--catalog-alpha', String(catalogAlpha));
       stage.style.setProperty('--catalog-exit-copy', String(1 - ease(.025, .19, exit)));
-      stage.style.setProperty('--hex-alpha', String(staticMode ? 1 : ease(.65, .99, exit)));
+      stage.style.setProperty('--hex-alpha', String(staticMode ? 1 : ease(.73, .99, exit)));
       stage.style.setProperty('--hex-copy', String(staticMode ? 1 : ease(.88, .997, exit) * (1 - ease(.025, .30, dive))));
       stage.style.setProperty('--hex-plot-alpha', String(1 - ease(0, .054, dive)));
       stage.style.setProperty('--tile-dive-alpha', String(ease(0, .054, dive) * (1 - ease(.87, .99, dive))));
       stage.style.setProperty('--recommendation-alpha', String(staticMode ? 1 : ease(.62, .94, dive)));
       stage.style.setProperty('--recommendation-copy', String(staticMode ? 1 : ease(.80, .99, dive)));
       stage.style.setProperty('--particle-layer', exiting ? '8' : bridge > 0 ? '4' : '2');
-      if (morph !== previousMorph) api.refreshHero?.();
+      if (morph !== previousMorph && Math.min(morph, previousMorph) < revenueBarFadeEnd) api.refreshHero?.();
       if (growth !== previousGrowth) api.refreshMap?.();
       previousMorph = morph;
       previousGrowth = growth;
       api.paintHex?.(top - hexStart.offsetTop, hexLive, staticMode ? 1 : ease(.86, .996, exit), staticMode, dive);
-      const automaticRun = !staticMode && recommendationLive && time >= ignoreMomentumUntil &&
-        top >= recommendationStart.offsetTop + Math.min(150, innerHeight * .18);
-      api.paintRecommendation?.(recommendationVisible, recommendationLive, dive, automaticRun);
+      api.paintRecommendation?.(recommendationVisible, recommendationLive, dive);
       if (ctx && !staticMode) {
         if (exiting) paintExit(exit);
         else if (bridge > 0) paintBridge(bridge, flatten);
         else paint(morph);
       } else if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height);
-      if (exiting && catalogAlpha > 0) api.paintCatalogExit?.(exit);
+      if (exiting && catalogAlpha > 0) api.paintCatalogExit?.();
       else if (!exiting && (staticMode || catalogAlpha > 0 || !catalog.inert)) api.paintCatalog?.(top - catalogStart.offsetTop);
     }
 
     function queue() {
-      if (!queued && (stageSeen || tileFlight) && !document.hidden) queued = requestAnimationFrame(render);
+      if (!queued && (stageSeen || tileFlight || keyboardMove) && !document.hidden) queued = requestAnimationFrame(render);
     }
 
     addEventListener('wheel', event => {
       if (event.ctrlKey || Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
+      cancelKeyboardMove();
       if (tileFlight || performance.now() < ignoreMomentumUntil) event.preventDefault();
     }, {capture: true, passive: false});
 
     const scrollKeys = new Set(['ArrowUp', 'ArrowDown', 'PageUp', 'PageDown', 'Home', 'End', ' ']);
     addEventListener('keydown', event => {
-      if (tileFlight && scrollKeys.has(event.key) && !event.ctrlKey && !event.metaKey && !event.altKey) {
-        event.preventDefault();
+      if (scrollKeys.has(event.key) && !event.ctrlKey && !event.metaKey && !event.altKey) {
+        cancelKeyboardMove();
+        if (tileFlight) event.preventDefault();
       }
+      navigateWithArrow(event);
     }, {capture: true});
+    addEventListener('pointerdown', cancelKeyboardMove, {passive: true});
 
     addEventListener('hashchange', () => {
+      keyboardMove = null;
       tileFlight = null;
       lastTileScroll = null;
       ignoreMomentumUntil = 0;
@@ -2376,17 +2720,58 @@
   surface.globalCompositeOperation = 'copy';
 
   const rows = [
-    { year: '2018', value: 17.4 },
-    { year: '2019', value: 18.7 },
-    { year: '2020', value: 20.0 },
-    { year: '2021', value: 23.7 },
-    { year: '2022', value: 25.8 },
-    { year: '2023', value: 28.4 },
-    { year: '2024', value: 29.7 },
-    { year: '2025', value: 31.7 }
+    {year:'2018',value:17.4,streaming:8.8,physical:4.0},
+    {year:'2019',value:18.7,streaming:10.7,physical:3.8},
+    {year:'2020',value:20.0,streaming:12.7,physical:3.7},
+    {year:'2021',value:23.7,streaming:15.6,physical:4.3},
+    {year:'2022',value:25.8,streaming:17.4,physical:4.4},
+    {year:'2023',value:28.4,streaming:19.1,physical:5.0},
+    {year:'2024',value:29.7,streaming:20.5,physical:4.9},
+    {year:'2025',value:31.7,streaming:22.0,physical:5.3}
   ];
   const yearText = document.getElementById('selected-year');
   const valueText = document.getElementById('selected-value');
+  const roseToggle=document.getElementById('revenue-rose-toggle');
+  const lineToggle=document.getElementById('revenue-line-toggle');
+  const compositionLegend=document.getElementById('revenue-composition-legend');
+  const streamingDetail=document.getElementById('revenue-stream-detail');
+  let revenueView='bars';
+  const linePanel=document.createElement('div');
+  linePanel.className='revenue-line-panel';linePanel.hidden=true;
+  linePanel.id = 'revenue-share-chart';
+  lineToggle.setAttribute('aria-controls', linePanel.id);
+  const shareY = percent => 117 - (percent - 50) * 4.9;
+  const chartPoints = rows.map((row, index) => ({
+    year: row.year, share: 100 * row.streaming / row.value, x: 44 + index * 37
+  }));
+  const grid = [50,55,60,65,70].map(tick => `
+    <path d="M40 ${shareY(tick)}h269" stroke="#44414e" stroke-width=".65"/>
+    <text x="35" y="${shareY(tick)+4}" text-anchor="end">${tick}%</text>`).join('');
+  const line = chartPoints.map((p, i) => `${i ? 'L' : 'M'}${p.x} ${shareY(p.share)}`).join(' ');
+  const points = chartPoints.map(p => `
+    <g><title>${p.year}년 · ${p.share.toFixed(1)}%</title>
+    <circle cx="${p.x}" cy="${shareY(p.share)}" r="2.7" fill="#C6DCFF"/>
+    <text class="share-value" text-anchor="middle" x="${p.x}" y="${shareY(p.share)-7}">${p.share.toFixed(1)}</text>
+    <text text-anchor="middle" x="${p.x}" y="136">’${p.year.slice(-2)}</text></g>`).join('');
+  linePanel.innerHTML = `<strong>전체 매출 중 스트리밍 비율</strong>
+    <svg viewBox="0 0 325 141" role="img" aria-label="2018년부터 2025년까지 스트리밍 매출 비율, 세로축 50~70%">
+    ${grid}<path d="${line}" fill="none" stroke="#C6DCFF" stroke-width="2"/>${points}</svg>`;
+  compositionLegend.after(linePanel);
+  function setRoseView(active) {
+    revenueView = active ? 'rose' : 'bars';
+    roseToggle.setAttribute('aria-pressed', String(active));
+    document.getElementById('revenue-chart-guide').textContent = active
+      ? '각 조각의 면적이 스트리밍과 기타 매출을 나타냅니다.'
+      : '중심 원에서 시작하는 막대 길이가 매출을 나타냅니다.';
+    updateSnapshot(previewYear());
+    queueDraw();
+  }
+  function setShareVisible(visible) {
+    linePanel.hidden = !visible;
+    lineToggle.setAttribute('aria-pressed', String(visible));
+  }
+  roseToggle.addEventListener('click', () => setRoseView(revenueView !== 'rose'));
+  lineToggle.addEventListener('click', () => setShareVisible(linePanel.hidden));
   const motion = matchMedia('(prefers-reduced-motion: reduce)');
   const finePointer = matchMedia('(hover: hover) and (pointer: fine)');
   const tau = Math.PI * 2;
@@ -2468,6 +2853,44 @@
   }
 
   const sectors = rows.map(makeSector);
+  // Every rose uses the same area scale; its two component areas retain the exact revenue ratio.
+  const roseAreaUnit=((innerRadius+lengthPerBillion*rows.at(-1).value)**2-innerRadius**2)/rows.at(-1).value;
+  function makeRoseSlice(sector,inner,outer,color) {
+    const start=sector.angle-halfAngle,end=sector.angle+halfAngle;
+    const outerTop=arc(outer,start,end,thickness),outerBottom=arc(outer,start,end,0);
+    const innerTop=arc(inner,start,end,thickness),innerBottom=arc(inner,start,end,0);
+    const faces=[];
+    for(let i=0;i<samples;i++) {
+      faces.push({points:[outerTop[i],outerTop[i+1],outerBottom[i+1],outerBottom[i]],side:1});
+      faces.push({points:[innerTop[i+1],innerTop[i],innerBottom[i],innerBottom[i+1]],side:2});
+    }
+    faces.push({points:[innerTop[0],outerTop[0],outerBottom[0],innerBottom[0]],side:0});
+    faces.push({points:[outerTop[samples],innerTop[samples],innerBottom[samples],outerBottom[samples]],side:0});
+    const dots=[];
+    for(let radius=inner+1.8;radius<outer-1;radius+=3.55) {
+      const columns=Math.max(1,Math.floor(2*halfAngle*radius/3.56));
+      for(let j=0;j<columns;j++) {
+        const phi=start+(end-start)*(j+.15+random()*.7)/columns;
+        dots.push({...polar(radius+(random()-.5)*1.4,phi,thickness+random()),glow:random(),rim:0});
+      }
+    }
+    const wallDots=Array.from({length:100},(_,i)=>{
+      const edge=i%3===0 ? inner : outer;
+      return {...polar(edge,start+(end-start)*random(),thickness*random()),glow:random(),edge};
+    });
+    return {...sector,inner,outer,color,top:[...outerTop,...innerTop.slice().reverse()],faces,dots,wallDots};
+  }
+  const roses=sectors.map(sector=>{
+    const fraction=sector.streaming/sector.value,gap=2.1;
+    const area=roseAreaUnit*sector.value;
+    const split=Math.sqrt(innerRadius**2+area*fraction);
+    const outer=Math.sqrt((split+gap)**2+area*(1-fraction));
+    const streaming=makeRoseSlice(sector,innerRadius,split,[198,220,255]);
+    const other=makeRoseSlice(sector,split+gap,outer,[164,147,212]);
+    const envelope=makeRoseSlice(sector,innerRadius,outer,silver);
+    return {streaming,other,envelope};
+  });
+
   const atmosphere = Array.from({ length: 1180 }, (_, j) => {
     const phi = random() * tau;
     const distance = j < 790 ? 295 + random() ** 2 * 43 : 283 + random() * 177;
@@ -2544,10 +2967,14 @@
 
   function updateSnapshot(preview) {
     const index = preview >= 0 ? preview : selected;
-    if (index === displayed) return;
-    displayed = index;
-    yearText.textContent = sectors[index].year;
-    valueText.textContent = sectors[index].value.toFixed(1);
+    displayed=index;
+    const row=sectors[index];
+    yearText.textContent=row.year;
+    valueText.textContent=row.value.toFixed(1);
+    const split=revenueView==='rose'||preview>=0;
+    streamingDetail.hidden=!split;
+    streamingDetail.textContent='스트리밍 '+row.streaming.toFixed(1)+' US$ bn · '+(row.streaming/row.value*100).toFixed(1)+'%';
+    compositionLegend.hidden=!split;
   }
 
   function projector() {
@@ -2632,7 +3059,7 @@
 
   function drawSector(sector, index, project, time) {
     const is2025 = sector.year === '2025';
-    const opacity = !story.staticMode && is2025 ? 1 - story.ease(.103, .177, story.morph) : 1;
+    const opacity = !story.staticMode && is2025 ? 1 - story.ease(.103, revenueBarFadeEnd, story.morph) : 1;
     if (opacity <= 0) {
       sectorsOnScreen[index] = [];
       return;
@@ -2664,7 +3091,7 @@
       const higher = project({ ...particle, z: particle.z + 1 });
       const outward = project({ ...particle, x: particle.x * 1.01, y: particle.y * 1.01 });
       const side = (outward.x - point.x) * (higher.y - point.y) - (outward.y - point.y) * (higher.x - point.x);
-      if ((particle.edge === innerRadius ? -side : side) < 0) continue;
+      if ((particle.edge === (sector.inner??innerRadius) ? -side : side) < 0) continue;
       ctx.globalAlpha = opacity * (.24 + particle.glow * .63) * (highlighted ? 1 : .8);
       const dot = (1.02 + .79 * particle.glow) * scale;
       ctx.fillRect(point.x, point.y, dot, dot);
@@ -2672,7 +3099,7 @@
     ctx.globalAlpha = opacity;
     ctx.globalCompositeOperation = 'source-over';
     trace(projectedTop, true);
-    const inner = project(polar(innerRadius, sector.angle, thickness));
+    const inner = project(polar(sector.inner??innerRadius, sector.angle, thickness));
     const edge = project(polar(sector.outer, sector.angle, thickness));
     const gradient = ctx.createLinearGradient(inner.x, inner.y, edge.x, edge.y);
     gradient.addColorStop(0, rgba(color, highlighted ? .145 : .085));
@@ -2764,14 +3191,34 @@
       return { index, depth: project(sector.depthPoint, lift).z, projectBar: point => project(point, lift) };
     }).sort((a, b) => a.depth - b.depth);
 
-    for (const { index, projectBar } of drawOrder) drawSector(sectors[index], index, projectBar, t);
+    for (const {index,projectBar} of drawOrder) {
+      const rose=(revenueView==='rose'||index===previewYear())&&(story.staticMode||story.morph<.04);
+      if(rose) {
+        const parts=roses[index];
+        drawSector(parts.streaming,index,projectBar,t);drawSector(parts.other,index,projectBar,t);
+        sectorsOnScreen[index]=[pathFrom(parts.envelope.top.map(point=>projectBar(point))),
+          ...parts.envelope.faces.map(face=>pathFrom(face.points.map(point=>projectBar(point))))];
+      } else drawSector(sectors[index],index,projectBar,t);
+    }
     screenOrder = drawOrder.slice().reverse();
     const previousHover = hoveredBar;
     if (pointer) hoveredBar = hitTest(pointer.x, pointer.y);
     hero.style.cursor = hoveredBar === -1 ? '' : 'pointer';
     updateSnapshot(previewYear());
     const headingEdge = hero.clientWidth > 700 ? headline.getBoundingClientRect().right - plot.getBoundingClientRect().left : null;
-    for (const { index, projectBar } of drawOrder) positionLabel(sectors[index], index, project, projectBar, headingEdge);
+    for (const {index,projectBar} of drawOrder) {
+      const rose=(revenueView==='rose'||index===previewYear())&&(story.staticMode||story.morph<.04);
+      positionLabel(rose ? roses[index].envelope : sectors[index],index,project,projectBar,headingEdge);
+      if(rose) {
+        const part=roses[index].streaming;
+        const point=projectBar(polar((part.inner+part.outer)/2,part.angle,thickness+2));
+        ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+        ctx.font='600 '+(w<540?10:12)+'px monospace';
+        ctx.lineWidth=4;ctx.strokeStyle='rgba(3,12,17,.85)';ctx.fillStyle='#C6DCFF';
+        const amount=part.streaming.toFixed(1);
+        ctx.strokeText(amount,point.x,point.y);ctx.fillText(amount,point.x,point.y);ctx.restore();
+      }
+    }
     surface.drawImage(buffer, 0, 0);
     if (playing || previousHover !== hoveredBar) queueDraw();
   }
@@ -2876,6 +3323,12 @@
       return { x: point.x + offsetX, y: point.y + offsetY, light: dot.glow, size: Math.max(.66, (1.11 + dot.glow ** 4) * scale) };
     });
   };
+  story.showLatestRevenue = () => {
+    setRoseView(false);
+    setShareVisible(false);
+    resetPointer();
+    select(sectors.length - 1);
+  };
   story.refreshHero = queueDraw;
   motion.addEventListener('change', applyMotionPreference);
   applyMotionPreference();
@@ -2975,9 +3428,9 @@
     mist.width = mist.height = 64;
     const mistContext = mist.getContext('2d');
     const gradient = mistContext.createRadialGradient(32, 32, 0, 32, 32, 32);
-    gradient.addColorStop(0, '#c7c2df97');
-    gradient.addColorStop(.37, '#a29db73d');
-    gradient.addColorStop(1, '#7b778d00');
+    gradient.addColorStop(0, '#e4dcffb8');
+    gradient.addColorStop(.37, '#c9b9f461');
+    gradient.addColorStop(1, '#aa98dd00');
     mistContext.fillStyle = gradient;
     mistContext.fillRect(0, 0, 64, 64);
 
@@ -3003,9 +3456,9 @@
       const point = cam.domePoint(x, y, z);
       const painter = layers[Math.min(layerCount - 1, Math.floor(z * layerCount))].painter;
       const fleck = sample();
-      const opacity = (.055 + .25 * wisp + .64 * fleck ** 6) * clamp(.56 + y * .28 + z * .22, 0, 1);
+      const opacity = (.13 + .43 * wisp + .72 * fleck ** 6) * clamp(.56 + y * .28 + z * .22, 0, 1);
       const dotSize = .48 + fleck * .55 + fleck ** 7 * 1.1;
-      painter.fillStyle = 'rgba(230,229,246,' + opacity + ')';
+      painter.fillStyle = (fleck > .70 ? 'rgba(247,247,253,' : 'rgba(214,202,247,') + Math.min(.96,opacity*1.25) + ')';
       painter.fillRect(point.x * unit, point.y * unit, dotSize, dotSize);
       if (i % 34 === 0) {
         const blur = (.11 + sample() * .15) * unit;
@@ -3032,9 +3485,9 @@
     const base = radius * cam.cosine;
     context.beginPath();
     context.ellipse(0, 0, radius, base, 0, 0, tau);
-    context.fillStyle = active ? '#b0e8d10d' : '#c1c2d408';
+    context.fillStyle = active ? '#dfd5ff2b' : '#c9b9f418';
     context.fill();
-    context.strokeStyle = active ? '#a7e6d857' : '#b9bed128';
+    context.strokeStyle = active ? '#e7e1fbd9' : '#d4c7f590';
     context.lineWidth = .65;
     context.stroke();
     context.rotate(-cam.roll);
@@ -3052,8 +3505,8 @@
     context.rotate(cam.roll);
     context.beginPath();
     context.ellipse(0, 0, radius, base, 0, 0, Math.PI);
-    context.strokeStyle = active ? '#a7efd99a' : '#c7cada4b';
-    context.lineWidth = active ? 1.05 : .73;
+    context.strokeStyle = active ? '#f2eefced' : '#dcd0faaa';
+    context.lineWidth = active ? 1.25 : .95;
     context.stroke();
     context.restore();
   }
@@ -3377,7 +3830,7 @@
   }
 
   function scrollProgress() {
-    return reducedMotion.matches || !context ? 1 : story.growth;
+    return context ? story.growth : 1;
   }
 
   function render() {
@@ -3455,7 +3908,7 @@
   const STAR_COUNT = TRACKS[3] * STARS_PER_MILLION;
   const BASE_SPHERE_VOLUME = .69 ** 3;
   const ORBIT_START = 5.3;
-  const ORBIT_END = 13.2;
+  const ORBIT_END = ORBIT_START + (13.2 - ORBIT_START) * 1.5;
   const SCROLL_STOPS = [0, 1, 2, 3, ORBIT_START, (ORBIT_START + ORBIT_END) / 2, ORBIT_END];
   const SCENE_END = ORBIT_END + .85;
 
@@ -3496,18 +3949,12 @@
   const signed = () => random() * 2 - 1;
   const bell = () => (signed() + signed() + signed()) / 3;
 
-  function sphereRadius(starCount) {
-    // The first year's stars form a compact core. The following years add wider outer layers.
-    const volume = starCount <= BASE_STAR_COUNT
-      ? BASE_SPHERE_VOLUME * starCount / BASE_STAR_COUNT
-      : mix(BASE_SPHERE_VOLUME, 1, (starCount - BASE_STAR_COUNT) / (STAR_COUNT - BASE_STAR_COUNT));
-    return Math.cbrt(volume);
-  }
+  function sphereRadius(starCount) { return Math.cbrt(starCount/STAR_COUNT); }
 
   const stars = Array.from({length: STAR_COUNT}, (_, index) => {
     const y = signed();
     const azimuth = random() * TAU;
-    const radius = sphereRadius(index + .15 + random() * .83);
+    const radius=Math.cbrt(random());
     const latitude = Math.sqrt(1 - y * y) * radius;
     return {
       x: Math.cos(azimuth) * latitude, y: y * radius, z: Math.sin(azimuth) * latitude,
@@ -3566,7 +4013,7 @@
       if (cohort === 0) {
         const azimuth = n * GOLDEN_ANGLE + signed() * .13;
         const pitch = signed() * .60;
-        return {...makeCluster(random() ** 2.9, azimuth, pitch), ignition: null};
+        return {...makeCluster(random() ** 2.9, azimuth, pitch),cohort,ignition:null};
       }
 
       // Form new clusters in the camera's field of view across each full half-turn.
@@ -3577,9 +4024,95 @@
       const azimuth = mix(start, end, .55) + signed() * .42;
       const pitch = signed() * .54;
       const depth = n % 11 === 4 ? mix(.63, .93, random()) : random() ** 2.9;
-      return {...makeCluster(depth, azimuth, pitch), ignition: {start, end}};
+      return {...makeCluster(depth,azimuth,pitch),cohort,ignition:{start,end}};
     });
   });
+
+  const genreNames = [
+    ['Sea Shanty','UK Drill','Slap House','Russian Rave','EDM'],
+    ['Phonk','Amapiano','Música Mexicana','Brazilian Trap','Post-Punk'],
+    ['Shoegaze','Hyper Techno','Jersey Club','Nu Metal','Alt Country']
+  ];
+  const genreLayer=document.createElement('div');genreLayer.className='catalog-genre-targets';
+  const genreTooltip=document.createElement('span');genreTooltip.className='catalog-genre-tooltip';genreTooltip.hidden=true;
+  scene.append(genreLayer,genreTooltip);
+  let genreYear=-1,genrePicks=[],hoveredGenre=-1;
+  const genreButtons=Array.from({length:5},(_,index)=>{
+    const button=document.createElement('button');button.type='button';button.className='catalog-genre-target';button.hidden=true;
+    button.addEventListener('pointerenter',event=>{if(event.pointerType!=='touch'){hoveredGenre=index;showGenreTooltip(index)}});
+    button.addEventListener('pointerleave',()=>{hoveredGenre=-1;genreTooltip.hidden=true});
+    button.addEventListener('focus',()=>{hoveredGenre=index;showGenreTooltip(index)});
+    button.addEventListener('blur',()=>{hoveredGenre=-1;genreTooltip.hidden=true});
+    genreLayer.append(button);return button;
+  });
+  function showGenreTooltip(index) {
+    const button=genreButtons[index];
+    if(button.hidden){genreTooltip.hidden=true;return}
+    genreTooltip.textContent=genreNames[genreYear][index];
+    genreTooltip.style.left=button.style.left;
+    genreTooltip.style.top=button.dataset.labelY+'px';
+    genreTooltip.hidden=false;
+  }
+  function chooseGenrePicks(year,bearing) {
+    const width=geometry.width,height=geometry.height;
+    const sin=Math.sin(bearing),cos=Math.cos(bearing),focus=width*.54;
+    const vf=Math.min(focus,height*.32/Math.tan(.60));
+    const sceneBox = scene.getBoundingClientRect();
+    const obstacles = ['.catalog-intro','.metric','.timeline','.scene-header','.view-angle']
+      .map(selector => scene.querySelector(selector).getBoundingClientRect())
+      .filter(rect => rect.width && rect.height);
+    const candidates = clusters.filter(cluster => cluster.cohort <= year).map(cluster => {
+      const depth = cluster.z*cos + cluster.x*sin;
+      const x = width*.5 + (cluster.x*cos-cluster.z*sin)*focus/depth;
+      const y = height*.49 - cluster.y*vf/depth;
+      return {cluster,depth,x,y,light:cluster.depth*.65+cluster.scale*5};
+    }).filter(({x,y,depth}) => depth>.29 && x>width*.07 && x<width*.93 &&
+      y>height*.12 && y<height*.87 && !obstacles.some(rect =>
+        x+sceneBox.left>rect.left-24 && x+sceneBox.left<rect.right+24 &&
+        y+sceneBox.top>rect.top-24 && y+sceneBox.top<rect.bottom+24));
+    const anchors = [[.15,.51],[.88,.21],[.89,.74],[.46,.25],[.46,.73]];
+    const picks = [];
+    for (const [ax,ay] of anchors) {
+      const score = p => {
+        const clearance = Math.min(1,...picks.map(q=>Math.hypot((p.x-q.x)/width,(p.y-q.y)/height)));
+        return -Math.hypot(p.x/width-ax,p.y/height-ay) + .65*clearance + .07*p.light;
+      };
+      candidates.sort((a,b)=>score(b)-score(a));
+      if (candidates.length) picks.push(candidates.shift());
+    }
+    return picks.map(p=>p.cluster);
+  }
+  function syncGenreTargets(bearing,opacity) {
+    const year=shown-TRACKS.length;
+    if(year<0||opacity<.9){genreYear=-1;genreLayer.hidden=true;genreTooltip.hidden=true;return}
+    genreLayer.hidden=false;
+    const enteringYear = genreYear !== year;
+    if (enteringYear) {
+      genreYear = year;
+      genrePicks = chooseGenrePicks(year, year * Math.PI);
+      hoveredGenre = -1;
+      genreTooltip.hidden = true;
+    }
+    const sin=Math.sin(bearing),cos=Math.cos(bearing),focus=geometry.width*.54;
+    const vf=Math.min(focus,geometry.height*.32/Math.tan(.60));
+    genreButtons.forEach((button,index)=>{
+      const cluster=genrePicks[index];
+      if(!cluster){button.hidden=true;return}
+      const depth=cluster.z*cos+cluster.x*sin;
+      const x=geometry.width*.5+(cluster.x*cos-cluster.z*sin)*focus/depth;
+      const y=geometry.height*.49-cluster.y*vf/depth;
+      const extent=focus*cluster.scale/depth;
+      button.hidden=depth<.29||x<10||x>geometry.width-10||y<20||y>geometry.height-20;
+      button.style.left=x+'px';button.style.top=y+'px';
+      const size=Math.max(24,Math.min(64,extent*1.4));button.style.width=size+'px';button.style.height=size+'px';
+      if (enteringYear && !reduceMotion.matches && !story.staticMode) {
+        button.animate([{opacity:.25}, {opacity:1,offset:.55}, {opacity:.82}], {duration:1100,easing:'ease-in-out'});
+      }
+      button.dataset.labelY=String(Math.max(22,y-size/2-10));
+      button.setAttribute('aria-label',(2021+year)+'년 주목받은 장르 '+genreNames[year][index]);
+    });
+    if(hoveredGenre>=0)showGenreTooltip(hoveredGenre);
+  }
 
 
   function makeSprite(color) {
@@ -3611,6 +4144,7 @@
     const g = geometry;
     const ratio = Math.min(devicePixelRatio || 1, 1.75);
     mobile = matchMedia("(max-width: 860px)").matches;
+    genreYear=-1;
     g.width = sceneBounds.width;
     g.height = sceneBounds.height;
     g.x = area.left - sceneBounds.left + area.width * (mobile ? .5 : .545);
@@ -3692,6 +4226,50 @@
     context.fillRect(x - radius, y - radius, radius * 2, radius * 2);
   }
 
+  const sphereControl = scene.querySelector('.sphere-control');
+  const spin = {yaw:0, pitch:0};
+  let gesture = null, suppressClick = false;
+  let surfaceRadius = 0, lens = 0;
+  let waves = [];
+  const waveDuration = 1350;
+
+  sphereControl.addEventListener('pointerdown', event => {
+    if (!event.isPrimary || event.button !== 0) return;
+    gesture = {id:event.pointerId, x:event.clientX, y:event.clientY, yaw:spin.yaw, pitch:spin.pitch};
+    suppressClick = false;
+    sphereControl.setPointerCapture(event.pointerId);
+  });
+  sphereControl.addEventListener('pointermove', event => {
+    if (gesture?.id !== event.pointerId) return;
+    const dx = event.clientX - gesture.x, dy = event.clientY - gesture.y;
+    if (!suppressClick && Math.hypot(dx, dy) < 5) return;
+    suppressClick = true;
+    const sensitivity = 2.7 / Math.max(100, sphereControl.offsetWidth);
+    spin.yaw = gesture.yaw + dx * sensitivity;
+    spin.pitch = gesture.pitch - dy * sensitivity;
+    story.queue();
+  });
+  sphereControl.addEventListener('lostpointercapture', () => { gesture = null; });
+  sphereControl.addEventListener('pointercancel', () => { gesture = null; suppressClick = true; });
+  sphereControl.addEventListener('click', event => {
+    if (suppressClick && event.detail) return;
+    if (!surfaceRadius || !lens || sphereControl.hidden) return;
+    const rect = scene.getBoundingClientRect();
+    const dx = event.detail ? (event.clientX - rect.left - geometry.x) / lens : 0;
+    const dy = event.detail ? (event.clientY - rect.top - geometry.y) / lens : 0;
+    // Intersect the viewing ray with the front surface, then undo the current spin.
+    const camera = 3.3, rayLength2 = 1 + dx*dx + dy*dy;
+    const discriminant = camera*camera - rayLength2*(camera*camera - surfaceRadius*surfaceRadius);
+    const depth = (camera - Math.sqrt(Math.max(0, discriminant))) / rayLength2;
+    const x = dx*depth/surfaceRadius, y = dy*depth/surfaceRadius, z = (camera-depth)/surfaceRadius;
+    const uy = y*Math.cos(spin.pitch) + z*Math.sin(spin.pitch);
+    const uz = z*Math.cos(spin.pitch) - y*Math.sin(spin.pitch);
+    waves = waves.slice(-2);
+    waves.push({x:x*Math.cos(spin.yaw)-uz*Math.sin(spin.yaw), y:uy,
+      z:x*Math.sin(spin.yaw)+uz*Math.cos(spin.yaw), start:performance.now()});
+    story.queue();
+  });
+
   function drawSphere(phase, dive, opacity) {
     const g = geometry;
     const year = Math.min(TRACKS.length - 1, Math.floor(phase));
@@ -3705,8 +4283,22 @@
     const cameraY = mix(0, -.085, advance);
     const opticalX = mix(g.x, g.width * .5, advance);
     const opticalY = mix(g.y, g.height * .5, advance);
-    const focus = g.radius * 3.13;
-    const extent = sphereRadius(mix(previous, upcoming, growth));
+    const sizeScale=1.10;
+    const focus = g.radius * 3.13 * sizeScale;
+    const extent = sphereRadius(mix(previous, upcoming, growth)) * sizeScale;
+    lens = focus;
+    surfaceRadius = extent;
+    sphereControl.hidden = dive > .025;
+    const diameter = 2 * focus * extent / Math.sqrt(3.3**2 - extent**2);
+    sphereControl.style.cssText = `left:${g.x}px;top:${g.y}px;width:${diameter}px;height:${diameter}px`;
+    const now = performance.now();
+    waves = waves.filter(wave => now-wave.start < waveDuration);
+    const fronts = waves.map(wave => {
+      const t = (now-wave.start) / waveDuration;
+      return {...wave, angle:t*Math.PI, strength:(1-t)**.65};
+    });
+    const cy = Math.cos(spin.yaw), sy = Math.sin(spin.yaw);
+    const cp = Math.cos(spin.pitch), sp = Math.sin(spin.pitch);
     haze(opticalX, opticalY, g.radius * extent * (1.12 + advance * .88), .078 * opacity, 1);
 
     context.globalCompositeOperation = "lighter";
@@ -3714,21 +4306,55 @@
       const star = stars[index];
       let birth = 1;
       if (index >= previous) {
-        const arrival = .90 * (index - previous) / (upcoming - previous);
-        if (arrival >= growth) break;
-        birth = ease(arrival, arrival + .10, growth);
+        const arrival=.58*(index-previous)/(upcoming-previous);
+        if(arrival>=growth)break;
+        birth=ease(arrival,arrival+.42,growth);
       }
-      const distance = cameraZ - star.z;
-      if (distance <= .12) continue;
-      const projection = focus / distance;
-      const px = opticalX + (star.x - cameraX) * projection;
-      const py = opticalY + (star.y - cameraY) * projection;
-      const depth = (star.z + 1) / 2;
-      const flare = index >= previous ? Math.sin(Math.PI * birth) * .24 : 0;
+      const unitRadius=Math.hypot(star.x,star.y,star.z)||1;
+      const incoming=index>=previous&&upcoming>previous;
+      let radial=unitRadius*extent;
+      if(incoming)radial=birth<.65
+        ? mix(extent*(1.8+star.light*.5),extent,ease(0,.65,birth))
+        : mix(extent,unitRadius*extent,ease(.65,1,birth));
+      const nx = star.x/unitRadius, ny = star.y/unitRadius, nz = star.z/unitRadius;
+      let crest = 0;
+      for (const wave of fronts) {
+        const angle = Math.acos(clamp(nx*wave.x + ny*wave.y + nz*wave.z, -1, 1));
+        const band = Math.max(0, 1 - Math.abs(angle-wave.angle)/.20);
+        crest += band*band*wave.strength*unitRadius*unitRadius;
+      }
+      if (!reduceMotion.matches) radial += extent*.065*crest;
+      const rx = nx*cy + nz*sy, yawZ = nz*cy - nx*sy;
+      const ry = ny*cp - yawZ*sp, rz = ny*sp + yawZ*cp;
+      const wx = rx*radial, wy = ry*radial, wz = rz*radial;
+      const distance=cameraZ-wz;
+      if(distance<=.12)continue;
+      const projection=focus/distance;
+      const px=opticalX+(wx-cameraX)*projection;
+      const py=opticalY+(wy-cameraY)*projection;
+      const depth=(wz+1)/2;
+      const travelGlow = incoming ? Math.sin(Math.PI * birth) : 0;
+      if(travelGlow>.02 && birth<.87 && star.size>.62) {
+        const behind=radial+.22*(1-birth),tz=rz*behind;
+        const tp=focus/Math.max(.12,cameraZ-tz);
+        const tx=opticalX+(rx*behind-cameraX)*tp;
+        const ty=opticalY+(ry*behind-cameraY)*tp;
+        context.strokeStyle='#C6DCFF';context.globalAlpha=Math.sqrt(travelGlow)*opacity*.82;context.lineWidth=mobile?.95:1.2;
+        context.beginPath();context.moveTo(tx,ty);context.lineTo(px,py);context.stroke();
+      }
+      const contact=incoming ? Math.max(0,1-Math.abs(birth-.65)/.14) : 0;
+      if(contact>0&&star.size>.77) {
+        context.fillStyle=starInk[star.tint];context.globalAlpha=contact*opacity*.68;
+        for(let particle=0;particle<3;particle++){
+          const angle=particle*TAU/3+star.light*TAU,spread=(1-contact)*5+1;
+          context.fillRect(px+Math.cos(angle)*spread,py+Math.sin(angle)*spread,1,1);
+        }
+      }
+      const flare = travelGlow * .8;
       const outerLayer = index >= BASE_STAR_COUNT;
-      const shimmer = .19 + star.light ** 2 * .59 + depth * .18 + flare + (outerLayer ? .10 : 0);
+      const shimmer = .19 + crest*.95 + star.light ** 2 * .59 + depth * .18 + flare + (outerLayer ? .10 : 0);
       const radius = (.32 + star.size ** 2 * .94) * (mobile ? .84 : 1) * (outerLayer ? 1.08 : 1) * clamp(3.3 / distance, .72, 3.1);
-      const alpha = Math.min(1, shimmer) * birth * opacity * ease(.12, .42, distance);
+      const alpha = Math.min(1, shimmer) * Math.sqrt(birth) * opacity * ease(.12, .42, distance);
       if (star.size > .92 && streak > .09 && alpha > .07 &&
           px > -22 && px < g.width + 22 && py > -22 && py < g.height + 22) {
         const tail = streak * clamp(1 / distance, .15, 1.7) * (.047 + star.light * .07);
@@ -3740,21 +4366,17 @@
         context.lineTo(mix(px, opticalX, tail), mix(py, opticalY, tail));
         context.stroke();
       }
-      dot(px, py, radius, alpha, star.tint, star.size > .82 || flare > .16);
+      dot(px, py, radius*(1+.9*crest+.85*travelGlow), alpha, star.tint, crest>.22 || star.size > .82 || flare > .16);
     }
     context.globalCompositeOperation = "source-over";
   }
 
-  function drawPanorama(bearing, opacity, gather, exit = 0, capture = null) {
+  function drawPanorama(bearing, opacity, gather, capture = null) {
     const g = geometry;
     const focus = g.width * .54;
-    const originalVerticalFocus = Math.min(focus, g.height * .32 / Math.tan(.60));
-    const retreat = ease(.018, .48, exit);
-    const verticalFocus = mix(originalVerticalFocus, Math.max(originalVerticalFocus, focus * .84), retreat);
-    const travel = retreat * 3.65;
-    const scale = mix(1, .59, retreat);
-    const originX = g.width * (.5 + .108 * ease(.13, .48, exit));
-    const originY = g.height * (.49 + .018 * retreat);
+    const verticalFocus = Math.min(focus, g.height * .32 / Math.tan(.60));
+    const originX = g.width * .5;
+    const originY = g.height * .49;
     const sin = Math.sin(bearing), cos = Math.cos(bearing);
     const emit = capture ? (x, y, radius, light, tint, glowing) => {
       if (light < .018 || x < -10 || y < -10 || x > g.width + 10 || y > g.height + 10) return;
@@ -3763,20 +4385,19 @@
 
     if (!capture) context.globalCompositeOperation = "lighter";
     for (const star of backdrop) {
-      const distance = star.z * cos + star.x * sin + travel;
+      const distance = star.z * cos + star.x * sin;
       if (distance < .24) continue;
       const projection = focus / distance;
       const x = originX + (star.x * cos - star.z * sin) * projection;
       const y = originY - star.y * projection;
-      const near = mix(1, ease(.24, .53, distance), retreat);
-      emit(x, y, star.size * scale, star.light * opacity * near, star.tint, star.size > .72);
+      emit(x, y, star.size, star.light * opacity, star.tint, star.size > .72);
     }
     for (const cluster of clusters) {
       const ignition = cluster.ignition;
       if (ignition && bearing <= ignition.start) break;
       const formation = ignition ? clamp((bearing - ignition.start) / (ignition.end - ignition.start)) : 1;
       const birth = ease(0, 1, formation);
-      const depth = cluster.z * cos + cluster.x * sin + travel;
+      const depth = cluster.z * cos + cluster.x * sin;
       if (depth < .29) continue;
       const projectedX = (cluster.x * cos - cluster.z * sin) * focus / depth;
       const projectedY = -cluster.y * verticalFocus / depth;
@@ -3792,8 +4413,7 @@
         ? .21 * ease(.56, .93, formation) * (1 - ease(ignition.end, ignition.end + .095, bearing))
         : 0;
       const flash = Math.max(Math.sin(Math.PI * formation) ** 1.45, afterglow);
-      const near = mix(1, ease(.29, .66, depth), retreat);
-      const luminosity = opacity * birth * (.42 + settle * .52) * (.70 + cluster.depth * .30) * near;
+      const luminosity=opacity*birth*(.42+settle*.52)*(.70+cluster.depth*.30)*(genrePicks.includes(cluster)?1.35:1);
       // Each genre has a nucleus and its own cloud of stars at the same angular location.
       const haloRadius = Math.max(1.8, extent * .45);
       const haloLight = luminosity * settle * (.13 + cluster.depth * .16)
@@ -3803,12 +4423,12 @@
         const worldX = cluster.x + star.x * spread;
         const worldY = cluster.y + star.y * spread;
         const worldZ = cluster.z + star.z * spread;
-        const distance = worldZ * cos + worldX * sin + travel;
+        const distance = worldZ * cos + worldX * sin;
         if (distance < .18) continue;
         const projection = focus / distance;
         const px = originX + (worldX * cos - worldZ * sin) * projection;
         const py = originY - worldY * verticalFocus / distance;
-        const radius = star.size * (mobile ? .76 : 1) * (.75 + cluster.depth * .34) * scale;
+        const radius = star.size * (mobile ? .76 : 1) * (.75 + cluster.depth * .34);
         emit(px, py, radius, star.light * luminosity * (1 + flash * .70), cluster.tint, star.glow);
       }
     }
@@ -3832,7 +4452,10 @@
       }
       drawSphere(phase, dive, 1 - interior);
     }
-    if (interior > 0) drawPanorama(bearing, interior, gather);
+    if (interior >= 1) sphereControl.hidden = true;
+    if (waves.length && !sphereControl.hidden && !scene.inert) story.queue();
+    syncGenreTargets(bearing,interior);
+    if(interior>0)drawPanorama(bearing,interior,gather);
     context.globalAlpha = 1;
   }
 
@@ -3865,28 +4488,43 @@
   }
 
   story.paintCatalog = render;
-  story.paintCatalogExit = progress => {
-    if (!context || geometry.radius < 1) return;
+  story.paintCatalogExit = () => {
     if (shown !== SCROLL_STOPS.length - 1) render(stopPositions[SCROLL_STOPS.length - 1]);
-    context.clearRect(0, 0, geometry.width, geometry.height);
-    drawPanorama(TAU, 1, 1, progress);
-    context.globalAlpha = 1;
   };
   story.captureCatalogExit = () => {
     if (geometry.radius < 1) return [];
     const points = [];
-    drawPanorama(TAU, 1, 1, .48, points);
+    drawPanorama(TAU, 1, 1, points);
+
+    // Bring the back of the panorama in through the sides of the screen.
+    const {width, height} = geometry;
+    for (const cluster of clusters) {
+      if (cluster.z > .24) continue;
+      const side = cluster.x < 0 ? -1 : 1;
+      const gutter = 10 + Math.abs(cluster.z) * 65;
+      const edge = side < 0 ? -gutter : width + gutter;
+      for (let index = 0; index < cluster.members.length; index += 11) {
+        const star = cluster.members[index];
+        points.push({
+          x: edge + star.x * 140,
+          y: height * (.49 - .45 * (cluster.y + star.y)),
+          size: star.size * 1.3,
+          opacity: .25 + star.light * .43,
+          color: starInk[cluster.tint]
+        });
+      }
+    }
     return points;
   };
   story.catalogPoints = () => {
     const g = geometry;
-    const focus = g.radius * 3.13;
-    const points = stars.slice(0, BASE_STAR_COUNT).map(star => {
-      const distance = 3.3 - star.z;
-      const projection = focus / distance;
+    const focus=g.radius*3.13*1.10,extent=sphereRadius(BASE_STAR_COUNT);
+    const points=stars.slice(0,BASE_STAR_COUNT).map(star=>{
+      const distance=3.3-star.z*extent;
+      const projection=focus/distance;
       return {
-        x: g.x + star.x * projection,
-        y: g.y + star.y * projection,
+        x:g.x+star.x*extent*projection,
+        y:g.y+star.y*extent*projection,
         size: (.32 + star.size ** 2 * .94) * (mobile ? .84 : 1) * clamp(3.3 / distance, .72, 3.1)
       };
     });
@@ -3902,6 +4540,10 @@
     }
     scrollTo({top: story.catalogScrollTop() + stopPositions[index], behavior: "instant"});
   }
+
+  story.catalogOffsets = () => stopPositions;
+  story.currentCatalogStop = () => staticIndex;
+  story.goToCatalogStop = goToMilestone;
 
   function followHash() {
     const index = yearLinks.findIndex(link => link.hash === location.hash);
@@ -3935,7 +4577,7 @@
   "use strict";
 
   // Luminate 2025 Year-End Report, ordered by annual playback range.
-  const groups = [
+  const ranges = [
     {tracks:120500000, count:"120.5M", label:"0–10회", speed:.005},
     {tracks:62600000, count:"62.6M", label:"11–100회", speed:.015},
     {tracks:40700000, count:"40.7M", label:"101–1,000회", speed:.034},
@@ -3946,6 +4588,17 @@
     {tracks:5000, count:"5.0K", label:"1억–10억 회", speed:.620},
     {tracks:29, count:"29", label:"10억 회 이상", speed:.880}
   ];
+  // Each disjoint L-shaped piece represents its own cumulative threshold count.
+  // S[i]^2 - S[i+1]^2 = unitArea * cumulativeCount[i].
+  // Lower-left alignment with small rigid offsets; only the final piece is a complete square.
+  const thresholds = ["전체 곡", "11회 이상", "101회 이상", "1천 회 이상", "10만 회 이상",
+    "100만 회 이상", "1천만 회 이상", "1억 회 이상", "10억 회 이상"];
+  const groups = ranges.map((range,index) => {
+    const tracks = ranges.slice(index).reduce((sum,item) => sum+item.tracks,0);
+    return {...range,tracks,count:new Intl.NumberFormat("ko-KR").format(tracks),label:thresholds[index]};
+  });
+  const zoomStops = [0,4,6,8];
+
 
   const chapter = document.getElementById("hex-overview");
   const root = document.getElementById("revenue-story");
@@ -3956,6 +4609,9 @@
   const axis = graph.querySelector(".hex-axis");
   const status = scene.querySelector("[role='status']");
   const targets = plot.querySelector(".hex-targets");
+  const detail = plot.querySelector(".hex-detail");
+  const detailCanvas = detail.querySelector("canvas");
+  const detailContext = detailCanvas.getContext("2d");
   const toggle = scene.querySelector(".hex-motion");
   const canvas = plot.querySelector("canvas");
   const ctx = canvas.getContext("2d");
@@ -3968,22 +4624,25 @@
   }
 
   const reduced = matchMedia("(prefers-reduced-motion: reduce)");
-  const apothem = Math.sqrt(3) / 2;
-  const innerEdge = apothem * .946;
+  const innerEdge = .94;
   const tau = Math.PI * 2;
-  const normals = [[1,0],[.5,apothem],[-.5,apothem],[-1,0],[-.5,-apothem],[.5,-apothem]];
-  const corners = Array.from({length:6}, (_, index) => [Math.sin(index*tau/6),-Math.cos(index*tau/6)]);
-  const tileEdges = ["#42434d", "#373842", "#30323c", "#272933", "#191b23", "#252731"];
-  const pitch = .57, roll = -.045;
-  const baseAngle = {
-    cosPitch: Math.cos(pitch), sinPitch: Math.sin(pitch),
-    cosRoll: Math.cos(roll), sinRoll: Math.sin(roll)
-  };
+  const corners = [[-1,-1],[1,-1],[1,1],[-1,1]];
+  const finePointer=matchMedia("(hover: hover) and (pointer: fine)");
+  const plateSide = 3.8;
+  const maxTileThickness=.06;
+  const tileGapPixels=()=>innerWidth<=760 ? 6 : 9;
+  const tileThicknessPixels=()=>innerWidth<=760 ? 7 : 11;
+  const cornerAnchor = {x:-plateSide/2,y:plateSide/2,z:0};
+  const pitch = .44, roll = -.08;
+  const baseAngle = projectionAngle(pitch,roll);
   const clamp = (value, min, max) => Math.max(min, Math.min(max,value));
   const view = {
-    dimensions:null, step:-1, focus:-1, visible:true, frame:0, previousTick:null,
-    motion:null, time:0, scrollStart:0, scrollStep:1,
-    active:false, reveal:0, revision:0, dive:0, diveSurface:null
+    dimensions:null, step:-1, focus:-1, visible:true, frame:0, previousTick:null, motionTime:0,
+    motion:null, flashStart:-Infinity, scrollStart:0, scrollStep:1,
+    active:false, reveal:0, revision:0, dive:0, diveSurface:null, staticBars:true,
+    zoomPhase:0, zoomFactor:1, manualStep:-1, navigation:null,
+    selected:0, hoveredTile:-1, hoveredLabel:-1, focusedLabel:-1,
+    cameraPitch:pitch, cameraRoll:roll, targetPitch:pitch, targetRoll:roll
   };
   const overrides = new Map();
   let seed = 4202025;
@@ -3993,63 +4652,114 @@
     return seed / 4294967296;
   }
 
-  function makeStar(speedPerRadius) {
+  function makeStar(speed,halfWidth,halfHeight,innerRatio=0) {
+    const cutX=-1+innerRatio*2+.008, cutY=1-innerRatio*2-.008;
     let x,y;
     do {
-      x = (random()*2-1)*innerEdge;
-      y = (random()*2-1)*.946;
-    } while (normals.some(([nx,ny]) => nx*x+ny*y >= innerEdge));
+      x=(random()*2-1)*innerEdge;
+      y=(random()*2-1)*innerEdge;
+    } while (innerRatio>0 && x<cutX && y>cutY);
     const direction = random()*tau;
-    const speed = speedPerRadius*(.72+random()*.56);
+    const velocity=(4+220*speed)*(.9+random()*.2);
     return {
-      x,y,tailX:x,tailY:y,vx:Math.cos(direction)*speed,vy:Math.sin(direction)*speed,
+      x,y,tailX:x,tailY:y,
+      vx:Math.cos(direction)*velocity,
+      vy:Math.sin(direction)*velocity,
       size:.48+random()**1.65*1.65,alpha:.22+random()**1.6*.65,
-      spark:random()>.936,tint:Math.floor(random()*starInk.length),
-      phase:(x*31+y*29)*tau
+      spark:random()>.936,tint:Math.floor(random()*starInk.length),phase:random()*tau
     };
   }
 
-  // The first three regular hexagons point to the same junction, with the approved seam.
-  // The remaining centers follow the approved top-down layout.
-  const centers = [
-    [0, 1.012124356],
-    [-0.719213262, -0.415237970],
-    [0.633319350, -0.365647097],
-    [-1.435880000, 0.647357300],
-    [1.170095200, 0.394724600],
-    [-0.215131300, -1.196137400],
-    [0.084162400, -0.954682000],
-    [-1.552377400, -0.062849100],
-    [-1.738118800, 0.068730000]
-  ];
-
-  const tiles = groups.map((group,index) => {
-    const [x,y] = centers[index];
-    const share = group.tracks/groups[0].tracks;
-    const radius = .09+.91*share**.34;
-    const count = Math.min(group.tracks,Math.round(27+620*share**.36));
-    return {
-      ...group,index,x,y,radius,age:Infinity,
-      // Same independent sinusoidal lift as the bars on Page 1, in the tile scene's units.
-      period:3.4+(index*683%1730)/1000,
-      phase:.36+index*2.37,
-      amplitude:(11+index*5%6)/257,
-      thickness:.039+.092*radius,
-      stars:Array.from({length:count},() => makeStar(group.speed/radius))
-    };
+  const compositionArea = groups.reduce((sum,group)=>sum+group.tracks,0);
+  const layout = groups.map((group,index) => {
+    const area=groups.slice(index).reduce((sum,item)=>sum+item.tracks,0);
+    const side=plateSide*Math.sqrt(area/compositionArea);
+    return {x:cornerAnchor.x,y:cornerAnchor.y-side,width:side,height:side};
   });
-  const background = Array.from({length:118},() => ({
+  const tiles = groups.map((group,index) => {
+    const cell=layout[index];
+    const innerSide=layout[index+1]?.width ?? 0;
+    const halfWidth=cell.width/2, halfHeight=cell.height/2;
+    const count=index===8 ? 29 : Math.round(120+2200*Math.sqrt(group.tracks/groups[0].tracks));
+    return {...group,index,x:cell.x+halfWidth,y:cell.y+halfHeight,z:0,halfWidth,halfHeight,
+      innerSide,thickness:maxTileThickness,
+      starlight:.48+1.05*Math.sqrt(group.speed/groups.at(-1).speed),
+      stars:Array.from({length:count},()=>makeStar(group.speed,halfWidth,halfHeight,innerSide/cell.width))};
+  });
+
+  function footprint(tile) {
+    const w=tile.halfWidth,h=tile.halfHeight,s=tile.innerSide;
+    return s>0 ? [[-w,-h],[w,-h],[w,h],[-w+s,h],[-w+s,h-s],[-w,h-s]]
+      : [[-w,-h],[w,-h],[w,h],[-w,h]];
+  }
+  for (const tile of tiles) {
+    const polygon=footprint(tile);
+    tile.wallStars=polygon.map((point,edge)=>{
+      const end=polygon[(edge+1)%polygon.length];
+      const count=Math.max(8,Math.round(Math.hypot(end[0]-point[0],end[1]-point[1])/(tile.halfWidth*2)*45));
+      return Array.from({length:count},()=>{
+        const u=random();
+        return {u,x:point[0]+(end[0]-point[0])*u,y:point[1]+(end[1]-point[1])*u,
+          depth:random(),alpha:.28+random()*.65,phase:random()*tau};
+      });
+    });
+  }
+  const squareCutoffs=[4,7,8,8];
+  const proxyStars=new Map([4,7].map(index=>[index,
+    Array.from({length:tiles[index].stars.length},()=>makeStar(tiles[index].speed,1,1,0))]));
+  let compositionCache=null;
+
+  function makeComposition(cutoff,scale) {
+    const gap=tileGapPixels()/(Math.max(1,scale)*Math.cos(pitch));
+    const unit=plateSide**2/compositionArea;
+    let side=layout[cutoff].width;
+    const result=[];
+    for (let index=cutoff;index>=0;index--) {
+      const square=index===cutoff;
+      const innerSide=square ? 0 : side+gap;
+      if (!square) side=Math.sqrt(groups[index].tracks*unit+innerSide**2);
+      const tile=tiles[index];
+      result.unshift({...tile,
+        x:cornerAnchor.x+side/2,y:cornerAnchor.y-side/2,
+        halfWidth:side/2,halfHeight:side/2,innerSide,
+        proxy:square&&index<8,
+        displayTracks:square ? groups.slice(index).reduce((sum,g)=>sum+g.tracks,0) : tile.tracks,
+        stars:square&&index<8 ? proxyStars.get(index) : tile.stars});
+    }
+    for (const tile of result) tile.peers=result;
+    return result;
+  }
+
+  function renderTiles() {
+    // Reveal the next square's structure as zooming starts; outer bands leave the
+    // rectangular viewing window naturally, rather than disappearing in place.
+    const phase=view.zoomPhase;
+    const stage=phase<.0001 ? 0 : phase<=1.0001 ? 1 : phase<=2.0001 ? 2 : 3;
+    const cutoff=squareCutoffs[stage];
+    const scale=(view.dimensions?.scale??1)*view.zoomFactor;
+    const key=cutoff+":"+scale+":"+tileGapPixels();
+    if (compositionCache?.key!==key) compositionCache={key,tiles:makeComposition(cutoff,scale)};
+    return compositionCache.tiles;
+  }
+
+  const entryTile = tiles.at(-1);
+  detail.addEventListener("click",() => toggleTile(entryTile.index));
+  const background = Array.from({length:250},() => ({
     x:random(),y:random(),size:.22+random()**4*1.2,alpha:.07+random()**2*.27
   }));
-  const chartMax = 120500000;
-  const barRows = groups.map(group => {
+  const chartMax = groups[0].tracks;
+  const barRows = groups.map((group,index) => {
     const row = document.createElement("li");
     row.className = "hex-bar-row";
     const inner = document.createElement("div");
     inner.className = "hex-bar-inner";
-    const label = document.createElement("span");
-    label.className = "hex-band";
+    const label = document.createElement("button");
+    label.type = "button";
+    label.className = "hex-band hex-band-button";
     label.textContent = group.label;
+    label.setAttribute("aria-label",group.label+" · "+group.count+"곡, 조각 선택");
+    label.addEventListener("click",()=>selectTile(index));
+    bindPreview(label,index,"hoveredLabel");
     const track = document.createElement("span");
     track.className = "hex-track";
     track.setAttribute("aria-hidden","true");
@@ -4065,7 +4775,7 @@
     bars.append(row);
     return row;
   });
-  for (const [number,label] of [[0,"0"],[40000000,"40M"],[80000000,"80M"],[chartMax,"120.5M"]]) {
+  for (const [number,label] of [[0,"0"],[100000000,"100M"],[chartMax,"253.2M"]]) {
     const tick = document.createElement("span");
     tick.textContent = label;
     tick.style.setProperty("--at",100*number/chartMax+"%");
@@ -4076,31 +4786,55 @@
     button.type = "button";
     button.className = "hex-target";
     button.setAttribute("aria-label",tile.label+" · "+tile.count+"곡");
-    button.addEventListener("click",() => toggleTile(index));
+    button.addEventListener("click",()=>toggleTile(index));
+    button.title=tile.label+" · "+tile.count+"곡 · 클릭하여 막대 표시 전환";
+    bindPreview(button,index,"hoveredTile");
     targets.append(button);
     return button;
   });
 
-  function project(x,y,z,out={},angle=baseAngle) {
+  function projectionAngle(tilt,turn) {
+    return {
+      cosPitch:Math.cos(tilt),sinPitch:Math.sin(tilt),
+      cosRoll:Math.cos(turn),sinRoll:Math.sin(turn)
+    };
+  }
+
+  function project(x,y,z,out={},angle=currentAngle()) {
     const {cosPitch, sinPitch, cosRoll, sinRoll} = angle;
     const xr = x*cosRoll-y*sinRoll;
     const yr = x*sinRoll+y*cosRoll;
     const depth = yr*sinPitch+z*cosPitch;
-    const scale = 11.6/(11.6-depth);
+    const scale = 1; // Orthographic: identical projected area ratio at every threshold.
     out.x = xr*scale;
     out.y = (yr*cosPitch-z*sinPitch)*scale;
     out.depth = depth;
     return out;
   }
 
-  function pose(tile) {
-    const z = reduced.matches && view.motion === null ? 0 :
-      tile.amplitude*Math.sin(view.time/tile.period*tau+tile.phase);
-    return {x:tile.x,y:tile.y,z};
+  function localPoint(x,y,z,position,out={},angle=currentAngle()) {
+    return project(position.x+x,position.y+y,position.z+z,out,angle);
   }
 
-  function localPoint(x,y,z,position,out={},angle=baseAngle) {
-    return project(position.x+x,position.y+y,position.z+z,out,angle);
+  function tilePosition(tile) {
+    const scale=(view.dimensions?.scale??1)*view.zoomFactor;
+    const arrival=story.ease(0,.9,view.motionTime)*view.reveal;
+    const period=3.5+(tile.index*683%1900)/1000;
+    const wave=Math.sin(view.motionTime/period*tau+.4+tile.index*2.37);
+    const liftPixels=tileGapPixels()*.22*wave*arrival;
+    const lift=liftPixels/(Math.max(.2,Math.abs(Math.sin(view.cameraPitch)))*Math.max(1,scale));
+    return {x:tile.x,y:tile.y,z:tile.z+lift};
+  }
+
+  function currentAngle() { return projectionAngle(view.cameraPitch,view.cameraRoll); }
+
+  function fitProjection(points,width,height,fill) {
+    const left = Math.min(...points.map(point=>point.x));
+    const right = Math.max(...points.map(point=>point.x));
+    const top = Math.min(...points.map(point=>point.y));
+    const bottom = Math.max(...points.map(point=>point.y));
+    const scale = Math.min(width*fill/(right-left),height*fill/(bottom-top));
+    return {scale,cx:width/2-(left+right)*scale/2,cy:height/2-(top+bottom)*scale/2};
   }
 
   function measure() {
@@ -4119,84 +4853,269 @@
       diveCanvas.height = Math.round(height * ratio);
       diveContext.setTransform(ratio,0,0,ratio,0,0);
     }
-    const points = tiles.flatMap(tile => corners.flatMap(([x,y]) => [
-      project(tile.x+tile.radius*x,tile.y+tile.radius*y,tile.amplitude),
-      project(tile.x+tile.radius*x,tile.y+tile.radius*y,-tile.thickness-tile.amplitude)
-    ]));
-    const left = Math.min(...points.map(point=>point.x))-.18;
-    const right = Math.max(...points.map(point=>point.x))+.18;
-    const top = Math.min(...points.map(point=>point.y))-.27;
-    const bottom = Math.max(...points.map(point=>point.y))+.24;
-    const scale = Math.min(rect.width*.98/(right-left),rect.height*.93/(bottom-top));
-    view.dimensions = {
-      width:rect.width,height:rect.height,scale,
-      cx:rect.width/2-(left+right)*scale/2,
-      cy:rect.height/2-(top+bottom)*scale/2
-    };
+    const reserve=innerWidth<=760 ? 90 : 100;
+    const mapHeight=rect.height-reserve;
+    const pointsFor=side=>corners.map(([x,y])=>project(
+      cornerAnchor.x+(x+1)*side/2,cornerAnchor.y-(1-y)*side/2,0,{},baseAngle));
+    let windowSide=plateSide;
+    let fit=fitProjection(pointsFor(windowSide),rect.width,mapHeight,.86);
+    for (let iteration=0;iteration<5;iteration++) {
+      windowSide=makeComposition(4,fit.scale)[0].halfWidth*2;
+      fit=fitProjection(pointsFor(windowSide),rect.width,mapHeight,.86);
+    }
+    view.dimensions={width:rect.width,height:rect.height,mapHeight,windowSide,...fit};
+    compositionCache=null;
     const viewport = document.documentElement.clientHeight||innerHeight;
     view.scrollStart = Math.max(110,viewport*.22);
-    view.scrollStep = Math.max(178,viewport*.41);
-    const runway = view.scrollStart+view.scrollStep*tiles.length+25;
+    view.scrollStep = Math.max(178,viewport*.41)*2;
+    const runway = view.scrollStart+view.scrollStep*tiles.length+Math.max(150,viewport*.28);
     root.style.setProperty("--hex-length", runway+"px");
     view.revision++;
     draw();
     story.queue();
   }
 
-  function indexAt(distance) {
-    if (distance < view.scrollStart) return -1;
-    return clamp(Math.floor((distance-view.scrollStart)/view.scrollStep),0,tiles.length-1);
+  const zoomPanel = document.createElement("div");
+  zoomPanel.className = "hex-zoom-panel";
+  zoomPanel.innerHTML = '<div class="hex-zoom-caption"><span class="hex-zoom-label"></span><strong class="hex-zoom-value"></strong><span class="hex-zoom-scale"></span></div><div class="hex-zoom-controls" role="group" aria-label="확대 단계"><button type="button" class="hex-zoom-back" aria-label="이전 배율">축소</button><div class="hex-zoom-stops"></div><button type="button" class="hex-zoom-next" aria-label="다음 배율">확대</button></div>';
+  plot.append(zoomPanel);
+  const zoomLabel = zoomPanel.querySelector(".hex-zoom-label");
+  const zoomValue = zoomPanel.querySelector(".hex-zoom-value");
+  const zoomScale = zoomPanel.querySelector(".hex-zoom-scale");
+  const back = zoomPanel.querySelector(".hex-zoom-back");
+  const next = zoomPanel.querySelector(".hex-zoom-next");
+  const stageButtons = zoomStops.map((index,stage) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.setAttribute("aria-label","확대 "+(stage+1)+" · "+groups[index].label+" 배율로 이동");
+    button.textContent=String(stage+1);
+    button.addEventListener("click",() => goZoom(stage));
+    zoomPanel.querySelector(".hex-zoom-stops").append(button);
+    return button;
+  });
+  back.addEventListener("click",() => goZoom(zoomStage()-1));
+  next.addEventListener("click",() => goZoom(zoomStage()+1));
+
+  function previewIndex() {
+    if (view.hoveredLabel>=0) return view.hoveredLabel;
+    if (view.hoveredTile>=0) return view.hoveredTile;
+    return view.focusedLabel;
   }
 
-  function isShown(index) {
-    return overrides.get(index) ?? (index<=view.step);
+  function displayedIndex() {
+    const preview=previewIndex();
+    return preview>=0 ? preview : view.selected;
   }
+
+  function refreshReadout() {
+    const index=displayedIndex();
+    zoomLabel.textContent=groups[index].label;
+    zoomValue.textContent=groups[index].count+"곡";
+    zoomPanel.dataset.preview=String(previewIndex()>=0);
+  }
+
+  function bindPreview(button,index,field) {
+    button.addEventListener("pointerenter",event=>{
+      if (event.pointerType==="touch") return;
+      view[field]=index;
+      updateRows();refreshReadout();draw();schedule();
+    });
+    button.addEventListener("pointerleave",()=>{
+      view[field]=-1;
+      updateRows();refreshReadout();draw();schedule();
+    });
+    button.addEventListener("focus",()=>{
+      if (!button.matches(":focus-visible")) return;
+      view.focusedLabel=index;
+      updateRows();refreshReadout();draw();schedule();
+    });
+    button.addEventListener("blur",()=>{
+      view.focusedLabel=-1;
+      updateRows();refreshReadout();draw();schedule();
+    });
+  }
+
+  function isShown(index) { return overrides.get(index) ?? (index<=view.step); }
 
   function updateRows() {
-    let count = 0;
+    let count=0;
+    const current=displayedIndex();
     for (const [index,row] of barRows.entries()) {
-      const shown = isShown(index);
+      const shown=isShown(index);
       if (shown) count++;
       row.classList.toggle("is-visible",shown);
       row.setAttribute("aria-hidden",String(!shown));
-      buttons[index].setAttribute("aria-pressed",String(shown));
-      if (shown && index === view.focus) row.setAttribute("aria-current","true");
+      row.inert=!shown;
+      buttons[index].setAttribute("aria-pressed",String(index===view.selected));
+      if (shown && index===current) row.setAttribute("aria-current","true");
       else row.removeAttribute("aria-current");
     }
-    scene.dataset.selection = count ? "active" : "none";
+    scene.dataset.selection=count ? "active" : "none";
     graph.setAttribute("aria-hidden",String(!count));
   }
 
   function glint(index) {
-    view.focus = index;
-    if (index >= 0) tiles[index].age = 0;
+    view.focus=index;
+    if (index>=0) view.selected=index;
+    view.flashStart=index<0 ? -Infinity : performance.now();
   }
 
-  function readScroll(offset, still) {
-    const index = still ? tiles.length - 1 : indexAt(offset);
-    if (index === view.step) return false;
-    view.step = index;
-    const guide = scene.querySelector(".hex-guide");
-    guide.firstChild.textContent = index === tiles.length - 1 ? "스크롤로 타일 안으로 " : "스크롤로 탐색 ";
-    glint(index);
-    updateRows();
-    status.textContent = index < 0 ? "" : groups[index].label+" 구간";
-    return true;
+  function indexAt(offset) {
+    return offset<view.scrollStart ? -1 : clamp(Math.floor((offset-view.scrollStart)/view.scrollStep+.001),0,8);
+  }
+
+  function readScroll(offset,still) {
+    const position=still ? view.manualStep : (offset-view.scrollStart)/view.scrollStep;
+    const index=still ? view.manualStep : indexAt(offset);
+    // Nine bar arrivals, with three camera moves between their relevant playback levels.
+    let phase=position<=3 ? 0 : position<4 ? story.ease(3,4,position)
+      : position<=5 ? 1 : position<6 ? 1+story.ease(5,6,position)
+      : position<=7 ? 2 : 2+story.ease(7,8,position);
+    if(view.navigation?.phase!==undefined) phase=view.navigation.phase;
+    const lo=Math.min(2,Math.floor(phase));
+    const fraction=phase-lo;
+    const from=Math.sqrt(groups[0].tracks/groups[zoomStops[lo]].tracks);
+    const to=Math.sqrt(groups[0].tracks/groups[zoomStops[lo+1]].tracks);
+    const factor=from*(to/from)**fraction;
+    const stage=Math.round(phase);
+    const changed=phase!==view.zoomPhase || index!==view.step;
+    view.zoomPhase=phase;
+    view.zoomFactor=factor;
+    if (index!==view.step) {
+      view.step=index;
+      glint(index);
+      updateRows();
+      refreshReadout();
+      if (index>=0) status.textContent=groups[index].label+" · "+groups[index].count+"곡";
+    }
+    stageButtons.forEach((button,i)=>button.setAttribute("aria-pressed",String(i===stage)));
+    back.disabled=stage===0;
+    next.disabled=stage===3;
+    const area=factor*factor;
+    zoomScale.textContent=area<1.01 ? "조각 면적 = 누적 곡 수" : "전체 대비 면적 ×"+new Intl.NumberFormat("ko-KR",{maximumFractionDigits:1}).format(area);
+    zoomScale.textContent="확대 "+(stage+1)+"/4 · "+zoomScale.textContent;
+    scene.querySelector(".hex-guide").firstChild.textContent=index===8 ? "스크롤로 정사각형 안으로 " : "좌우 키로 확대 단계 이동 · 클릭으로 막대 표시 전환 ";
+    return changed;
+  }
+
+  function goStep(index) {
+    index=clamp(index,-1,8);
+    if (story.staticMode) {
+      view.manualStep=index;
+      view.staticBars=index>=0;
+      readScroll(0,true);draw();
+      return;
+    }
+    if (view.navigation) cancelAnimationFrame(view.navigation.frame);
+    const anchor=root.offsetTop+root.querySelector(".story-hex-start").offsetTop;
+    const from=window.scrollY;
+    const to=Math.ceil(anchor+(index<0 ? 1 : view.scrollStart+index*view.scrollStep+.5));
+    const start=performance.now();
+    const stage=zoomStops.indexOf(index);
+    const fromZoom=view.zoomFactor;
+    const toZoom=stage>=0 ? Math.sqrt(groups[0].tracks/groups[zoomStops[stage]].tracks) : fromZoom;
+    const logDistance=Math.abs(Math.log(toZoom/fromZoom));
+    const duration=logDistance>.001 ? Math.max(700,logDistance/1.05*1000) : 1200;
+    const movement=view.navigation={frame:0,stage,phase:view.zoomPhase};
+    const factors=zoomStops.map(stop=>Math.sqrt(groups[0].tracks/groups[stop].tracks));
+    const run=now=>{
+      if (view.navigation!==movement) return;
+      const u=clamp((now-start)/duration,0,1);
+      const eased=story.ease(0,1,u);
+      const factor=fromZoom*(toZoom/fromZoom)**eased;
+      if(stage>=0) {
+        let segment=0;while(segment<2&&factor>factors[segment+1])segment++;
+        movement.phase=segment+clamp(Math.log(factor/factors[segment])/Math.log(factors[segment+1]/factors[segment]),0,1);
+      }
+      window.scrollTo({top:from+(to-from)*u,behavior:"instant"});
+      if (u<1) movement.frame=requestAnimationFrame(run);
+      else view.navigation=null;
+    };
+    movement.frame=requestAnimationFrame(run);
+  }
+
+  function zoomStage() {
+    return view.navigation?.stage>=0 ? view.navigation.stage : Math.round(view.zoomPhase);
+  }
+  function goZoom(stage) { goStep(zoomStops[clamp(stage,0,3)]); }
+
+  function selectTile(index) {
+    // Selection stays at the current magnification, just as P1 selects a year in place.
+    glint(index);updateRows();refreshReadout();draw();schedule();
+    status.textContent=groups[index].label+" · "+groups[index].count+"곡";
   }
 
   function toggleTile(index) {
-    const next = !isShown(index);
-    const automatic = index<=view.step;
-    if (next === automatic) overrides.delete(index);
+    const next=!isShown(index);
+    if (next===(index<=view.step)) overrides.delete(index);
     else overrides.set(index,next);
-    glint(index);
-    updateRows();
-    status.textContent = groups[index].label+(next ? " 막대 추가" : " 막대 제거");
-    draw();
-    schedule();
+    selectTile(index);
+    status.textContent=groups[index].label+(next ? " 막대 추가" : " 막대 숨김");
   }
 
-  function screenPoint(point,frame=view.dimensions) {
+  function resetPointer() {
+    view.hoveredTile=-1;
+    view.targetPitch=pitch;
+    view.targetRoll=roll;
+    updateRows();refreshReadout();draw();schedule();
+  }
+  plot.addEventListener("pointermove",event=>{
+    if (event.pointerType==="touch" || !finePointer.matches || !view.active || view.dive>0) return;
+    if (event.target.closest(".hex-zoom-panel")) {
+      view.targetPitch=pitch;view.targetRoll=roll;schedule();return;
+    }
+    const bounds=plot.getBoundingClientRect();
+    if (playing()) {
+      view.targetPitch=pitch-(event.clientY-bounds.top-bounds.height/2)/bounds.height*.18;
+      view.targetRoll=roll+(event.clientX-bounds.left-bounds.width/2)/bounds.width*.13;
+      schedule();
+    }
+  },{passive:true});
+  plot.addEventListener("pointerleave",resetPointer);
+
+  let wheelSum=0,lastWheel=0,wheelLockedUntil=0;
+  chapter.addEventListener("wheel",event=>{
+    if (event.ctrlKey || event.metaKey || !view.active || story.staticMode || view.dive>0) return;
+    const now=performance.now(),direction=Math.sign(event.deltaY);
+    if (!direction) return;
+    const stage=zoomStage();
+    const boundary=(stage===0 && direction<0)||(stage===3 && direction>0);
+    if (boundary && !view.navigation && now>wheelLockedUntil) return;
+    event.preventDefault();event.stopPropagation();
+    if (now-lastWheel>180) wheelSum=0;
+    lastWheel=now;
+    if (view.navigation || now<wheelLockedUntil) return;
+    wheelSum+=event.deltaY*(event.deltaMode===1 ? 16 : event.deltaMode===2 ? innerHeight : 1);
+    if (Math.abs(wheelSum)>=28) {
+      goZoom(stage+Math.sign(wheelSum));wheelSum=0;wheelLockedUntil=now+1900;
+    }
+  },{passive:false});
+
+  function cameraFrame() {
+    const base=view.dimensions;
+    const rest=project(cornerAnchor.x,cornerAnchor.y,0,{},baseAngle);
+    const anchor=project(cornerAnchor.x,cornerAnchor.y,0);
+    const scale=base.scale*view.zoomFactor;
+    return {...base,scale,
+      cx:base.cx+rest.x*base.scale-anchor.x*scale,
+      cy:base.cy+rest.y*base.scale-anchor.y*scale};
+  }
+
+  function windowPolygon(frame=cameraFrame(),bottom=false) {
+    const side=view.dimensions.windowSide/view.zoomFactor;
+    const z=bottom ? -tileThicknessPixels()/(Math.max(.02,Math.abs(Math.sin(view.cameraPitch)))*frame.scale) : 0;
+    return corners.map(([x,y])=>project(cornerAnchor.x+(x+1)*side/2,
+      cornerAnchor.y-(1-y)*side/2,z));
+  }
+
+  function clipComposition(context,frame) {
+    const hull=outline(windowPolygon(frame).concat(windowPolygon(frame,true)).map(point=>screenPoint(point,frame)));
+    context.beginPath();
+    hull.forEach(([x,y],index)=>index ? context.lineTo(x,y) : context.moveTo(x,y));
+    context.closePath();context.clip();
+  }
+
+  function screenPoint(point,frame=cameraFrame()) {
     const {cx,cy,scale} = frame;
     return [cx+point.x*scale,cy+point.y*scale];
   }
@@ -4220,12 +5139,13 @@
     return area/2;
   }
 
-  function shape(tile,angle=baseAngle) {
-    const position = pose(tile);
-    const top = corners.map(([x,y]) => localPoint(x*tile.radius,y*tile.radius,0,position,{},angle));
-    const bottom = corners.map(([x,y]) => localPoint(x*tile.radius,y*tile.radius,-tile.thickness,position,{},angle));
+  function shape(tile,angle=currentAngle(),position=tilePosition(tile),scale=(view.dimensions?.scale??1)*view.zoomFactor) {
+    const polygon=footprint(tile);
+    const top=polygon.map(([x,y])=>localPoint(x,y,0,position,{},angle));
+    const thickness=tileThicknessPixels()/(Math.max(.02,Math.abs(angle.sinPitch))*Math.max(1,scale));
+    const bottom=polygon.map(([x,y])=>localPoint(x,y,-thickness,position,{},angle));
     const depth = top.reduce((sum,point)=>sum+point.depth,0)/top.length;
-    return {tile,position,top,bottom,depth,angle};
+    return {tile,position,top,bottom,depth,angle,thickness};
   }
 
   function outline(vertices) {
@@ -4243,7 +5163,7 @@
   }
 
   function placeTarget(body,layer) {
-    const polygon = outline(body.top.concat(body.bottom).map(point => screenPoint(point)));
+    const polygon = body.top.map(point=>screenPoint(point));
     const left = Math.min(...polygon.map(point=>point[0]));
     const right = Math.max(...polygon.map(point=>point[0]));
     const top = Math.min(...polygon.map(point=>point[1]));
@@ -4256,122 +5176,138 @@
     style.clipPath = "polygon("+polygon.map(([x,y])=>(x-left)+"px "+(y-top)+"px").join(",")+")";
   }
 
-  function brightness(tile) {
-    if (tile.index !== view.focus) return 0;
-    const persistent = isShown(tile.index) ? .16 : 0;
-    return playing() ? persistent+.84*Math.exp(-tile.age*3.2) : persistent+.25;
+  function brightness(tile,now) {
+    const preview=previewIndex();
+    if (tile.index===preview) return 1;
+    if (tile.index===view.selected) return .64;
+    if (tile.index!==view.focus || reduced.matches) return 0;
+    return .42*(1-story.ease(0,750,now-view.flashStart));
   }
 
+  function silverInk(alpha) { return "rgba(217,220,234,"+alpha+")"; }
+
   function drawBackground() {
-    const {width,height} = view.dimensions;
-    ctx.fillStyle = starInk[1];
+    const {width,height}=view.dimensions;
+    for (const [x,y,radius,alpha] of [[.33,.28,.48,.10],[.75,.69,.54,.08]]) {
+      const r=Math.max(width,height)*radius;
+      const glow=ctx.createRadialGradient(x*width,y*height,0,x*width,y*height,r);
+      glow.addColorStop(0,"rgba(141,103,236,"+alpha+")");
+      glow.addColorStop(1,"rgba(120,82,211,0)");
+      ctx.fillStyle=glow;ctx.fillRect(0,0,width,height);
+    }
+    ctx.fillStyle=starInk[1];
     for (const dot of background) {
-      ctx.globalAlpha = dot.alpha;
+      ctx.globalAlpha=dot.alpha*(.83+.17*Math.sin(view.motionTime*.65+dot.x*tau));
       ctx.fillRect(dot.x*width,dot.y*height,dot.size,dot.size);
     }
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha=1;
   }
 
   function drawBody(body,emphasis,ctx,frame) {
-    const {tile,top,bottom,position,angle} = body;
-    const {scale} = frame;
-    for (let index=0; index<6; index++) {
-      const next = (index+1)%6;
-      const face = [top[index],top[next],bottom[next],bottom[index]];
+    const {tile,position,top,bottom,angle,thickness}=body;
+    const {scale}=frame;
+    ctx.save();
+    // Adjacent coplanar pieces occlude a wall even when their material is translucent.
+    // Keep real exterior walls; avoid oversized parent walls showing through an inset piece.
+    ctx.save();
+    ctx.beginPath();
+    ctx.rect(-2,-2,(frame.width??canvas.width)+4,(frame.height??canvas.height)+4);
+    for (const other of tile.peers??tiles) {
+      if (other===tile) continue;
+      const points=shape(other,angle,tilePosition(other),frame.scale).top;
+      points.forEach((point,index)=>{
+        const [x,y]=screenPoint(point,frame);
+        if (index===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+      });
+      ctx.closePath();
+    }
+    ctx.clip("evenodd");
+    for (let index=0;index<top.length;index++) {
+      const next=(index+1)%top.length;
+      const face=[top[index],top[next],bottom[next],bottom[index]];
       if (signedArea(face)>=-1e-10) continue;
       screenPath(face,ctx,frame);
-      ctx.fillStyle = tileEdges[index];
-      ctx.fill();
-      ctx.strokeStyle = starInk[0];
-      ctx.globalAlpha = .34+emphasis*.16;
-      ctx.lineWidth = .64;
-      ctx.stroke();
-      ctx.globalAlpha = 1;
+      ctx.fillStyle=silverInk(.085+.06*emphasis);ctx.fill();
+      ctx.strokeStyle=silverInk(.24+.15*emphasis);ctx.lineWidth=.55;ctx.stroke();
+      ctx.save();ctx.clip();ctx.globalCompositeOperation="screen";
+      const polygon=footprint(tile);
+      const edgeStart=polygon[index],edgeEnd=polygon[next];
+      for (const star of tile.wallStars[index]) {
+        const point=localPoint(edgeStart[0]+(edgeEnd[0]-edgeStart[0])*star.u,
+          edgeStart[1]+(edgeEnd[1]-edgeStart[1])*star.u,-star.depth*thickness,position,{},angle);
+        const [x,y]=screenPoint(point,frame);
+        const size=clamp(Math.sqrt(scale/184),.55,1.5);
+        ctx.globalAlpha=star.alpha*(.35+.15*emphasis)*(.88+.12*Math.sin(view.motionTime*.7+star.phase));
+        ctx.fillStyle="#d9dcea";ctx.fillRect(x-size/2,y-size/2,size,size);
+      }
+      ctx.restore();
     }
-    const [x,y] = screenPoint(localPoint(0,0,0,position,{},angle),frame);
-    const radius = tile.radius*scale;
-    const surface = ctx.createLinearGradient(x-radius,y-radius,x+radius,y+radius);
-    surface.addColorStop(0,"#292b34");
-    surface.addColorStop(.70,"#15161d");
-    surface.addColorStop(1,"#20222b");
-    screenPath(top,ctx,frame);
-    ctx.fillStyle = surface;
-    ctx.fill();
-    ctx.strokeStyle = starInk[0];
-    ctx.globalAlpha = .55+emphasis*.44;
-    ctx.lineWidth = .82+emphasis*1.08;
-    ctx.shadowColor = starInk[0];
-    ctx.shadowBlur = 13*emphasis;
-    ctx.stroke();
-    ctx.shadowBlur = 0;
-    ctx.globalAlpha = 1;
+    ctx.restore();
+    const [x,y]=screenPoint(localPoint(0,0,0,position,{},angle),frame);
+    const rx=tile.halfWidth*scale,ry=tile.halfHeight*scale;
+    const surface=ctx.createLinearGradient(x-rx,y+ry,x+rx,y-ry);
+    surface.addColorStop(0,silverInk(.028+.025*emphasis));
+    surface.addColorStop(.64,silverInk(.057+.045*emphasis));
+    surface.addColorStop(1,silverInk(.11+.065*emphasis));
+    screenPath(top,ctx,frame);ctx.fillStyle=surface;ctx.fill();
+    ctx.strokeStyle=silverInk(.34+.34*emphasis);ctx.lineWidth=.72+.41*emphasis;ctx.stroke();
+    ctx.restore();
   }
 
-  function drawStars(body,emphasis,ctx,frame) {
-    if (view.reveal <= 0) return;
-    const {tile,position,angle} = body;
-    const {cx,cy,scale} = frame;
-    const lines = playing() && tile.speed>=.034;
-    const head = {}, tail = {};
-    const dotScale = clamp(Math.sqrt(scale/184),.43,1.18) * (frame.starScale ?? 1);
+  function drawStars(body,ctx,frame) {
+    if (view.reveal<=0) return;
+    const {tile,position,angle}=body;
+    const emphasis=brightness(tile,performance.now());
+    const dotScale=clamp(Math.sqrt(frame.scale/184),.48,1.18)*(frame.starScale??1);
     screenPath(body.top,ctx,frame);
-    ctx.save();
-    ctx.clip();
+    ctx.save();ctx.clip();ctx.globalCompositeOperation="screen";
     for (const star of tile.stars) {
-      localPoint(star.x*tile.radius,star.y*tile.radius,.002,position,head,angle);
-      const x = cx+head.x*scale, y = cy+head.y*scale;
-      const size = star.size*dotScale;
-      const color = starInk[star.tint];
-      const spark = playing() ? .55+.45*Math.sin(tile.age<4 ? tile.age*22+star.phase : star.phase) : .67;
-      const alpha = Math.min(.97,star.alpha*(1+emphasis*(.78+spark*.60))) * view.reveal;
-      if (lines) {
-        localPoint(star.tailX*tile.radius,star.tailY*tile.radius,.002,position,tail,angle);
-        const tx = cx+tail.x*scale, ty = cy+tail.y*scale;
-        const travel = Math.hypot(x-tx,y-ty);
-        if (travel>.62) {
-          ctx.globalAlpha = alpha*Math.min(.53,travel*.059);
-          ctx.strokeStyle = color;
-          ctx.lineWidth = Math.max(.55,size*.55);
-          ctx.beginPath();
-          const tailLength = Math.min(1, (frame.trailLimit ?? Infinity) / travel);
-          ctx.moveTo(x + (tx - x) * tailLength, y + (ty - y) * tailLength);
-          ctx.lineTo(x,y);
-          ctx.stroke();
+      const point=localPoint(star.x*tile.halfWidth,star.y*tile.halfHeight,body.thickness*.01,position,{},angle);
+      const [x,y]=screenPoint(point,frame);
+      if (x<-8 || y<-8 || x>frame.width+8 || y>frame.height+8) continue;
+      const flicker=.84+.16*Math.sin(view.motionTime*.65+star.phase);
+      const size=star.size*dotScale;
+      const alpha=(.20+star.alpha*.67)*flicker*(.78+.25*emphasis)*view.reveal;
+      if (playing() && tile.speed>=.071) {
+        const tail=localPoint(star.tailX*tile.halfWidth,star.tailY*tile.halfHeight,body.thickness*.01,position,{},angle);
+        const [tx,ty]=screenPoint(tail,frame);
+        const distance=Math.hypot(x-tx,y-ty),portion=Math.min(1,(9+15*tile.speed)/Math.max(.001,distance));
+        if (distance>.6) {
+          ctx.globalAlpha=alpha*(.30+.24*tile.speed);ctx.strokeStyle="#d9dcea";ctx.lineWidth=Math.max(.5,size*.5);
+          ctx.beginPath();ctx.moveTo(x+(tx-x)*portion,y+(ty-y)*portion);ctx.lineTo(x,y);ctx.stroke();
         }
       }
-      ctx.fillStyle = color;
-      if (star.spark && tile.radius*scale>14) {
-        const glow = size*(2.20+emphasis*1.25);
-        ctx.globalAlpha = alpha*(.14+emphasis*.20);
-        ctx.fillRect(x-glow/2,y-glow/2,glow,glow);
-      }
-      ctx.globalAlpha = alpha;
+      ctx.globalAlpha=alpha;
+      ctx.fillStyle="#d9dcea";
       ctx.fillRect(x-size/2,y-size/2,size,size);
+      if (star.spark && tile.halfWidth*frame.scale>14) {
+        ctx.globalAlpha*=.14;
+        ctx.fillRect(x-size*1.2,y-size*1.2,size*2.4,size*2.4);
+      }
     }
     ctx.restore();
   }
 
-  function drawDive(bodies) {
+  function drawDetail() { detail.hidden=true; }
+
+  function drawDive(bodies,now) {
     if (!diveContext || view.dive <= 0 || view.dive >= 1) return;
     const {width, height, dx, dy} = view.diveSurface;
-    const base = view.dimensions;
-    const target = tiles.at(-1);
+    const base = cameraFrame();
+    const target = entryTile;
     const u = view.dive;
-    const targetPosition = pose(target);
+    const targetPosition = tilePosition(target);
     const start = screenPoint(localPoint(0, 0, 0, targetPosition));
     const angle = story.ease(.16, .80, u);
     const banking = Math.sin(Math.PI * story.ease(.04, .83, u)) ** 2;
-    const forwardPitch = pitch * (1 - angle * .86) + .13 * banking;
-    const bank = roll * (1 - angle) + .14 * banking;
-    const cameraAngle = {
-      cosPitch: Math.cos(forwardPitch), sinPitch: Math.sin(forwardPitch),
-      cosRoll: Math.cos(bank), sinRoll: Math.sin(bank)
-    };
+    const forwardPitch = view.cameraPitch * (1 - angle * .86) + .13 * banking;
+    const bank = view.cameraRoll * (1 - angle) + .14 * banking;
+    const cameraAngle = projectionAngle(forwardPitch,bank);
     const focus = story.ease(.024, .69, u);
     const progress = Math.min(1, u / .91);
     const distance = progress ** 2 * (2.79 - 1.79 * progress);
     const maxScale = Math.max(
-      Math.hypot(width, height) * .95 / target.radius,
+      width*.65/target.halfWidth,height*.65/target.halfHeight,
       base.scale * 12
     );
     const scale = base.scale * (maxScale / base.scale) ** distance;
@@ -4379,7 +5315,7 @@
     const centerY = start[1] + dy + (height * .48 - start[1] - dy) * focus + height * .071 * banking;
     const targetPoint = localPoint(0, 0, 0, targetPosition, {}, cameraAngle);
     const frame = {
-      cx: centerX - targetPoint.x * scale, cy: centerY - targetPoint.y * scale, scale,
+      cx: centerX - targetPoint.x * scale, cy: centerY - targetPoint.y * scale, scale,width,height,
       trailLimit: 24 - 10 * story.ease(.37, .84, u),
       starScale: 1 + .7 * story.ease(.46, .87, u)
     };
@@ -4396,15 +5332,23 @@
       }
       diveContext.globalAlpha = 1;
     }
-    const candidates = angle > 0 || banking > 0 ? bodies.map(body => shape(body.tile, cameraAngle)) : bodies;
-    candidates.sort((a,b) => a.depth - b.depth);
+    const candidates=bodies.map(body=>shape(body.tile,cameraAngle,tilePosition(body.tile),frame.scale));
+    candidates.sort((a,b) => a.tile.index - b.tile.index);
     for (const body of candidates) {
       const coordinates = body.top.concat(body.bottom).map(point => screenPoint(point, frame));
       if (coordinates.every(([x]) => x < -48) || coordinates.every(([x]) => x > width + 48)
         || coordinates.every(([,y]) => y < -48) || coordinates.every(([,y]) => y > height + 48)) continue;
-      const emphasis = brightness(body.tile);
+      const emphasis = brightness(body.tile,now);
       drawBody(body, emphasis, diveContext, frame);
-      drawStars(body, emphasis, diveContext, frame);
+      drawStars(body, diveContext, frame);
+    }
+    const locate = 1-story.ease(.18,.40,u);
+    if (locate > 0) {
+      diveContext.strokeStyle = "#9df5db";
+      diveContext.globalAlpha = locate*.85;
+      diveContext.lineWidth = 1;
+      diveContext.strokeRect(centerX-4,centerY-4,8,8);
+      diveContext.globalAlpha = 1;
     }
     drawPursuitStreaks(u, centerX, centerY, width, height);
   }
@@ -4435,49 +5379,63 @@
     diveContext.restore();
   }
 
-  function draw() {
+  function draw(now=performance.now()) {
     if (!view.dimensions) return;
-    const bodies = tiles.map(tile => shape(tile)).sort((a,b) => a.depth - b.depth);
-    if (view.dive > .054 && view.dive < 1) {
-      drawDive(bodies);
-      return;
-    }
-    const {width,height} = view.dimensions;
-    ctx.clearRect(0,0,width,height);
-    drawBackground();
-    bodies.forEach((body,layer) => {
-      const emphasis = brightness(body.tile);
-      drawBody(body,emphasis,ctx,view.dimensions);
-      drawStars(body,emphasis,ctx,view.dimensions);
-      placeTarget(body,layer);
+    const bodies=renderTiles().map(tile=>shape(tile));
+    if (view.dive>.054 && view.dive<1) { detail.hidden=true;drawDive(bodies,now);return; }
+    const {width,height}=view.dimensions;
+    const frame=cameraFrame();
+    ctx.clearRect(0,0,width,height);drawBackground();
+    ctx.save();clipComposition(ctx,frame);
+    for (const button of buttons) button.hidden=true;
+    const windowSide=view.dimensions.windowSide/view.zoomFactor;
+    const wallMargin=2*(tileThicknessPixels()+tileGapPixels())/frame.scale;
+    bodies.forEach((body,layer)=>{
+      // A cutout larger than the viewing window places both arms outside the crop.
+      if (body.tile.innerSide>windowSide+wallMargin) return;
+      const emphasis=brightness(body.tile,now);
+      drawBody(body,emphasis,ctx,frame);drawStars(body,ctx,frame);placeTarget(body,layer);
+      const button=buttons[body.tile.index];button.hidden=false;
+      button.setAttribute("aria-label",body.tile.proxy
+        ? groups[body.tile.index].label+"부터 더 높은 재생횟수 구간을 합쳐 보여주는 정사각형"
+        : groups[body.tile.index].label+" · "+groups[body.tile.index].count+"곡");
     });
-    drawDive(bodies);
+    ctx.restore();
+    const boundary=windowPolygon(frame);
+    screenPath(boundary,ctx,frame);ctx.strokeStyle=silverInk(.32);ctx.lineWidth=.75;ctx.stroke();
+    targets.style.clipPath="polygon("+boundary.map(point=>screenPoint(point,frame).map(n=>n+"px").join(" ")).join(",")+")";
+    drawDetail(now);drawDive(bodies,now);
   }
 
-  function advance(star, elapsed, fade) {
-    let remaining = elapsed;
-    // Reflect velocity at the first intersected side, then consume the rest of the step.
-    for (let reflection = 0; reflection < 4 && remaining > 1e-8; reflection++) {
-      let travel = remaining;
-      let wall = null;
-      for (const normal of normals) {
-        const [nx,ny] = normal;
-        const heading = nx * star.vx + ny * star.vy;
-        if (heading <= 1e-10) continue;
-        const hit = Math.max(0, (innerEdge - nx * star.x - ny * star.y) / heading);
-        if (hit < travel) { travel = hit; wall = normal; }
-      }
-      star.x += star.vx * travel;
-      star.y += star.vy * travel;
-      remaining -= travel;
-      if (!wall) break;
+  function bounce(star,axis,velocity,elapsed) {
+    const position = star[axis]+star[velocity]*elapsed;
+    if (Math.abs(position) <= innerEdge) {
+      star[axis] = position;
+      return;
+    }
+    // Fold the travelled distance back inside the rectangular cell.
+    const span = 2*innerEdge, period = 2*span;
+    const offset = ((position+innerEdge)%period+period)%period;
+    star[axis] = (offset<=span ? offset : period-offset)-innerEdge;
+    if (offset>span) star[velocity] = -star[velocity];
+  }
 
-      const [nx,ny] = wall;
-      const incident = nx * star.vx + ny * star.vy;
-      star.vx -= 2 * incident * nx;
-      star.vy -= 2 * incident * ny;
-      star.x -= nx * 1e-8;
-      star.y -= ny * 1e-8;
+  function advance(star,elapsed,fade,tile) {
+    const previousX=star.x,previousY=star.y;
+    bounce(star,"x","vx",elapsed);
+    bounce(star,"y","vy",elapsed);
+    if (tile.innerSide>0) {
+      const cutX=-1+tile.innerSide/tile.halfWidth+.008;
+      const cutY=1-tile.innerSide/tile.halfHeight-.008;
+      if (star.x<cutX && star.y>cutY) {
+        if (previousX>=cutX) {
+          star.x=Math.min(innerEdge,2*cutX-star.x);
+          star.vx=Math.abs(star.vx);
+        } else {
+          star.y=Math.max(-innerEdge,2*cutY-star.y);
+          star.vy=-Math.abs(star.vy);
+        }
+      }
     }
     star.tailX = star.x + (star.tailX - star.x) * fade;
     star.tailY = star.y + (star.tailY - star.y) * fade;
@@ -4492,28 +5450,45 @@
     view.frame = 0;
     if (!view.visible || !view.active || document.hidden) return;
     const elapsed = view.previousTick === null ? 0 : Math.min((now-view.previousTick)/1000,.05);
-    view.previousTick = now;
+    view.previousTick=now;
+    if (playing() && elapsed>0 && view.dive<=0) {
+      const smoothing=1-Math.exp(-elapsed/.14);
+      view.cameraPitch+=(view.targetPitch-view.cameraPitch)*smoothing;
+      view.cameraRoll+=(view.targetRoll-view.cameraRoll)*smoothing;
+    }
     if (playing() && elapsed>0) {
-      view.time+=elapsed;
-      for (const tile of tiles) {
-        tile.age+=elapsed;
-        const motionScale = tile === tiles.at(-1) ? 1 - .86 * story.ease(.20,.78,view.dive) : 1;
-        const step = elapsed * motionScale;
-        const fade = Math.exp(-step/.075);
-        for (const star of tile.stars) advance(star,step,fade);
+      view.motionTime+=elapsed*(1-story.ease(.14,.74,view.dive));
+      const scale=view.dimensions.scale*view.zoomFactor;
+      // As the 29-track square fills the frame, maintain a perceptible crossing rate.
+      const squareWidth=entryTile.halfWidth*2*scale;
+      const exposure=Math.min(2.5,squareWidth/180);
+      const fade=Math.exp(-elapsed/.075);
+      for (const tile of renderTiles()) {
+        const rate=1+exposure*tile.speed;
+        const step=elapsed*rate/Math.max(1,tile.halfWidth*scale);
+        for (const star of tile.stars) advance(star,step,fade,tile);
       }
     }
-    if (playing()) draw();
-    if (playing()) schedule();
+    draw(now);
+    schedule();
   }
 
   function schedule() {
-    if (view.visible && view.active && playing() && !view.frame && !document.hidden) view.frame = requestAnimationFrame(tick);
+    const flashing = !reduced.matches && performance.now()-view.flashStart<600;
+    if (view.visible && view.active && (playing() || flashing) && !view.frame && !document.hidden) {
+      view.frame = requestAnimationFrame(tick);
+    }
   }
 
   function syncMotion() {
     view.previousTick = null;
-    toggle.textContent = playing() ? "모션 정지" : "모션 재생";
+    toggle.textContent=playing() ? "모션 정지" : "모션 재생";
+    toggle.setAttribute("aria-pressed",String(!playing()));
+    if (reduced.matches) {
+      view.cameraPitch=view.targetPitch=pitch;
+      view.cameraRoll=view.targetRoll=roll;
+      view.motionTime=0;
+    }
     draw();
     schedule();
   }
@@ -4525,22 +5500,60 @@
     schedule();
   });
 
+  story.moveHexZoom = direction => {
+    const stage=zoomStage();
+    if ((stage===0 && direction<0)||(stage===3 && direction>0)) return Boolean(view.navigation);
+    goZoom(stage+direction);
+    return true;
+  };
+  story.hexBarSpacing = () => view.scrollStep;
+  story.hexLastBarOffset = () => view.scrollStart + view.scrollStep * (tiles.length-1);
+  story.resetHexSelection = () => {
+    overrides.clear();
+    updateRows();
+  };
+  story.staticHexBarsVisible = () => view.staticBars;
+  story.showStaticHexBars = show => {
+    story.resetHexSelection();
+    view.staticBars = show;
+    view.manualStep=show ? tiles.length-1 : -1;
+    readScroll(0, true);
+    draw();
+  };
   story.hexRevision = () => view.revision;
-  story.captureHexStars = () => {
-    if (!view.dimensions) return [];
-    const plotBounds = plot.getBoundingClientRect();
-    const stageBounds = story.stage.getBoundingClientRect();
-    const dx = plotBounds.left - stageBounds.left;
-    const dy = plotBounds.top - stageBounds.top;
-    const dotScale = clamp(Math.sqrt(view.dimensions.scale / 184), .43, 1.18);
-    return tiles.flatMap(tile => {
-      const position = pose(tile);
+  story.captureHexAssembly = () => {
+    if (!view.dimensions) return null;
+    const {dx,dy} = view.diveSurface;
+    const {cx,cy,scale,mapHeight} = view.dimensions;
+    const side = Math.min(plateSide*scale*.95,mapHeight*.96);
+    const flatScale = side/plateSide;
+    const flatX = x => cx+dx+x*flatScale;
+    const flatY = y => cy+dy+y*flatScale;
+    const dotScale = clamp(Math.sqrt(scale/184),.43,1.18);
+    const initialTiles=makeComposition(4,scale);
+    const cells=initialTiles.map(tile=>{
+      const cell = layout[tile.index];
+      const flat=footprint(tile).map(([x,y])=>[
+        flatX(tile.x+x),flatY(tile.y+y)
+      ]);
+      const resting={x:tile.x,y:tile.y,z:tile.z};
+      const settled=shape(tile,baseAngle,resting,scale).top.map(point=>{
+        const [x,y] = screenPoint(point,view.dimensions);
+        return [x+dx,y+dy];
+      });
+      return {flat,settled};
+    });
+    const targets=initialTiles.flatMap(tile=>{
       return tile.stars.map(star => {
-        const point = localPoint(star.x * tile.radius, star.y * tile.radius, .002, position);
-        const [x, y] = screenPoint(point);
-        return {x: x + dx, y: y + dy, size: star.size * dotScale, opacity: star.alpha, color: starInk[star.tint]};
+        const localX = star.x*tile.halfWidth, localY = star.y*tile.halfHeight;
+        const point=localPoint(localX,localY,0,tile,{},baseAngle);
+        const [x, y] = screenPoint(point,view.dimensions);
+        return {x:x+dx,y:y+dy,flatX:flatX(tile.x+localX),flatY:flatY(tile.y+localY),
+          size:star.size*dotScale,
+          opacity: Math.min(.97,star.alpha*tile.starlight), color: starInk[star.tint]};
       });
     });
+    return {left:flatX(-plateSide/2),top:flatY(-plateSide/2),side,targets,cells};
   };
   story.paintHex = (offset, active, reveal, still, dive) => {
     const diveChanged = view.dive !== dive;
@@ -4562,8 +5575,9 @@
     view.previousTick=null;
     schedule();
   }).observe(scene);
-  new ResizeObserver(measure).observe(scene);
+  new ResizeObserver(measure).observe(plot);
   updateRows();
+  refreshReadout();
   measure();
   syncMotion();
 })();
@@ -4805,7 +5819,7 @@ story.queue();
       const dy = (y - wave.y) * 1.18;
       const distance = Math.hypot(dx, dy);
       const strength = ripple(distance / wave.scale, dx / wave.scale, dy / wave.scale, wave);
-      const displacement = strength * 27 / Math.max(22, distance);
+      const displacement = strength * 12 / Math.max(22, distance);
       x += dx * displacement + dy * displacement * .17;
       y += dy * displacement - dx * displacement * .20;
     }
@@ -4952,7 +5966,7 @@ story.queue();
       y: clamp(point.y, view.h * .12, view.h * .86),
       scale: Math.min(view.w * .55, view.h * .80),
       age: reduced.matches ? .24 : age,
-      amplitude: Math.exp(-age * 2.45) * (visible ? 1 : .84)
+      amplitude: .45*Math.exp(-age*3.4) * (visible ? 1 : .84)
     };
   }
 
@@ -4962,7 +5976,7 @@ story.queue();
       + .042 * Math.sin(dy * 9 + wave.age * 5);
     const offset = bent - wavefront;
     const envelope = Math.exp(-((offset / .52) ** 2)) * Math.min(1, radius * 9);
-    const primary = Math.sin(offset * 21);
+    const primary = Math.sin(offset*15);
     const echo = Math.sin(bent * 13 + dx * 4 - wave.age * 17);
     return (primary * .76 + echo * .24) * envelope * wave.amplitude;
   }
@@ -4987,7 +6001,7 @@ story.queue();
         pixels.data[i] = glow ? silverChannels[0] : 24;
         pixels.data[i + 1] = glow ? silverChannels[1] : 24;
         pixels.data[i + 2] = glow ? silverChannels[2] : 35;
-        pixels.data[i + 3] = (glow ** .83 * 49 + shadow * 26);
+        pixels.data[i + 3] = (glow ** .83 * 25 + shadow * 13);
       }
     }
     waveContext.putImageData(pixels, 0, 0);
@@ -5049,10 +6063,12 @@ story.queue();
       guide.textContent = narrow.matches
         ? "버튼으로 앞뒤 이동 · 드래그로 둘러보기"
         : "↑ ↓ 키로 앞뒤 이동 · 마우스로 둘러보기";
+    } else if (page.dataset.sequence === "settled") {
+      guide.textContent = narrow.matches ? "스크롤 ↓ 다음 이야기" : "→ 키 또는 스크롤 ↓ 다음 이야기";
     } else {
-      guide.textContent = narrow.matches
-        ? "스크롤 ↓ 자동 재생 · 버튼으로 앞뒤 이동"
-        : "스크롤 ↓ 자동 재생 · ↑ ↓ 키로 앞뒤 이동";
+      guide.textContent = page.dataset.sequence === "playing"
+        ? "앞뒤 충돌 재생 중"
+        : "입장 후 앞뒤로 한 번씩 충돌";
     }
   }
 
@@ -5066,15 +6082,28 @@ story.queue();
     if (page.dataset.sequence || !inView()) return;
     page.dataset.sequence = "playing";
     automatic = {step: 0, advanceAt: 0};
+    updateGuide();
     requestFrame();
+  }
+
+  function advanceRecommendation() {
+    if (!inView()) return;
+    if (page.dataset.sequence !== "settled") {
+      startAutomatic();
+      return;
+    }
+    page.dataset.sequence = "complete";
+    closing.removeAttribute("aria-hidden");
+    updateGuide();
   }
 
   function updateAutomatic(time) {
     if (!automatic || movement || time < automatic.advanceAt) return;
     if (automatic.step === automaticDirections.length) {
       automatic = null;
-      page.dataset.sequence = "complete";
-      closing.removeAttribute("aria-hidden");
+      impact = null;
+      clearFeedback();
+      page.dataset.sequence = "settled";
       updateGuide();
       return;
     }
@@ -5103,8 +6132,8 @@ story.queue();
     let jolt = 0;
     if (impact) {
       const age = clamp((time - impact.time) / 1000, 0, 1.3);
-      pulse = Math.exp(-age * 8);
-      if (!reduced.matches) jolt = Math.sin(age * 47) * Math.exp(-age * 12) * .032;
+      pulse=.5*Math.exp(-age*10);
+      if (!reduced.matches) jolt = Math.sin(age * 47) * Math.exp(-age*14)*.012;
     }
     const response = reduced.matches ? 1 : 1 - Math.exp(-seconds * 12);
     const yaw = camera.aimYaw + driftX;
@@ -5135,7 +6164,7 @@ story.queue();
     if (!inView()) return;
     if (event.ctrlKey || event.altKey || event.metaKey || event.shiftKey) return;
     const key = event.key.toLowerCase();
-    if (key === "pagedown" && !event.repeat) startAutomatic();
+    if (key === "pagedown" && !event.repeat) advanceRecommendation();
     if (key === "arrowup" || key === "w" || key === "arrowdown" || key === "s") {
       event.preventDefault();
       if (!event.repeat && !automatic) move(key === "arrowup" || key === "w" ? 1 : -1);
@@ -5143,12 +6172,12 @@ story.queue();
   });
 
   window.addEventListener("wheel", event => {
-    if (!event.defaultPrevented && !event.ctrlKey && event.deltaY > Math.abs(event.deltaX)) startAutomatic();
+    if (!event.defaultPrevented && !event.ctrlKey && event.deltaY > Math.abs(event.deltaX)) advanceRecommendation();
   }, {passive: true});
 
   window.addEventListener("scroll", () => {
     const y = window.scrollY;
-    if (story.staticMode && y > lastScrollY) startAutomatic();
+    if (y > lastScrollY) advanceRecommendation();
     lastScrollY = y;
   }, {passive: true});
 
@@ -5227,14 +6256,35 @@ story.queue();
     requestFrame();
   });
 
-  story.paintRecommendation = (visible, live, dive, automaticRun) => {
+  function resetRecommendation() {
+    automatic = null;
+    movement = null;
+    impact = null;
+    camera.z = 0;
+    delete page.dataset.sequence;
+    closing.setAttribute("aria-hidden", "true");
+    clearFeedback();
+    updateGuide();
+  }
+
+  story.startRecommendation = startAutomatic;
+  story.advanceRecommendation = advanceRecommendation;
+  story.resetRecommendation = resetRecommendation;
+  story.syncRecommendationScroll = () => { lastScrollY = window.scrollY; };
+  story.rewindRecommendation = () => {
+    if (page.dataset.sequence !== "complete") return false;
+    resetRecommendation();
+    page.dataset.sequence = "settled";
+    updateGuide();
+    requestFrame();
+    return true;
+  };
+
+  story.paintRecommendation = (visible, live, dive) => {
     const wasDrawn = drawn;
     drawn = visible;
     if (!live) {
-      if (automatic) {
-        automatic = null;
-        delete page.dataset.sequence;
-      }
+      if (page.dataset.sequence) resetRecommendation();
       movement = null;
       impact = null;
       if (wasDrawn) clearFeedback();
@@ -5255,7 +6305,7 @@ story.queue();
       entry = dive;
       requestFrame();
     }
-    if (automaticRun) startAutomatic();
+    if (!story.staticMode) startAutomatic();
   };
 
   new ResizeObserver(resize).observe(canvas);
