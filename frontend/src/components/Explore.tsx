@@ -61,6 +61,11 @@ export function Explore() {
     requestAnimationFrame(() => dockRef.current?.querySelector<HTMLButtonElement>(next ? '[data-pick-exit]' : '[data-pick-entry]')?.focus())
   }
   const showPicker = !subgenre || picking
+  function toggleMap(open: boolean) {
+    setMapOpen(open)
+    // Focus follows the swap: to the map's close button, or back to the folded map button.
+    requestAnimationFrame(() => document.querySelector<HTMLButtonElement>(open ? '#miniMapDock button' : '[data-map-open]')?.focus())
+  }
   useEffect(() => {
     if (webgl) return
     const timeout = setTimeout(() => dispatch({ type: 'arrive', transition: state.transition }), reduced ? 200 : (journeyMotion.duration + journeyMotion.reveal) * 1000)
@@ -87,12 +92,18 @@ export function Explore() {
         <h1 id="worldTitle" key={headingSubgenre?.id ?? headingGenre.id} style={{ color: headingGenre.color }}>{headingSubgenre ? headingSubgenre.name : headingGenre.name}</h1>
       </div>}
     </div>
-    <LiquidGlass as="nav" elementRef={toolbar} className={styles.toolRail} aria-label="탐색 도구">
+    {/* Left column, vertically centered: the zoom box sits just above the tool rail, each its own glass. */}
+    <div className={styles.leftTools}>
+      {webgl && <LiquidGlass className={styles.zoomPill} role="group" aria-label="지도 배율 조절">
+        <button aria-label="지도 확대" title="확대 (+)" disabled={transitioning} onClick={() => zoom.current?.zoomIn()}><Icon name="plus" size={16} /></button>
+        <button aria-label="지도 축소" title="축소 (-)" disabled={transitioning} onClick={() => zoom.current?.zoomOut()}><Icon name="minus" size={16} /></button>
+      </LiquidGlass>}
+      <LiquidGlass as="nav" elementRef={toolbar} className={styles.toolRail} aria-label="탐색 도구">
       {tools.map(tool => <button key={tool.id} aria-label={tool.label} title={tool.label} aria-expanded={activePanel === tool.id} aria-controls="exploreTools"
         onClick={() => setActivePanel(activePanel === tool.id ? null : tool.id)}><Icon name={tool.icon} size={20} /></button>)}
       <button aria-label="추천 패널" title="추천 패널" aria-pressed={dockOpen} aria-controls="recommendationDock" onClick={() => setDockOpen(!dockOpen)}><Icon name="mix" size={20} /></button>
-      <button aria-label="전체 지도" title="전체 지도" aria-pressed={mapOpen} aria-controls="miniMapDock" onClick={() => setMapOpen(!mapOpen)}><Icon name="map" size={20} /></button>
     </LiquidGlass>
+    </div>
     {activePanel && <LiquidGlass as="section" id="exploreTools" className={styles.utilityPanel} aria-label={panelLabel}
       onKeyDown={event => { if (event.key === 'Escape' && !(event.target as Element).closest('dialog')) { event.stopPropagation(); closePanel() } }}>
       <div className={styles.utilityPanelHeader}><span>{panelLabel}</span><button onClick={closePanel} aria-label="패널 닫기"><Icon name="close" size={18} /></button></div>
@@ -130,14 +141,9 @@ export function Explore() {
         {showPicker ? <StageConsole onChoose={() => setPicking(false)} /> : <><TrackDock /><RecommendationJar onPick={() => togglePicking(true)} /></>}
       </div>
     </LiquidGlass>}
-    {webgl && <LiquidGlass className={styles.zoomPill} role="group" aria-label="지도 배율 조절">
-      <button aria-label="지도 확대" title="확대 (+)" disabled={transitioning} onClick={() => zoom.current?.zoomIn()}><Icon name="plus" size={16} /></button>
-      <button aria-label="지도 축소" title="축소 (-)" disabled={transitioning} onClick={() => zoom.current?.zoomOut()}><Icon name="minus" size={16} /></button>
-    </LiquidGlass>}
-    {mapOpen && <MiniMapDock bounds={webgl ? mapBounds : null} onClose={() => {
-      toolbar.current?.querySelector<HTMLButtonElement>('[aria-controls="miniMapDock"]')?.focus()
-      setMapOpen(false)
-    }} />}
+    {/* The overview map folds into a single map button in its corner, and opens from it again. */}
+    {mapOpen ? <MiniMapDock bounds={webgl ? mapBounds : null} onClose={() => toggleMap(false)} />
+      : <LiquidGlass className={styles.mapButton}><button data-map-open aria-label="전체 지도 열기" title="전체 지도" aria-controls="miniMapDock" onClick={() => toggleMap(true)}><Icon name="map" size={20} /></button></LiquidGlass>}
     <div className="srOnly" role="status" aria-live="polite">{!transitioning && (subgenre ? `${genre!.name}, ${subgenre.name}. ${subgenre.trackIds.length}곡. 방문 ${state.visits[subgenre.id] ?? 0}회.` : genre ? `${genre.name}. 방문 ${state.genreVisits[genre.id] ?? 0}회. 세부장르 ${genre.subgenreIds.length}개.` : '전체 음악 지도. 15개 장르, 4961곡.')}</div>
   </main>
 }
