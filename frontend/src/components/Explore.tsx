@@ -15,6 +15,7 @@ import { VisitPanel } from './VisitPanel'
 import styles from './Interface.module.css'
 
 const Scene = lazy(() => import('../scene/Scene'))
+type MapZoom = import('../scene/Scene').MapZoom
 
 function hasWebGL() {
   try {
@@ -37,6 +38,7 @@ export function Explore() {
   const resizeStart = useRef<{ x: number; width: number } | null>(null)
   const [mapBounds, setMapBounds] = useState<Position[] | null>(null)
   const toolbar = useRef<HTMLElement>(null)
+  const zoom = useRef<MapZoom | null>(null)
   const view = state.view
   const genre = view.level !== 'universe' ? catalog.genreById.get(view.genreId)! : null
   const subgenre = view.level === 'system' ? catalog.subgenreById.get(view.subgenreId)! : null
@@ -64,7 +66,7 @@ export function Explore() {
   const clampWidth = (width: number, main: Element) => Math.max(380, Math.min(main.getBoundingClientRect().width * .6, width))
   return <main className={styles.explorer} data-traveling={transitioning} data-system={Boolean(subgenre)} data-dock={dockOpen}
     style={{ '--dock-width': `${dockWidth}px` } as CSSProperties}>
-    {webgl ? <Suspense fallback={<div className={styles.sceneLoading}>GATHERING THE STARS<span /></div>}><Scene reduced={reduced} onUnavailable={() => setWebgl(false)} onBoundsChange={setMapBounds} /></Suspense>
+    {webgl ? <Suspense fallback={<div className={styles.sceneLoading}>GATHERING THE STARS<span /></div>}><Scene reduced={reduced} onUnavailable={() => setWebgl(false)} onBoundsChange={setMapBounds} zoomRef={zoom} /></Suspense>
       : <div className={styles.sceneFallback}><Icon name="star" size={32} /><h2>소리의 지도를 목록으로 만나보세요.</h2><p>이 브라우저에서 3D 지도를 표시할 수 없습니다.<br />장르 탐색과 추천은 계속 사용할 수 있어요.</p><button className="outlinedButton" onClick={() => setActivePanel('genres')}>장르 목록 열기 <Icon name="arrow" /></button></div>}
     <div className={styles.worldHeading}>
       {headingGenre && <div className={styles.worldTitleRow}>
@@ -78,6 +80,11 @@ export function Explore() {
         onClick={() => setActivePanel(activePanel === tool.id ? null : tool.id)}><Icon name={tool.icon} size={20} /></button>)}
       <button aria-label="추천 패널" title="추천 패널" aria-pressed={dockOpen} aria-controls="recommendationDock" onClick={() => setDockOpen(!dockOpen)}><Icon name="mix" size={20} /></button>
       <button aria-label="전체 지도" title="전체 지도" aria-pressed={mapOpen} aria-controls="miniMapDock" onClick={() => setMapOpen(!mapOpen)}><Icon name="map" size={20} /></button>
+      {webgl && <>
+        <i className={styles.toolRailDivider} aria-hidden="true" />
+        <button aria-label="지도 확대" title="확대 (+)" disabled={transitioning} onClick={() => zoom.current?.zoomIn()}><Icon name="plus" size={18} /></button>
+        <button aria-label="지도 축소" title="축소 (-)" disabled={transitioning} onClick={() => zoom.current?.zoomOut()}><Icon name="minus" size={18} /></button>
+      </>}
     </LiquidGlass>
     {activePanel && <LiquidGlass as="section" id="exploreTools" className={styles.utilityPanel} aria-label={panelLabel}
       onKeyDown={event => { if (event.key === 'Escape' && !(event.target as Element).closest('dialog')) { event.stopPropagation(); closePanel() } }}>

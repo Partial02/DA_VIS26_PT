@@ -218,12 +218,22 @@ function LabelProjection({ labels, elements, lines, container, flight, onUnavail
   return null
 }
 
-export default function Scene({ reduced, onUnavailable, onBoundsChange }: { reduced: boolean; onUnavailable: () => void; onBoundsChange: (bounds: Position[] | null) => void }) {
+/** Zoom handle the scene hands to the tool rail's + / − buttons. */
+export interface MapZoom { zoomIn: () => void; zoomOut: () => void }
+
+export default function Scene({ reduced, onUnavailable, onBoundsChange, zoomRef }: {
+  reduced: boolean; onUnavailable: () => void; onBoundsChange: (bounds: Position[] | null) => void; zoomRef?: RefObject<MapZoom | null>
+}) {
   const { catalog, state, dispatch } = useExperience()
   const viewport = useRef<HTMLDivElement>(null)
   const start = useRef<[number, number] | null>(null)
   const suppressUntil = useRef(0)
   const controls = useRef<NavigationControls | null>(null)
+  useEffect(() => {
+    if (!zoomRef) return
+    zoomRef.current = { zoomIn: () => controls.current?.zoom(zoomFactor), zoomOut: () => controls.current?.zoom(1 / zoomFactor) }
+    return () => { zoomRef.current = null }
+  }, [zoomRef])
   const flight = useRef<FlightState>({ busy: true, reveal: 0 })
   const [starHover, setStarHover] = useState<string | null>(null)
   const labelsContainer = useRef<HTMLDivElement>(null)
@@ -327,9 +337,5 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange }: { redu
       style={label.color ? { color: hovered === label.id ? label.color : sceneView.level === 'universe' ? '#aeb5c2' : `color-mix(in srgb, ${label.color} 30%, #e3e9f7)` } : undefined}>
       {label.track ? <><strong>{label.name}</strong><span>{label.artist}</span><small>{label.detail}</small></> : <><span className={styles.markerName}>{label.name}</span><span className="srOnly">{label.detail}{label.visited ? ' · 발견됨' : ''}</span></>}
     </button>)}</div>
-    <div className={styles.mapControls} aria-label="지도 배율 조절">
-      <button disabled={traveling} onClick={() => controls.current?.zoom(zoomFactor)} aria-label="지도 확대" title="확대 (+)">+</button>
-      <button disabled={traveling} onClick={() => controls.current?.zoom(1 / zoomFactor)} aria-label="지도 축소" title="축소 (-)">−</button>
-    </div>
   </div>
 }

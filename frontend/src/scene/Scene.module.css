@@ -28,8 +28,3 @@
 @media (max-width: 600px) { .viewport { inset: 80px 0 0 56px; } .marker .markerName { font-size: 9px; } }
 @media (max-width: 900px) { .viewport { right: 0; } }
 
-.mapControls { position: absolute; left: 0; bottom: 16px; display: flex; align-items: center; gap: 2px; z-index: 2; }
-.mapControls button { width: 32px; height: 32px; color: #d3cbe0; font-size: 18px; border-radius: 50%; background: #aaaaaa22; box-shadow: inset 2px 4px 8px #ffffff10, inset 0 0 4px #ffffff27; backdrop-filter: blur(10px); }
-.mapControls button:first-child { border-radius: 0; }
-.mapControls button:nth-child(3) { border-radius: 0; }
-.mapControls button:hover { background: #a999dc22; }
