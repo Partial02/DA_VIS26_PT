@@ -302,8 +302,7 @@
 .tableRow { display: contents; }
 .tableCorner { color: #77708a; font-size: 8px; white-space: nowrap; overflow: hidden; }
 .sessionHead { align-self: stretch; display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 5px; padding: 5px 0 6px; border-radius: 8px; color: #b9b1c8; transition: background .2s, color .2s; }
-/* English labels turned 90°, read bottom to top as on chart axes. */
-.sessionHead span { writing-mode: vertical-rl; transform: rotate(180deg); font-size: 9px; line-height: 1; letter-spacing: .2px; white-space: nowrap; color: #8f86a0; }
+.sessionHead span { writing-mode: vertical-rl; font-size: 9px; line-height: 1; letter-spacing: 0; white-space: nowrap; color: #8f86a0; }
 .sessionHead:hover { background: #ffffff10; color: #fff; }
 .sessionHead:hover span, .sessionHead[aria-pressed='true'] span { color: #e9e2f3; }
 .sessionHead[aria-pressed='true'] { background: #ffffff1c; color: #fff; }
