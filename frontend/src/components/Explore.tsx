@@ -34,6 +34,9 @@ export function Explore() {
   // The recommendation dock sits on the right and starts open.
   const [dockOpen, setDockOpen] = useState(true)
   const [mapOpen, setMapOpen] = useState(true)
+  // Inside a subgenre, the dock flips between the playlist and the genre × instrument picker.
+  const [picking, setPicking] = useState(false)
+  const dockRef = useRef<HTMLElement>(null)
   const [dockWidth, setDockWidth] = useState(440)
   const resizeStart = useRef<{ x: number; width: number } | null>(null)
   const [mapBounds, setMapBounds] = useState<Position[] | null>(null)
@@ -49,6 +52,15 @@ export function Explore() {
   useEffect(() => { if (!transitioning) setHeadingView(view) }, [transitioning, view])
   // Entering a subgenre always shows its playlist.
   useEffect(() => { if (view.level === 'system') setDockOpen(true) }, [view.level])
+  // Arriving somewhere new always shows that place's own panel.
+  const viewKey = JSON.stringify(view)
+  useEffect(() => { setPicking(false) }, [viewKey])
+  function togglePicking(next: boolean) {
+    setPicking(next)
+    // Keep focus inside the dock: on the way in at the back button, on the way out at the filter button.
+    requestAnimationFrame(() => dockRef.current?.querySelector<HTMLButtonElement>(next ? '[data-pick-exit]' : '[data-pick-entry]')?.focus())
+  }
+  const showPicker = !subgenre || picking
   useEffect(() => {
     if (webgl) return
     const timeout = setTimeout(() => dispatch({ type: 'arrive', transition: state.transition }), reduced ? 200 : (journeyMotion.duration + journeyMotion.reveal) * 1000)
@@ -89,9 +101,13 @@ export function Explore() {
         {activePanel === 'visits' && <VisitPanel />}
       </div>
     </LiquidGlass>}
-    {dockOpen && <LiquidGlass as="aside" id="recommendationDock" className={styles.rightDock} strength={.6}
+    {dockOpen && <LiquidGlass as="aside" id="recommendationDock" elementRef={dockRef} className={styles.rightDock} strength={.6}
       aria-label={subgenre ? '세부장르 플레이리스트와 추천' : '범주 선택과 세부장르 추천'} inert={Boolean(subgenre) && transitioning}
-      onKeyDown={event => { if (!subgenre && event.key === 'Escape' && !(event.target as Element).closest('dialog')) { event.stopPropagation(); setDockOpen(false) } }}>
+      onKeyDown={event => {
+        if (event.key !== 'Escape' || (event.target as Element).closest('dialog')) return
+        if (picking) { event.stopPropagation(); togglePicking(false) }
+        else if (!subgenre) { event.stopPropagation(); setDockOpen(false) }
+      }}>
       <div className={styles.recommendationResize} role="separator" aria-orientation="vertical" aria-label="추천 패널 너비 조절" tabIndex={0}
         onKeyDown={event => {
           if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return
@@ -106,10 +122,12 @@ export function Explore() {
         }}
         onPointerUp={() => { resizeStart.current = null }}
         onPointerCancel={() => { resizeStart.current = null }} />
-      <div className={styles.rightDockHeader}><span>{subgenre ? 'PLAYLIST' : 'RECOMMEND'}</span>
+      <div className={styles.rightDockHeader}>{subgenre && picking
+        ? <button data-pick-exit className={styles.dockBack} onClick={() => togglePicking(false)} aria-label="플레이리스트로 돌아가기"><Icon name="back" size={14} />PLAYLIST</button>
+        : <span>{subgenre ? 'PLAYLIST' : 'RECOMMEND'}</span>}
         <button onClick={() => setDockOpen(false)} aria-label="추천 패널 접기"><Icon name="close" size={16} /></button></div>
-      <div className={styles.rightDockBody}>
-        {subgenre ? <><TrackDock /><RecommendationJar /></> : <StageConsole />}
+      <div className={styles.rightDockBody} data-picking={showPicker}>
+        {showPicker ? <StageConsole onChoose={() => setPicking(false)} /> : <><TrackDock /><RecommendationJar onPick={() => togglePicking(true)} /></>}
       </div>
     </LiquidGlass>}
     {webgl && <LiquidGlass className={styles.zoomPill} role="group" aria-label="지도 배율 조절">
