@@ -18,6 +18,11 @@ export function shortGenreName(name: string) {
     .replace(' / Caribbean', '').replace(' / Country', ' · Country')
 }
 
+/** Column-head label: at most three syllables so the vertical labels line up. */
+export function shortSessionName(name: string) {
+  return ({ '일렉 기타': '일렉', '어쿠스틱 기타': '통기타', '민속 악기': '민속' } as Record<string, string>)[name] ?? name
+}
+
 /**
  * Rows: 15 genres, drawn in their colors. Columns: 16 sessions, drawn as patterns.
  * Each of the 231 existing cells is genre color × session pattern. Row and column
@@ -36,13 +41,13 @@ export function CategoryTable() {
   return <div className={styles.categoryTableWrap}>
     <div className={styles.categoryTable} role="group" aria-label={`장르 ${genres.length}개 × 세션 ${sessions.length}개 범주 선택표`}
       style={{ '--sessions': sessions.length } as CSSProperties} onPointerLeave={() => setHover(null)}>
-      <span className={styles.tableCorner} aria-hidden="true">장르 \ 세션</span>
+      <span className={styles.tableCorner} aria-hidden="true">장르 \ 악기</span>
       {sessions.map((session, s) => {
         const ids = columnIds(s)
         const on = ids.every(id => picked.has(id))
         return <button key={session.key} className={styles.sessionHead} aria-pressed={on} title={`${session.name} 열 전체 ${on ? '해제' : '선택'}`}
-          aria-label={`${session.name} 세션 전체 ${on ? '해제' : '선택'}`} onClick={() => dispatch({ type: 'toggleCells', ids })}>
-          <SessionGlyph session={session.key} size={14} />
+          aria-label={`${session.name} 열 전체 ${on ? '해제' : '선택'}`} onClick={() => dispatch({ type: 'toggleCells', ids })}>
+          <span aria-hidden="true">{shortSessionName(session.name)}</span><SessionGlyph session={session.key} size={14} />
         </button>
       })}
       {genres.map(genre => {
@@ -59,8 +64,8 @@ export function CategoryTable() {
             const category = categories[id]
             const on = picked.has(id)
             return <button key={session.key} className={styles.cell} aria-pressed={on}
-              style={{ '--rate': .3 + .7 * Math.min(1, category.rate / .6) } as CSSProperties}
-              aria-label={`${genre.name} × ${session.name}, ${category.tracks}곡, ${on ? '선택됨' : '선택 안 됨'}`}
+              style={{ '--heat': `${heat(category.rate)}%` } as CSSProperties}
+              aria-label={`${genre.name} × ${session.name}, ${category.tracks}곡, 장르 곡의 ${Math.round(category.rate * 100)}%, ${on ? '선택됨' : '선택 안 됨'}`}
               onPointerEnter={() => setHover(id)} onFocus={() => setHover(id)} onBlur={() => setHover(null)}
               onClick={() => dispatch({ type: 'toggleCell', id })}>
               <SessionGlyph session={session.key} size={13} />
@@ -69,10 +74,19 @@ export function CategoryTable() {
         </div>
       })}
     </div>
+    <div className={styles.heatLegend} aria-hidden="true">
+      <span>드물게 씀</span><i /><span>자주 씀</span>
+      <small>칸이 진할수록 그 장르 곡에서 그 악기가 자주 쓰여요</small>
+    </div>
     <p className={styles.cellInfo} aria-live="polite">{info && infoGenre
-      ? <><b style={{ color: infoGenre.color }}>{shortGenreName(infoGenre.name)}</b> × {sessions[info.session].name} · {info.tracks}곡 · 장르 안 {Math.round(info.rate * 100)}% · 특이도 {info.lift.toFixed(2)}<small>{info.instruments.join(', ')}</small></>
-      : <>칸을 누르면 그 장르 색 × 세션 무늬의 범주가 담깁니다. 행·열 머리는 한 줄 전체를 담습니다.</>}</p>
+      ? <><b style={{ color: infoGenre.color }}>{shortGenreName(infoGenre.name)}</b> × {sessions[info.session].name} · {info.tracks}곡 · 장르 곡의 {Math.round(info.rate * 100)}%가 사용 · 전체 평균의 {info.lift.toFixed(1)}배<small>{info.instruments.join(', ')}</small></>
+      : <>칸을 누르면 그 장르 × 악기 조합이 담겨요. 행·열 머리를 누르면 한 줄 전체가 담겨요.</>}</p>
   </div>
+}
+
+/** Fill strength (percent of the genre color) for a cell: share of the genre's songs using the session. */
+function heat(rate: number) {
+  return Math.round(6 + 58 * Math.min(1, rate / .7))
 }
 
 export function SubgenreRanking({ perPage = 6, onChoose }: { perPage?: number; onChoose?: () => void }) {
