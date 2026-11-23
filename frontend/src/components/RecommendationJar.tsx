@@ -6,7 +6,7 @@ import { useExperience } from '../state/ExperienceContext'
 import { Icon } from './Icon'
 import { LiquidGlass } from './LiquidGlass'
 import { SessionGlyph } from './SessionGlyph'
-import { instrumentName, shortGenreName, useChooseRecommendation } from './StageConsole'
+import { shortGenreName, useChooseRecommendation } from './StageConsole'
 import styles from './Interface.module.css'
 
 /**
@@ -21,32 +21,32 @@ export function RecommendationJar({ onPick }: { onPick: () => void }) {
     .filter(result => result.subgenreId !== current)), [catalog, current, state.selection, state.genreVisits])
   const index = catalog.categories
   const pickedSessions = useMemo(() => new Set(index ? state.selection.map(id => index.cells[id].session) : []), [index, state.selection])
-  return <aside className={styles.recommendation} aria-label="Subgenres matching your picks">
-    <div className={styles.recommendationHeader}><span>Up next{state.selection.length > 0 && <small> · {state.selection.length} {state.selection.length === 1 ? 'pick' : 'picks'}</small>}</span>
-      <button data-pick-entry onClick={onPick} aria-label="Open the genre × instrument picker" title="Genre × instrument picker"><Icon name="mix" size={16} /></button></div>
+  return <aside className={styles.recommendation} aria-label="고른 범주로 찾은 세부장르 추천">
+    <div className={styles.recommendationHeader}><span>다음 추천{state.selection.length > 0 && <small> · {state.selection.length}칸</small>}</span>
+      <button data-pick-entry onClick={onPick} aria-label="장르 × 악기 고르기 열기" title="장르 × 악기 고르기"><Icon name="mix" size={16} /></button></div>
     <ol className={styles.genreRecommendations}>{results.map(result => {
       const genre = catalog.genreById.get(result.genreId)!
       const subgenre = catalog.subgenreById.get(result.subgenreId)!
       const signature = index ? signatureSessions(subgenreProfile(index, catalog, subgenre.id)) : []
-      const names = signature.map(({ session }) => instrumentName(index!.model.sessions[session].key))
+      const names = signature.map(({ session }) => index!.model.sessions[session].name)
       const seed = [...subgenre.id].reduce((sum, char) => sum * 31 + char.charCodeAt(0) >>> 0, 7)
       return <li key={result.genreId}>
         <LiquidGlass as="button" className={styles.genreGlass} tint={genre.color} style={{ '--genre-color': genre.color } as CSSProperties}
-          aria-label={`Explore ${subgenre.name} (${genre.name}), score ${Math.round(result.score * 100)}${names.length ? `, signature instruments ${names.join(', ')}` : ''}`}
+          aria-label={`${genre.name} 추천: ${subgenre.name} 탐색하기, 점수 ${Math.round(result.score * 100)}${names.length ? `, 대표 악기 ${names.join(', ')}` : ''}`}
           onClick={() => choose(result)}>
           {/* The subgenre's signature instruments as genre-colored orbs melting into the glass. */}
           <span className={styles.cardBlobs} aria-hidden="true">{signature.map(({ weight }, i) =>
             <i key={i} style={{ ...blobPlace(i, seed), '--d': `${Math.round(36 + 40 * weight)}%`, '--o': (.16 + .24 * weight).toFixed(2) } as CSSProperties} />)}</span>
           <span className={styles.genreGlassLabel}><strong>{subgenre.name}</strong><small>{shortGenreName(genre.name)} · {Math.round(result.score * 100)}</small></span>
           {signature.length > 0 && <span className={styles.cardOrbRow} aria-hidden="true">{signature.map(({ session, weight }) =>
-            <i key={session} className={styles.cardOrb} data-matched={pickedSessions.has(session)} title={instrumentName(index!.model.sessions[session].key)}
+            <i key={session} className={styles.cardOrb} data-matched={pickedSessions.has(session)} title={index!.model.sessions[session].name}
               style={{ '--d': `${Math.round(16 + 8 * weight)}px` } as CSSProperties}>
               <SessionGlyph session={index!.model.sessions[session].key} size={10} />
             </i>)}</span>}
         </LiquidGlass>
       </li>
     })}</ol>
-    {!results.length && <p className={styles.emptyMix}>Pick genres and instruments to see matching subgenres.<br /><button className={styles.inlineAction} onClick={onPick}>Open picker <Icon name="arrow" size={13} /></button></p>}
+    {!results.length && <p className={styles.emptyMix}>장르와 악기를 고르면 어울리는 세부장르가 떠요.<br /><button className={styles.inlineAction} onClick={onPick}>고르기 열기 <Icon name="arrow" size={13} /></button></p>}
   </aside>
 }
 
