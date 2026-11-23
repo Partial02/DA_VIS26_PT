@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { CSSProperties } from 'react'
-import { cellKey } from '../domain/category'
+import { cellKey, crossCells } from '../domain/category'
 import { rankRecommendations } from '../domain/recommendations'
 import type { RecommendationTarget } from '../domain/recommendations'
 import { useExperience } from '../state/ExperienceContext'
@@ -98,7 +98,7 @@ export function SubgenreRanking({ perPage = 6, onChoose }: { perPage?: number; o
   useEffect(() => { setPage(0) }, [selectionKey])
   const pages = Math.max(1, Math.ceil(ranked.length / perPage))
   const current = Math.min(page, pages - 1)
-  if (!ranked.length) return <p className={styles.stageEmpty}>표에서 범주를 고르면 그 조합에 어울리는 세부장르가 점수 순으로 뜹니다.</p>
+  if (!ranked.length) return <p className={styles.stageEmpty}>장르와 악기를 고르면 그 조합에 어울리는 세부장르가 점수 순으로 떠요.</p>
   return <>
     <ol className={styles.rankList} start={current * perPage + 1}>{ranked.slice(current * perPage, (current + 1) * perPage).map((result, i) => {
       const genre = catalog.genreById.get(result.genreId)!
@@ -121,18 +121,67 @@ export function SubgenreRanking({ perPage = 6, onChoose }: { perPage?: number; o
   </>
 }
 
-/** Pick cells → see the subgenre ranking. */
+/**
+ * Two-step picker: genre chips × instrument chips. The selection is their cross product
+ * (plus any cell picked by hand in the table). A chip shows how many of its cells are picked.
+ */
+export function ChipPicker() {
+  const { catalog, state, dispatch } = useExperience()
+  const index = catalog.categories!
+  const { sessions, genres } = index.model
+  const allSessions = sessions.map((_, s) => s)
+  const allGenres = genres.map(g => g.id)
+  const picked = useMemo(() => state.selection.map(id => index.cells[id]), [index, state.selection])
+  const genresOn = new Set(state.pickedGenres), sessionsOn = new Set(state.pickedSessions)
+  const line = (ids: number[]) => ids.map(id => ({ id, ...index.cells[id] }))
+  const pickGenre = (genreId: string) => dispatch({ type: 'pickChip', chip: { genreId }, line: line(crossCells(index, [genreId], allSessions)) })
+  const pickSession = (session: number) => dispatch({ type: 'pickChip', chip: { session }, line: line(crossCells(index, allGenres, [session])) })
+  const g = state.pickedGenres.length, n = state.pickedSessions.length
+  const hint = !g && !n ? '장르와 악기를 하나 이상씩 고르면, 그 조합에 맞는 세부장르를 바로 찾아 드려요.'
+    : !n ? '이제 듣고 싶은 악기를 골라 보세요.'
+    : !g ? '어느 장르에서 찾을지 골라 보세요.'
+    : `장르 ${g}개 × 악기 ${n}개로 찾는 중이에요. 칩을 더 누르면 조합이 늘어나요.`
+  return <div className={styles.chipPicker}>
+    <fieldset>
+      <legend><b>1</b> 장르</legend>
+      <div className={styles.chipRow}>{genres.map(genre => {
+        const count = picked.filter(cell => cell.genreId === genre.id).length
+        return <button key={genre.id} className={styles.chip} aria-pressed={genresOn.has(genre.id)} title={genre.name}
+          style={{ '--genre-color': genre.color } as CSSProperties} onClick={() => pickGenre(genre.id)}>
+          <i className={styles.chipDot} aria-hidden="true" />{shortGenreName(genre.name)}{count > 0 && !genresOn.has(genre.id) && <small aria-label={`표에서 ${count}칸`}>{count}</small>}
+        </button>
+      })}</div>
+    </fieldset>
+    <fieldset>
+      <legend><b>2</b> 악기</legend>
+      <div className={styles.chipRow}>{sessions.map((session, s) => {
+        const count = picked.filter(cell => cell.session === s).length
+        return <button key={session.key} className={`${styles.chip} ${styles.sessionChip}`} aria-pressed={sessionsOn.has(s)} onClick={() => pickSession(s)}>
+          <SessionGlyph session={session.key} size={13} />{session.name}{count > 0 && !sessionsOn.has(s) && <small aria-label={`표에서 ${count}칸`}>{count}</small>}
+        </button>
+      })}</div>
+    </fieldset>
+    <p className={styles.pickerHint} aria-live="polite">{hint}</p>
+  </div>
+}
+
+/** Pick genres × instruments → see the subgenre ranking; the full table folds below. */
 export function StageConsole({ onChoose, perPage = 6 }: { onChoose?: () => void; perPage?: number }) {
   const { state, dispatch } = useExperience()
+  const empty = !state.selection.length && !state.pickedGenres.length && !state.pickedSessions.length
   return <div className={styles.stageConsole}>
-    <section aria-labelledby="tableHeading">
-      <div className={styles.stageHeader}><h3 id="tableHeading">범주 고르기 <span>{state.selection.length ? `${state.selection.length}칸` : '장르 색 × 세션 무늬'}</span></h3>
-        <button className={styles.inlineAction} onClick={() => dispatch({ type: 'clearSelection' })} disabled={!state.selection.length}>비우기</button></div>
-      <CategoryTable />
+    <section aria-labelledby="pickHeading">
+      <div className={styles.stageHeader}><h3 id="pickHeading">무엇을 듣고 싶나요? {state.selection.length > 0 && <span>{state.selection.length}칸</span>}</h3>
+        <button className={styles.inlineAction} onClick={() => dispatch({ type: 'clearSelection' })} disabled={empty}>비우기</button></div>
+      <ChipPicker />
     </section>
     <section aria-labelledby="rankHeading">
       <h3 id="rankHeading">세부장르 추천</h3>
       <SubgenreRanking perPage={perPage} onChoose={onChoose} />
     </section>
+    <details className={styles.tableDetails}>
+      <summary>장르 × 악기 표 자세히 보기 <span>칸 하나씩 고르기</span></summary>
+      <CategoryTable />
+    </details>
   </div>
 }

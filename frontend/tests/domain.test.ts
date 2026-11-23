@@ -97,6 +97,30 @@ test('the selection toggles cells, whole rows or columns, and clears', () => {
   assert.equal(experienceReducer(state, { type: 'clearSelection' }), state)
 })
 
+test('picker chips add their cross cells, drop their whole line, and clear with the selection', () => {
+  // A tiny 2 genre × 2 session grid; jazz × session 1 does not exist.
+  const cells = [{ id: 0, genreId: 'rock', session: 0 }, { id: 1, genreId: 'rock', session: 1 }, { id: 2, genreId: 'jazz', session: 0 }]
+  const row = (genreId: string) => cells.filter(c => c.genreId === genreId)
+  const column = (session: number) => cells.filter(c => c.session === session)
+  let state = experienceReducer(initialState, { type: 'pickChip', chip: { genreId: 'rock' }, line: row('rock') })
+  assert.deepEqual(state.pickedGenres, ['rock'])
+  assert.deepEqual(state.selection, []) // No instrument yet: nothing to cross with.
+  state = experienceReducer(state, { type: 'pickChip', chip: { session: 0 }, line: column(0) })
+  assert.deepEqual(state.selection, [0])
+  state = experienceReducer(state, { type: 'toggleCell', id: 1 }) // A cell picked by hand in the table.
+  state = experienceReducer(state, { type: 'pickChip', chip: { genreId: 'jazz' }, line: row('jazz') })
+  assert.deepEqual(state.selection, [0, 1, 2])
+  state = experienceReducer(state, { type: 'pickChip', chip: { session: 1 }, line: column(1) }) // Already picked by hand.
+  assert.deepEqual(state.selection, [0, 1, 2])
+  state = experienceReducer(state, { type: 'pickChip', chip: { genreId: 'rock' }, line: row('rock') })
+  assert.deepEqual(state.selection, [2])
+  assert.deepEqual(state.pickedGenres, ['jazz'])
+  state = experienceReducer(state, { type: 'pickChip', chip: { session: 0 }, line: column(0) })
+  assert.deepEqual([state.selection, state.pickedSessions], [[], [1]])
+  state = experienceReducer(state, { type: 'clearSelection' })
+  assert.deepEqual([state.selection, state.pickedGenres, state.pickedSessions], [[], [], []])
+})
+
 test('only arrival at the current destination increments visits, including rapid retargeting', () => {
   const destination = (id: string) => ({ level: 'system' as const, genreId: 'jazz', subgenreId: id })
   let state = experienceReducer(initialState, { type: 'navigate', destination: destination('a') })

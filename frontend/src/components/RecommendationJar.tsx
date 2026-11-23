@@ -25,7 +25,7 @@ export function RecommendationJar() {
   function close() { setEditing(false); editButton.current?.focus() }
   return <aside className={styles.recommendation} aria-label="고른 범주로 찾은 세부장르 추천">
     <div className={styles.recommendationHeader}><span>다음 추천{state.selection.length > 0 && <small> · {state.selection.length}칸</small>}</span>
-      <button ref={editButton} onClick={() => setEditing(true)} aria-label="범주 선택표 열기" title="범주 선택표"><Icon name="mix" size={16} /></button></div>
+      <button ref={editButton} onClick={() => setEditing(true)} aria-label="장르 × 악기 고르기 열기" title="장르 × 악기 고르기"><Icon name="mix" size={16} /></button></div>
     <ol className={styles.genreRecommendations}>{results.map(result => {
       const genre = catalog.genreById.get(result.genreId)!
       const subgenre = catalog.subgenreById.get(result.subgenreId)!
@@ -37,10 +37,10 @@ export function RecommendationJar() {
         </LiquidGlass>
       </li>
     })}</ol>
-    {!results.length && <p className={styles.emptyMix}>범주를 고르면 어울리는 세부장르가 뜹니다.<br /><button className={styles.inlineAction} onClick={() => setEditing(true)}>선택표 열기 <Icon name="arrow" size={13} /></button></p>}
+    {!results.length && <p className={styles.emptyMix}>장르와 악기를 고르면 어울리는 세부장르가 떠요.<br /><button className={styles.inlineAction} onClick={() => setEditing(true)}>고르기 열기 <Icon name="arrow" size={13} /></button></p>}
     <dialog ref={dialog} className={`${styles.mixerDialog} ${styles.stageDialog}`} onKeyDown={containDialogFocus} onCancel={close} onClose={() => setEditing(false)} onClick={event => { if (event.target === event.currentTarget) close() }} aria-labelledby="mixerTitle">
       <div className={styles.dialogInner}>
-        <div className={styles.panelHeading}><span id="mixerTitle">장르 색 × 세션 무늬</span><button onClick={close} aria-label="선택표 닫기"><Icon name="close" /></button></div>
+        <div className={styles.panelHeading}><span id="mixerTitle">장르 × 악기로 고르기</span><button onClick={close} aria-label="선택표 닫기"><Icon name="close" /></button></div>
         {editing && <StageConsole onChoose={close} perPage={5} />}
       </div>
     </dialog>

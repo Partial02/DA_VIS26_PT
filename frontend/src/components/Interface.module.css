@@ -241,6 +241,29 @@
 .rightDockBody .panelHeading, .rightDockBody .panelHeading > span { color: #c0b3ce; font-size: 11px; letter-spacing: 0; }
 .utilityPanel:global(.liquidGlass) { background: #0b0a14a8; }
 
+/* Two-step picker: genre chips, then instrument chips. */
+.chipPicker { display: grid; gap: 12px; }
+.chipPicker fieldset { margin: 0; padding: 0; border: 0; min-width: 0; }
+.chipPicker legend { display: flex; align-items: center; gap: 6px; margin-bottom: 7px; padding: 0; color: #a99fb8; font-size: 10px; }
+.chipPicker legend b { display: grid; place-items: center; width: 15px; height: 15px; border-radius: 50%; background: #ffffff14; color: #d6cce6; font-size: 9px; font-weight: 500; }
+.chipRow { display: flex; flex-wrap: wrap; gap: 5px; }
+.chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: 1px solid #ffffff1c; border-radius: 999px; color: #c9c0d6; font-size: 11px; line-height: 1.2; white-space: nowrap; transition: background .2s, border-color .2s, color .2s; }
+.chip:hover { background: #ffffff0d; color: #fff; }
+.chip small { min-width: 14px; padding: 0 4px; border-radius: 7px; background: #ffffff1a; color: #e5ddf0; font-size: 9px; text-align: center; }
+.chipDot { width: 8px; height: 8px; border-radius: 50%; background: var(--genre-color); box-shadow: 0 0 6px color-mix(in srgb, var(--genre-color) 60%, transparent); }
+.chip[aria-pressed='true'] { color: #fff; border-color: color-mix(in srgb, var(--genre-color, #fff) 70%, transparent); background: color-mix(in srgb, var(--genre-color, #fff) 24%, transparent); }
+.sessionChip svg { color: #b9b1c8; }
+.sessionChip[aria-pressed='true'] svg { color: #fff; }
+.pickerHint { margin: 0; color: #8f86a0; font-size: 10px; line-height: 1.6; }
+.tableDetails { border-top: 1px solid #ffffff0d; padding-top: 12px; }
+.tableDetails summary { display: flex; align-items: baseline; gap: 8px; color: #c9c0d6; font-size: 11px; cursor: pointer; list-style: none; }
+.tableDetails summary::-webkit-details-marker { display: none; }
+.tableDetails summary::before { content: '▸'; color: #8f86a0; transition: transform .2s; }
+.tableDetails[open] summary::before { transform: rotate(90deg); }
+.tableDetails summary span { color: #776e88; font-size: 10px; }
+.tableDetails summary:hover { color: #fff; }
+.tableDetails[open] summary { margin-bottom: 12px; }
+
 /* Selection table: genre color (rows) × session pattern (columns). */
 .categoryTableWrap { display: grid; gap: 8px; }
 .categoryTable { display: grid; grid-template-columns: 84px repeat(var(--sessions), minmax(0, 1fr)); gap: 3px; align-items: center; }

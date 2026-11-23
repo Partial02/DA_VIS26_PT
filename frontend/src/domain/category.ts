@@ -61,6 +61,12 @@ export const ARTIST_PENALTY = .18
 
 export const cellKey = (genreId: string, session: number) => `${genreId}:${session}`
 
+/** Existing cells of the genres × sessions cross product (missing combinations are skipped). */
+export function crossCells(index: CategoryIndex, genreIds: readonly string[], sessions: readonly number[]): number[] {
+  return genreIds.flatMap(genreId => sessions.map(s => index.cellOf.get(cellKey(genreId, s))))
+    .filter((id): id is number => id !== undefined)
+}
+
 export function indexCategories(model: CategoryModel, catalog: Catalog): CategoryIndex {
   const cells = model.categories.map(c => ({ genreId: c.genreId, session: c.session }))
   return {

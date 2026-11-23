@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { indexCatalog, scoredPlaylist } from '../src/domain/catalog.ts'
 import type { MusicData } from '../src/domain/catalog.ts'
-import { ARTIST_PENALTY, cellKey, lengthFit, rankSubgenres, sessionsOf, subgenreScore, trackMatch } from '../src/domain/category.ts'
+import { ARTIST_PENALTY, cellKey, crossCells, lengthFit, rankSubgenres, sessionsOf, subgenreScore, trackMatch } from '../src/domain/category.ts'
 import type { CategoryModel } from '../src/domain/category.ts'
 
 const read = (file: string) => JSON.parse(readFileSync(new URL(`../public/data/${file}`, import.meta.url), 'utf8'))
@@ -81,4 +81,10 @@ test('the playlist follows the picks, is deterministic, and spreads artists', ()
 test('session masks decode back to sessions', () => {
   assert.deepEqual(sessionsOf(0b1010), [1, 3])
   assert.deepEqual(sessionsOf(0), [])
+})
+
+test('the picker cross product keeps only existing cells', () => {
+  const metalAndRock = crossCells(index, ['metal', 'rock'], [session('drums'), session('ethnic')])
+  assert.deepEqual(metalAndRock, [cell('metal', 'drums'), cell('rock', 'drums'), cell('rock', 'ethnic')]) // Metal × ethnic does not exist.
+  assert.deepEqual(crossCells(index, ['rock'], []), [])
 })
