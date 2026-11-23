@@ -98,7 +98,7 @@
   .chart {
     position: absolute;
     z-index: 1;
-    left: 58%;
+    left: 55%;
     top: 52.5%;
     transform: translate(-50%, -50%);
     width: min(72vw, 980px);
@@ -150,9 +150,9 @@
   .year[aria-pressed="true"] strong { color: #a7ffe1; }
 
   .hero .revenue-view-controls { display:flex; flex-wrap:wrap; gap:9px; margin-top:20px; max-width:330px; position:relative; z-index:5; pointer-events:auto; }
-  .hero .liquid-glass { position:relative; overflow:hidden; min-height:42px; padding:10px 15px; border:1px solid #e5efff4d; border-radius:24px; color:#edf5f4; font:13px/1.3 var(--sans); cursor:pointer; background:linear-gradient(135deg,#e6f2ff20,#c7d6ee08 55%,#9df5db12); backdrop-filter:blur(18px) saturate(155%); -webkit-backdrop-filter:blur(18px) saturate(155%); box-shadow:inset 0 1px 1px #fff5,inset 0 -1px 1px #0005,0 5px 20px #0003; transition:background .2s,border-color .2s,transform .2s; }
+  .hero .liquid-glass { position:relative; overflow:hidden; min-height:42px; padding:10px 15px; border:1px solid #e5efff4d; border-radius:24px; color:#edf5f4; font:13px/1.3 var(--sans); cursor:pointer; background:linear-gradient(135deg,#e6f2ff20,#c7d6ee08 55%,#a493d412); backdrop-filter:blur(18px) saturate(155%); -webkit-backdrop-filter:blur(18px) saturate(155%); box-shadow:inset 0 1px 1px #fff5,inset 0 -1px 1px #0005,0 5px 20px #0003; transition:background .2s,border-color .2s,transform .2s; }
   .hero .liquid-glass::before { content:""; position:absolute; inset:0 0 50%; border-radius:inherit; background:linear-gradient(#ffffff18,transparent); pointer-events:none; }
-  .hero .liquid-glass:hover,.hero .liquid-glass[aria-pressed="true"] { border-color:#9df5dbb3; background:linear-gradient(135deg,#dcefff2b,#9df5db16); }
+  .hero .liquid-glass:hover, .hero .liquid-glass:focus-visible { border-color:#b7a0e4; background:linear-gradient(135deg,#dcefff22,#a493d410); }
   .hero .liquid-glass[aria-pressed="true"], .hero .liquid-glass:active {
     border-color:#b7a0e4; background:linear-gradient(135deg,#dbcdff29,#a493d41b);
   }
@@ -166,6 +166,12 @@
     width:min(24vw, 340px); margin-top:12px; color:#e2dfef;
     font: 12px/1.4 var(--sans); font-variant-numeric:tabular-nums;
   }
+  .revenue-line-panel { position:relative; z-index:6; pointer-events:auto; }
+  .share-point { cursor:pointer; outline:none; }
+  .share-point .share-halo { opacity:0; }
+  .share-point.is-current .share-halo { opacity:.8; }
+  .share-point.is-current .share-value { fill:#fff; }
+  .share-point:not(.is-current) .share-unit { display:none; }
   .revenue-line-panel svg { width:100%; display:block; height:auto; }
   .revenue-line-panel text { font:12px var(--mono); fill:#c7c3d3; }
   .revenue-line-panel .share-value { fill:#C6DCFF; font-weight:bold; }
@@ -227,7 +233,7 @@
   .motion-toggle:hover { color: var(--paper); }
   @media (max-width: 1000px) and (min-width: 701px) {
     .hero { min-height: 800px; }
-    .chart { width: 85vw; left: 58.5%; top: 53.8%; height: 560px; }
+    .chart { width: 85vw; left: 55.5%; top: 53.8%; height: 560px; }
     .intro { padding-top: calc(62px + clamp(40px, 5.4vh, 55px)); }
     h1 { font-size: clamp(51px, 7.1vw, 72px); }
     .hero-footer { grid-template-columns: 156px 190px; }
@@ -418,6 +424,8 @@
     font: 11px/1.35 var(--mono);
     pointer-events: none;
   }
+  .market-tooltip div + div { margin-top:3px; }
+  .market-tooltip div:last-child { color:#c6dcff; }
   .market-tooltip b { margin-left: 7px; color: #a7ffe1; font-size: 12px; }
   .market-footer {
     z-index: 2;
@@ -746,6 +754,8 @@
   .source-link { color: var(--mint); white-space: nowrap; padding: 10px 0; }
   .source-link:hover { color: var(--paper); }
   #stars { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 0; }
+  #track-delta:not([hidden]) + #track-change { display:none; }
+  #track-delta { color:#c1c9e0; }
   .sphere-control {
     position:absolute; z-index:1; transform:translate(-50%, -50%);
     border:0; border-radius:50%; background:transparent; padding:0;
@@ -1046,15 +1056,20 @@
   .catalog-genre-target { position:absolute; transform:translate(-50%,-50%); border:0; border-radius:50%; background:transparent; opacity:.95; padding:0; cursor:help; pointer-events:auto; }
   .catalog-genre-target::before {
     content:""; position:absolute; left:50%; top:50%; width:24px; height:24px;
-    transform:translate(-50%,-50%); background:#f2f3ff; pointer-events:none;
+    transform:translate(-50%,-50%); background:#b7b9cf; pointer-events:none;
     clip-path:polygon(50% 0,57% 41%,95% 50%,57% 57%,50% 100%,43% 57%,5% 50%,43% 43%);
   }
   .catalog-genre-target:hover::before, .catalog-genre-target:focus-visible::before {
-    background:#fff;
+    background:#d9dcea;
   }
   .catalog-genre-target:focus-visible { outline:1px dotted #dadbe5; outline-offset:2px; }
   .catalog-genre-tooltip { position:absolute; z-index:8; transform:translate(-50%,-100%); padding:4px 7px; border-radius:4px; color:#edf5f4; background:#080c14bb; border:1px solid #b7c6df35; font:12px/1.4 var(--mono); white-space:nowrap; pointer-events:none; }
-  .catalog-genre-tooltip[hidden] { display:none; }
+  .catalog-genre-tooltip[hidden], .genre-card[hidden] { display:none; }
+  .genre-card { position:absolute; z-index:10; width:min(258px,calc(100% - 16px)); padding:13px 15px;
+    border:1px solid #a9a8c65c; border-radius:9px; background:#111320f2; color:#e1e0ed;
+    font:13px/1.55 var(--sans); box-shadow:0 5px 22px #08081266; }
+  .genre-card strong { color:#eae7f6; } .genre-card p { margin:6px 0; }
+  .genre-card a { color:#c6dcff; font-size:12px; text-underline-offset:3px; }
 
   .hex-story { position: relative; }
   .hex-scene {
@@ -1287,6 +1302,7 @@
   .hex-zoom-caption { display:grid; gap:5px; font-variant-numeric:tabular-nums; }
   .hex-zoom-label { color:var(--mint); font-size:14px; }
   .hex-zoom-value { color:var(--paper); font:400 clamp(20px,2.1vw,32px)/1.2 var(--sans); letter-spacing:-.04em; }
+  .hex-final-context { font:12px/1.4 var(--sans); color:#c6dcff; }
   .hex-zoom-scale { color:var(--muted); font:12px/1.4 var(--mono); }
   .hex-zoom-controls { display:flex; align-items:center; gap:12px; padding-bottom:4px; }
   .hex-zoom-controls button { appearance:none; border:1px solid #a5b9c33b; border-radius:3px; background:#111720c9; color:var(--paper); font:14px/1.4 var(--sans); min-height:40px; padding:7px 12px; cursor:pointer; }
@@ -1657,6 +1673,76 @@
     }
   }
 
+
+  .market-comparison, .genre-card {
+    background:linear-gradient(135deg,#21222feb,#10131ee8 60%,#1c202ad9);
+    border:1px solid #c6dcff40; border-radius:12px;
+    -webkit-backdrop-filter:blur(9px); backdrop-filter:blur(9px);
+    box-shadow:inset 0 1px #eef2ff21,0 8px 28px #0405123d;
+  }
+  .market-comparison { padding:12px; }
+  .market-ranking button:is(:hover,.is-active,[aria-pressed="true"]) {
+    color:#e5ddff; border-color:#b7a0e46b; background:#c6bcff12;
+  }
+  .market-ranking button[aria-pressed="true"] .market-bar i { background:#b7a0e4; }
+  .hex-zoom-controls > button, .recommendation-page .actions button {
+    border:1px solid #e5efff4d; border-radius:24px;
+    background:linear-gradient(145deg,#3c414ecc,#1b1b29d9 54%,#2b2939cc);
+    box-shadow:inset 0 1px 1px #ffffff3b, inset 0 -1px 1px #0004;
+    -webkit-backdrop-filter:blur(9px); backdrop-filter:blur(9px);
+  }
+  .hex-zoom-controls > button:enabled:hover, .hex-zoom-controls button:focus-visible,
+  .recommendation-page .actions button:is(:hover,:focus-visible,[aria-current="true"]) {
+    border-color:#b7a0e4; outline-color:#b7a0e4; color:#f0eaff;
+    background:linear-gradient(145deg,#49445be6,#232233de);
+  }
+  .hex-zoom-stops button[aria-pressed="true"], .recommendation-page .actions button span {color:#c6dcff;}
+  .hex-zoom-stops button[aria-pressed="true"]::after {background:#b7a0e4;}
+  .hex-band, .hex-count { min-height:clamp(17px,2.6vh,26px); }
+  .hex-chart {margin-top:clamp(14px,3vh,32px);}
+  .hex-footer { flex-wrap:wrap; gap:6px 20px; }
+  .hex-footer .hex-zoom-caption { margin:0 auto 0 0; padding:0; border:0; gap:2px; }
+  .hex-zoom-panel {align-items:center;}
+  .hex-final-context[hidden] {display:none;}
+  .hex-band-button:hover {color:#c6dcff;}
+  .recommendation-page #chapter-title {
+    white-space:nowrap; font-size:clamp(25px,3.15vw,54px);
+    letter-spacing:-.055em; line-height:1.08;
+  }
+  .recommendation-page .chapter-lead {color:var(--muted); margin:15px 0 0; font-size:14px; line-height:1.6; word-break:keep-all;}
+  .recommendation-page .theme {font-size:clamp(13.6px,1.14vw,17.85px); margin-top:8px;}
+  .recommendation-page .closing {border-color:#c6dcff75;}
+  .recommendation-page .closing h2 {color:var(--paper);}
+  @media(max-width:760px) {
+    .hex-band, .hex-count {min-height:17px;}
+    .hex-footer {display:grid;grid-template-columns:1fr auto;}
+    .hex-footer .hex-zoom-caption {grid-column:1;grid-row:1;}
+    .hex-guide {grid-row:2;grid-column:1/-1;font-size:11px;}
+    .hex-motion {grid-column:2;grid-row:1;}
+    .hex-zoom-panel {flex-wrap:wrap;gap:2px 10px;}
+    .hex-zoom-scale {flex:1 1 112px;}
+    .hex-zoom-controls {margin-left:auto;}
+    .recommendation-page #chapter-title {font-size:clamp(23px,6.6vw,38px);}
+  }
+
+  #revenue-story :is(#headline,#market-title,#catalog-title,#hex-title,#chapter-title) {
+    font:300 clamp(38px,5.35vw,88px)/.96 "Helvetica Neue",Arial,sans-serif;
+    color:var(--paper); letter-spacing:-.065em; white-space:normal;
+  }
+  #revenue-story :is(#headline,#market-title,#catalog-title,#hex-title) span {color:inherit;}
+  .recommendation-page #chapter-title {width:max-content;max-width:calc(100vw - 2 * var(--gutter));}
+  @media(min-width:701px) {
+    .story-stage .hero .chart {left:66.666667%;width:min(66.666667%,980px);}
+  }
+  @media(max-width:700px) {
+    #revenue-story :is(#headline,#market-title,#catalog-title,#hex-title,#chapter-title) {
+      font-size:clamp(27px,8.7vw,49px);
+    }
+  }
+  .market-scene > .market-tooltip {z-index:20;}
+  .lumpiness-control {display:flex;align-items:center;gap:8px;margin-top:6px;color:var(--muted);font:12px/1.3 var(--sans);}
+  .lumpiness-control input {width:72px;accent-color:#b7a0e4;cursor:pointer;}
+  .lumpiness-control output {min-width:28px;font-variant-numeric:tabular-nums;}
 </style>
 </head>
 <body>
@@ -1664,7 +1750,7 @@
 <section id="revenue-story" aria-label="세계 음반 음악 데이터">
   <span class="story-anchor story-launch" aria-hidden="true"></span>
   <span class="story-anchor story-landing" id="market-position" aria-hidden="true"></span>
-  <span class="story-anchor story-market-end" aria-hidden="true"></span>
+  <span class="story-anchor story-market-end" id="market-growth-position" aria-hidden="true"></span>
   <span class="story-anchor story-catalog-start" id="catalog-position" aria-hidden="true"></span>
   <span class="story-anchor story-genre-exit" aria-hidden="true"></span>
   <span class="story-anchor story-hex-start" id="distribution-position" aria-hidden="true"></span>
@@ -1726,13 +1812,13 @@
       </header>
       <div class="market-board">
         <figure class="market-frame" aria-labelledby="market-map-caption">
-          <figcaption class="sr-only" id="market-map-caption">2025년 국가별 성장률 버블맵. 반구 밑면의 원 면적은 국가별 전년 대비 매출 성장률에 비례합니다. 반구를 선택하면 해당 국가가 강조됩니다.</figcaption>
+          <figcaption class="sr-only" id="market-map-caption">2025년 국가별 성장률 버블맵. 반구 밑면의 원 면적은 국가별 전년 대비 매출 성장률에 비례합니다. 반구를 클릭해 기준 국가를 고정하고 다른 국가를 가리키면 성장률 차이를 확인할 수 있습니다.</figcaption>
           <canvas aria-hidden="true"></canvas>
           <div class="market-markers" role="group" aria-label="지도상의 국가"></div>
-          <div class="market-tooltip" aria-hidden="true" hidden></div>
           <noscript><p class="market-tools-placeholder">아래의 국가 비교 목록에서 성장률을 확인할 수 있습니다.</p></noscript>
         </figure>
       </div>
+      <div class="market-tooltip" aria-hidden="true" hidden></div>
       <footer class="market-footer">
         <div class="market-legend">
           <strong>원의 면적, 전년 대비 성장률</strong>
@@ -1797,8 +1883,10 @@
         <div id="track-metric">
           <p class="metric-heading"><span>곡 수 증가</span><span id="track-year">2022년 말</span></p>
           <p class="value"><span id="track-approximation">약</span><strong id="track-value">1.58</strong><span>억 곡</span></p>
+          <p class="metric-change" id="track-delta" hidden></p>
           <p class="metric-change" id="track-change">2022년 집계 기준</p>
           <p class="metric-legend">별 1개 ≈ 2만 5천 곡<br>드래그로 회전 · 클릭으로 파동</p>
+          <label class="lumpiness-control">일렁임 <input type="range" id="sphere-lumpiness" min="0" max="100" step="5" value="45"><output for="sphere-lumpiness">45%</output></label>
         </div>
         <div id="genre-metric" hidden>
           <p class="metric-heading"><span>장르 수 증가</span><span id="genre-year">2021년 조사</span></p>
@@ -1845,7 +1933,7 @@
           </section>
           <p class="sr-only" role="status" aria-live="polite"></p>
         </div>
-        <figure class="hex-plot" aria-label="왼쪽 아래 모서리를 맞춘 직사각형 안의 입체 조각. 확대 1은 ㄴ자 네 개와 정사각형 하나, 확대 2는 잘린 조각을 포함한 ㄴ자 네 개와 정사각형 하나, 확대 3은 ㄴ자 세 개와 정사각형 하나, 확대 4는 잘린 ㄴ자 하나와 정사각형 하나로 보입니다. 작은 정사각형을 확대하면 안쪽 구간이 드러납니다. 각 조각은 틈을 유지하며 독립적으로 부유하고 화면상의 두께는 동일합니다. 재생횟수가 높은 조각의 별일수록 빠르게 움직입니다. 각 ㄴ자 조각의 면적은 바깥 정사각형에서 안쪽 정사각형을 뺀 값이며 해당 재생횟수 기준 이상의 누적 곡 수에 비례합니다. 마지막 29곡 조각은 정사각형입니다. 마우스를 올리면 곡 수를 미리 보여주며 클릭하면 선택하고 해당 막대의 표시를 전환합니다. 좌우 방향키 또는 확대 버튼을 한 번 누를 때마다 전체 보기부터 네 확대 단계 사이를 이동하며 좌측 막대가 위에서부터 순서대로 내려옵니다.">
+        <figure class="hex-plot" aria-label="왼쪽 아래 모서리를 맞춘 직사각형 안의 입체 조각. 확대 1은 ㄴ자 네 개와 정사각형 하나, 확대 2는 잘린 조각을 포함한 ㄴ자 네 개와 정사각형 하나, 확대 3은 ㄴ자 세 개와 정사각형 하나, 확대 4는 잘린 ㄴ자 하나와 정사각형 하나로 보입니다. 작은 정사각형을 확대하면 안쪽 구간이 드러납니다. 각 조각은 틈을 유지하며 독립적으로 부유하고 화면상의 두께는 동일합니다. 재생횟수가 높은 조각의 별일수록 빠르게 움직입니다. 각 ㄴ자 조각의 면적은 바깥 정사각형에서 안쪽 정사각형을 뺀 값이며 해당 재생횟수 기준 이상의 누적 곡 수에 비례합니다. 마지막 29곡 조각은 정사각형입니다. 마우스를 올리면 해당 타일이 반쯤 눌리고 곡 수가 왼쪽 하단에 표시됩니다. 클릭하면 끝까지 눌리며 해당 막대를 추가하거나 숨깁니다. 오른쪽 방향키나 확대 버튼을 한 번 누르면 타일이 차례로 빛나고 대응하는 막대가 위에서부터 나타난 뒤 다음 단계로 확대됩니다.">
           <canvas aria-hidden="true"></canvas>
           <div class="hex-targets" role="group" aria-label="누적 재생횟수 기준 선택"></div>
           <button class="hex-detail" type="button" aria-label="10억 회 이상 · 29곡 칸 확대 보기, 막대 표시 전환" hidden>
@@ -1863,7 +1951,7 @@
   </section>
   <canvas class="hex-dive-canvas" aria-hidden="true"></canvas>
 <section class="recommendation-page" id="recommendations" aria-labelledby="chapter-title" inert>
-  <figure class="scene" aria-label="앞뒤와 옆면, 천장과 바닥이 유리인 공간에서 바라본 성단. 앞으로 또는 뒤로 이동하면 유리벽에 닿아 시점이 튕겨 돌아온다.">
+  <figure class="scene" aria-label="네 벽이 직각으로 만나고 천장과 바닥이 닫힌 직육면체 유리방에서 바라본 성단. 앞으로 또는 뒤로 이동하면 유리벽에 닿아 시점이 튕겨 돌아온다.">
     <canvas id="recommendation-space" aria-hidden="true"></canvas>
     <div class="shade" aria-hidden="true"></div>
     <div class="look" aria-hidden="true"></div>
@@ -1874,13 +1962,12 @@
   <article class="copy">
     <header>
       <p class="eyebrow" lang="en">05 / MUSIC DISCOVERY</p>
-      <h1 id="chapter-title" lang="en">The Limits <span>of Recommendation<br> Algorithms</span></h1>
-      <p class="theme">추천 알고리즘은 다양성을 줄일 수 있다.</p>
+      <h1 id="chapter-title" lang="en">Got musical paralysis?</h1>
+      <p class="chapter-lead">추천 알고리즘은 다양성을 줄일 수 있다.</p>
     </header>
     <section class="findings" aria-label="연구 결과">
-      <p>Spotify 프리미엄 이용자의 청취 기록에서 <strong>추천을 통한 청취</strong>는 직접 골라 들은 청취보다 음악적 다양성이 낮았다 <a href="https://www.cs.utoronto.ca/~ashton/pubs/alg-effects-spotify-www2020.pdf" target="_blank" rel="noopener">(Anderson et al., 2020)</a>.</p>
+      <p>Spotify 프리미엄 이용자의 청취 기록에서 <strong>추천을 통한 청취</strong>는 직접 골라 들은 청취보다 <strong>음악적 다양성이 낮았다</strong> <a href="https://www.cs.utoronto.ca/~ashton/pubs/alg-effects-spotify-www2020.pdf" target="_blank" rel="noopener">(Anderson et al., 2020)</a>.</p>
       <p>음악·영화·애니메이션 데이터에서 <strong>인기 있는 콘텐츠일수록 더 자주 추천</strong>됐다 <a href="https://proceedings.mlr.press/v294/kowald25a.html" target="_blank" rel="noopener">(Kowald, 2025)</a>.</p>
-      <p>Deezer 이용자들은 낯선 음악을 탐색할 때 <strong>인기 있는 곡에서 시작해 점차 덜 인기 있는 곡</strong>으로 옮겨 갔다 <a href="https://arxiv.org/abs/2505.03568" target="_blank" rel="noopener">(Moscati et al., 2025)</a>.</p>
     </section>
   </article>
   <div class="controls" role="group" aria-label="시점 이동" aria-describedby="move-guide">
@@ -1934,9 +2021,9 @@
         <p class="note">성단 하나는 장르 하나를 나타냅니다. 300·500·700개의 성단은 각 보고서가 공개한 장르 수의 하한을 보여줍니다.</p>
         <p class="note">표시된 성단은 그해 Spotify에서 청취 증가, 주요 플레이리스트 진입, 새 청취층 유입 또는 재유행이 보고된 장르 사례입니다. 연도마다 다섯 사례를 중복 없이 골랐습니다. 순위와 시장점유율은 표시하지 않습니다.</p>
         <p class="note">장르 사례 출처 · 2021
-          <a href="https://newsroom.spotify.com/2021-07-07/the-state-of-dance-music-according-to-spotify-editors/">댄스 장면</a> · <a href="https://newsroom.spotify.com/2021-06-28/how-body-became-the-first-u-k-drill-track-to-land-todays-top-hits/">UK 드릴</a> ·
-          2022 <a href="https://newsroom.spotify.com/2022-05-31/how-the-world-is-reimagining-amapiano-south-africas-hottest-music-export/">아마피아노</a> · <a href="https://newsroom.spotify.com/2022-09-16/a-new-generation-of-artists-is-reinventing-mexican-music-and-captivating-listeners-around-the-world/">멕시코 음악</a> · <a href="https://newsroom.spotify.com/2022-10-06/brazils-urban-culture-is-thriving-and-so-is-its-music/">브라질 트랩</a> · <a href="https://newsroom.spotify.com/2022-02-28/the-state-of-indie-music-according-to-spotifys-editors/">포스트펑크</a> · <a href="https://newsroom.spotify.com/2023-02-14/get-to-know-dxrk-%E3%83%80%E3%83%BC%E3%82%AF-the-phonk-artist-taking-electronic-music-by-storm/">퐁크</a> ·
-          <a href="https://newsroom.spotify.com/2023-11-29/music-editorial-playlists-genres-trends/">2023 연말 결산</a></p>
+          <a id="genre-source-0" href="https://newsroom.spotify.com/2021-07-07/the-state-of-dance-music-according-to-spotify-editors/">댄스 장면</a> · <a id="genre-source-1" href="https://newsroom.spotify.com/2021-06-28/how-body-became-the-first-u-k-drill-track-to-land-todays-top-hits/">UK 드릴</a> ·
+          2022 <a id="genre-source-2" href="https://newsroom.spotify.com/2022-05-31/how-the-world-is-reimagining-amapiano-south-africas-hottest-music-export/">아마피아노</a> · <a id="genre-source-3" href="https://newsroom.spotify.com/2022-09-16/a-new-generation-of-artists-is-reinventing-mexican-music-and-captivating-listeners-around-the-world/">멕시코 음악</a> · <a id="genre-source-4" href="https://newsroom.spotify.com/2022-10-06/brazils-urban-culture-is-thriving-and-so-is-its-music/">브라질 트랩</a> · <a id="genre-source-5" href="https://newsroom.spotify.com/2022-02-28/the-state-of-indie-music-according-to-spotifys-editors/">포스트펑크</a> · <a id="genre-source-6" href="https://newsroom.spotify.com/2023-02-14/get-to-know-dxrk-%E3%83%80%E3%83%BC%E3%82%AF-the-phonk-artist-taking-electronic-music-by-storm/">퐁크</a> ·
+          <a id="genre-source-7" href="https://newsroom.spotify.com/2023-11-29/music-editorial-playlists-genres-trends/">2023 연말 결산</a></p>
         <p class="note">IFPI <i>Engaging with Music</i> ·
           <a href="https://www.ifpi.org/wp-content/uploads/2021/10/IFPI-Engaging-with-Music-report.pdf">2021년</a> ·
           <a href="https://www.ifpi.org/wp-content/uploads/2022/11/Engaging-with-Music-2022_full-report-1.pdf">2022년</a> ·
@@ -2309,7 +2396,14 @@
         target,
         delay: ((index * 79) % 101) / 101 * .075
       }));
-      return {...assembly, entries};
+      let guide=null,best=Infinity;
+      for (const entry of entries) {
+        if (!entry.target.firstTile) continue;
+        const {x,y}=entry.source;
+        const distance=Math.hypot((x-width*.5)/width,(y-height*.5)/height);
+        if (distance<best) { best=distance;guide=entry; }
+      }
+      return {...assembly,entries,guide};
     }
 
     function paintExit(progress) {
@@ -2328,11 +2422,13 @@
       const split = ease(.64, .91, progress);
       const reveal = ease(.025, .19, progress) * (1 - ease(.84, .996, progress));
       ctx.globalCompositeOperation = 'lighter';
-      for (const {source, target, delay} of entries) {
+      for (const entry of entries) {
+        const {source,target,delay}=entry;
         const transfer = ease(.045 + delay, .53 + delay * .39, progress);
         const x = blend(source.x, blend(target.flatX, target.x, split), transfer);
         const y = blend(source.y, blend(target.flatY, target.y, split), transfer);
-        const size = blend(source.size, target.size, transfer);
+        const emphasis=entry===exitGeometry.guide ? ease(.025,.15,progress)*(1-ease(.78,.96,progress)) : 0;
+        const size = blend(source.size, target.size, transfer)+1.8*emphasis;
         const alpha = blend(source.opacity, target.opacity, transfer) * reveal;
         if (alpha <= .012 || x < -15 || y < -15 || x > width + 15 || y > height + 15) continue;
         const tail = .10 * Math.sin(transfer * Math.PI) * (1 - split);
@@ -2345,8 +2441,12 @@
           ctx.lineTo(blend(x, source.x, tail), blend(y, source.y, tail));
           ctx.stroke();
         }
+        if (emphasis>.01) {
+          ctx.beginPath();ctx.globalAlpha=.16*emphasis;ctx.fillStyle='#c6dcff';
+          ctx.arc(x,y,size*1.55,0,Math.PI*2);ctx.fill();
+        }
         ctx.fillStyle = transfer < .62 ? source.color : target.color;
-        ctx.globalAlpha = alpha;
+        ctx.globalAlpha = Math.min(1,alpha+.55*emphasis);
         ctx.fillRect(x - size / 2, y - size / 2, size, size);
       }
       ctx.globalAlpha = 1;
@@ -2538,6 +2638,16 @@
       queue();
     }
 
+    api.animateTrackYear = index => {
+      if (api.staticMode) {api.goToCatalogStop(index); return;}
+      const top=-root.getBoundingClientRect().top;
+      const to=catalogStart.offsetTop+api.catalogOffsets()[index]+1;
+      if (Math.abs(to-top)<2) return;
+      keyboardMove={from:top,to,elapsed:0,lastFrame:performance.now(),position:top,
+        mapStartPhase:null,maxTravel:Infinity,barRoute:false,duration:2200};
+      queue();
+    };
+
     function moveWithReducedMotion(direction) {
       const sightline = Math.min(300, innerHeight * .36);
       const section = staticScenes.findIndex(scene => {
@@ -2545,6 +2655,7 @@
         return rect.top <= sightline && rect.bottom > sightline;
       });
       if (section < 0) return;
+      if (section === 3 && api.moveHexZoom?.(direction)) return;
 
       const selectedYear = api.currentCatalogStop?.() ?? 0;
       const yearIndex = catalogKeyframes.findIndex(index => index >= selectedYear);
@@ -2749,14 +2860,28 @@
     <text x="35" y="${shareY(tick)+4}" text-anchor="end">${tick}%</text>`).join('');
   const line = chartPoints.map((p, i) => `${i ? 'L' : 'M'}${p.x} ${shareY(p.share)}`).join(' ');
   const points = chartPoints.map(p => `
-    <g><title>${p.year}년 · ${p.share.toFixed(1)}%</title>
+    <g class="share-point" role="button" tabindex="0" aria-label="${p.year}년 스트리밍 비율 ${p.share.toFixed(1)}%">
+    <rect x="${p.x-17}" y="0" width="34" height="140" fill="transparent"/>
+    <circle class="share-halo" cx="${p.x}" cy="${shareY(p.share)}" r="6" fill="none" stroke="#C6DCFF"/>
     <circle cx="${p.x}" cy="${shareY(p.share)}" r="2.7" fill="#C6DCFF"/>
-    <text class="share-value" text-anchor="middle" x="${p.x}" y="${shareY(p.share)-7}">${p.share.toFixed(1)}</text>
+    <text class="share-value" text-anchor="middle" x="${p.x}" y="${shareY(p.share)-7}">${p.share.toFixed(1)}<tspan class="share-unit">%</tspan></text>
     <text text-anchor="middle" x="${p.x}" y="136">’${p.year.slice(-2)}</text></g>`).join('');
   linePanel.innerHTML = `<strong>전체 매출 중 스트리밍 비율</strong>
-    <svg viewBox="0 0 325 141" role="img" aria-label="2018년부터 2025년까지 스트리밍 매출 비율, 세로축 50~70%">
+    <svg viewBox="0 0 325 141" role="group" aria-label="2018년부터 2025년까지 스트리밍 매출 비율, 세로축 50~70%">
     ${grid}<path d="${line}" fill="none" stroke="#C6DCFF" stroke-width="2"/>${points}</svg>`;
   compositionLegend.after(linePanel);
+  const sharePoints = [...linePanel.querySelectorAll('.share-point')];
+  let hoverShare = -1, focusShare = -1, lastShare = -2;
+  sharePoints.forEach((point,index) => {
+    point.addEventListener('pointerenter', event => { if(event.pointerType!=='touch') hoverShare=index; queueDraw(); });
+    point.addEventListener('pointerleave', () => { hoverShare=-1; queueDraw(); });
+    point.addEventListener('focus', () => { focusShare=index; queueDraw(); });
+    point.addEventListener('blur', () => { focusShare=-1; queueDraw(); });
+    point.addEventListener('click', () => { point.focus(); select(index); queueDraw(); });
+    point.addEventListener('keydown', event => {
+      if(event.key==='Enter'||event.key===' ') { event.preventDefault(); select(index); }
+    });
+  });
   function setRoseView(active) {
     revenueView = active ? 'rose' : 'bars';
     roseToggle.setAttribute('aria-pressed', String(active));
@@ -2768,6 +2893,8 @@
   }
   function setShareVisible(visible) {
     linePanel.hidden = !visible;
+    if (!visible) { hoverShare=-1; focusShare=-1; }
+    queueDraw();
     lineToggle.setAttribute('aria-pressed', String(visible));
   }
   roseToggle.addEventListener('click', () => setRoseView(revenueView !== 'rose'));
@@ -2960,13 +3087,19 @@
   }
 
   function previewYear() {
+    if (hoverShare >= 0) return hoverShare;
     if (hoveredLabel >= 0) return hoveredLabel;
     if (hoveredBar >= 0) return hoveredBar;
-    return focusedLabel;
+    return focusShare >= 0 ? focusShare : focusedLabel;
   }
 
   function updateSnapshot(preview) {
     const index = preview >= 0 ? preview : selected;
+    if (lastShare!==index) {
+      sharePoints[lastShare]?.classList.remove('is-current');
+      sharePoints[index].classList.add('is-current');
+      lastShare=index;
+    }
     displayed=index;
     const row=sectors[index];
     yearText.textContent=row.year;
@@ -2978,6 +3111,7 @@
   }
 
   function projector() {
+    const centerX=w*(hero.clientWidth<=700 ? 2/3 : .5);
     const sinP = Math.sin(pitch), cosP = Math.cos(pitch);
     const sinY = Math.sin(yaw), cosY = Math.cos(yaw);
     return (point, lift = 0) => {
@@ -2986,7 +3120,7 @@
       const x = cosY * point.x + sinY * elevation;
       const z = cosY * elevation - sinY * point.x;
       return {
-        x: w * .5 + x * scale,
+        x: centerX + x * scale,
         y: h * .5 + (cosP * point.y - sinP * z) * scale,
         z: sinP * point.y + cosP * z
       };
@@ -3236,6 +3370,7 @@
     h = height;
     pixelRatio = ratio;
     scale = Math.min(w / (w <= 700 ? 743 : 728), h / (w <= 700 ? 665 : 639));
+    if (hero.clientWidth<=700) scale=Math.min(scale, w / 1050);
     canvas.width = Math.round(w * pixelRatio);
     canvas.height = Math.round(h * pixelRatio);
     buffer.width = canvas.width;
@@ -3259,7 +3394,7 @@
     const bounds = plot.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
-    if (x < 0 || x > w || y < 0 || y > h || event.target.closest('a,button')) {
+    if (x < 0 || x > w || y < 0 || y > h || event.target.closest('a,button,.revenue-line-panel')) {
       resetPointer();
       return;
     }
@@ -3273,7 +3408,7 @@
   });
   hero.addEventListener('pointerleave', resetPointer);
   hero.addEventListener('click', event => {
-    if (event.target.closest('a,button')) return;
+    if (event.target.closest('a,button,.revenue-line-panel')) return;
     const bounds = plot.getBoundingClientRect();
     const x = event.clientX - bounds.left;
     const y = event.clientY - bounds.top;
@@ -3383,6 +3518,7 @@
   let hovered = null;
   let focused = null;
   let tooltipDismissed = false;
+  let tappedComparison = null;
   let animationFrame = 0;
   const basemap = document.createElement('canvas');
   const mapContext = basemap.getContext('2d');
@@ -3524,7 +3660,8 @@
   function setSelection(id) {
     const next = id === selected ? null : id;
     selected = next;
-    if (next) setComparison(true);
+    tooltipDismissed = false;
+    tappedComparison = null;
     clearButton.disabled = !next;
     announcement.textContent = next
       ? marketById.get(next).name + ' ' + number(marketById.get(next).value) + ' 선택'
@@ -3537,6 +3674,7 @@
     button.addEventListener('pointerenter', () => {
       if (!hoverDevice.matches) return;
       hovered = id;
+      focused = null;
       tooltipDismissed = false;
       requestDraw();
     });
@@ -3546,6 +3684,7 @@
     });
     button.addEventListener('focus', () => {
       focused = button.matches(':focus-visible') ? id : null;
+      if (focused) hovered=null;
       tooltipDismissed = false;
       requestDraw();
     });
@@ -3553,7 +3692,11 @@
       if (focused === id) focused = null;
       requestDraw();
     });
-    button.addEventListener('click', () => setSelection(id));
+    button.addEventListener('click', event => {
+      if (selected && id!==selected && (event.pointerType==='touch'||!hoverDevice.matches)) {
+        tappedComparison=id; tooltipDismissed=false; requestDraw();
+      } else setSelection(id);
+    });
   }
 
   for (const [id, name, value, lon, lat, offsetX, offsetY, labelSide] of markets) {
@@ -3761,7 +3904,7 @@
       const time = clamp((progress - delay) / (1 - delay), 0, 1);
       const area = smoothstep(.08, .94, time);
       const fill = smoothstep(.11, .98, time);
-      const active = (focused || hovered) === id;
+      const active = (hovered || tappedComparison || focused) === id;
       const isSelected = selected === id;
       marker.hidden = !interactive;
       marker.setAttribute('aria-pressed', String(isSelected));
@@ -3815,18 +3958,32 @@
   }
 
   function updateTooltip(progress) {
-    const id = focused || hovered;
+    const id = hovered || tappedComparison || focused || selected;
     const layout = markerLayout.get(id);
     tooltip.hidden = tooltipDismissed || !layout || progress < .25;
     if (tooltip.hidden) return;
     const market = marketById.get(id);
     const rate = document.createElement('b');
     rate.textContent = number(market.value);
-    tooltip.replaceChildren(market.name, rate);
-    const x = clamp(layout.x - tooltip.offsetWidth / 2, 6, width - tooltip.offsetWidth - 6);
-    const y = layout.y - layout.radius - tooltip.offsetHeight - 9;
-    tooltip.style.left = x + 'px';
-    tooltip.style.top = (y > 6 ? y : layout.y + layout.radius + 9) + 'px';
+    const reference = marketById.get(selected);
+    if (reference && reference!==market) {
+      const difference=market.value-reference.value;
+      const base=document.createElement('div');
+      base.textContent=reference.name+' '+number(reference.value)+' · 기준';
+      const other=document.createElement('div');
+      other.append(market.name,rate);
+      const delta=document.createElement('div');
+      delta.textContent='기준 대비 '+(difference>=0?'+':'−')+Math.abs(difference).toFixed(1)+'%p';
+      tooltip.replaceChildren(base,other,delta);
+    } else tooltip.replaceChildren(market.name+(reference?' · 기준':''),rate);
+    if (reference && announcement.textContent!==tooltip.textContent) announcement.textContent=tooltip.textContent;
+    const mapRect=frame.getBoundingClientRect(), sceneRect=tooltip.parentElement.getBoundingClientRect();
+    const markerX=mapRect.left-sceneRect.left+layout.x;
+    const markerY=mapRect.top-sceneRect.top+layout.y;
+    const above=markerY-layout.radius-tooltip.offsetHeight-9;
+    const y=above>=6 ? above : markerY+layout.radius+9;
+    tooltip.style.left=clamp(markerX-tooltip.offsetWidth/2,6,sceneRect.width-tooltip.offsetWidth-6)+'px';
+    tooltip.style.top=clamp(y,6,sceneRect.height-tooltip.offsetHeight-6)+'px';
   }
 
   function scrollProgress() {
@@ -3872,18 +4029,21 @@
     marketById.get(selected)?.row.focus();
     setSelection(null);
   });
-  section.addEventListener('keydown', event => {
-    if (event.key !== 'Escape') return;
+  section.addEventListener('click', event => {
+    if (!event.target.closest('button,a,.market-comparison') && selected) { setSelection(null); tooltipDismissed=true; }
+  });
+  function dismissMarket(event) {
+    if (event.key !== 'Escape' || section.inert) return;
+    if (selected) { setSelection(null); tooltipDismissed=true; requestDraw(); return; }
     if (!tooltip.hidden) {
       tooltipDismissed = true;
       requestDraw();
     } else if (!comparison.hidden) {
       setComparison(false);
       compareButton.focus();
-    } else if (selected) {
-      setSelection(null);
     }
-  });
+  }
+  document.addEventListener('keydown',dismissMarket);
   new ResizeObserver(requestDraw).observe(frame);
   new IntersectionObserver(([entry]) => {
     seen = entry.isIntersecting;
@@ -3902,6 +4062,22 @@
   "use strict";
   const YEARS = [2022, 2023, 2024, 2025, 2021, 2022, 2023];
   const TRACKS = [158, 184, 202, 253];
+  const annualGains = [null,2600,1800,3790]; // Ten thousand tracks. 2025 is the reported net gain.
+  const deltaLabel=document.getElementById('track-delta');
+  let lastLandedYear=0, deltaTimer=0;
+  function updateGain(phase,still) {
+    const landed=Math.min(3,Math.floor(phase+.07));
+    if (landed!==lastLandedYear || phase>3.08) {
+      clearTimeout(deltaTimer);
+      deltaLabel.hidden=true;
+      if (landed>lastLandedYear && landed>0 && phase<=3.08) {
+        deltaLabel.textContent='전년 대비 +'+annualGains[landed].toLocaleString('ko-KR')+'만 곡'+(landed===3?' · 공식 순증':'');
+        deltaLabel.hidden=false;
+        if (!still) deltaTimer=setTimeout(()=>{ deltaLabel.hidden=true; },2600);
+      }
+      lastLandedYear=landed;
+    }
+  }
   const GENRES = [300, 500, 700];
   const STARS_PER_MILLION = 40;
   const BASE_STAR_COUNT = TRACKS[0] * STARS_PER_MILLION;
@@ -4033,9 +4209,57 @@
     ['Phonk','Amapiano','Música Mexicana','Brazilian Trap','Post-Punk'],
     ['Shoegaze','Hyper Techno','Jersey Club','Nu Metal','Alt Country']
   ];
+  const genreNotes = [
+    [[0,'선원들의 노동요가 온라인에서 유행하며 댄스 음악가들에게까지 퍼졌습니다.'],
+     [1,'Tion Wayne과 Russ Millions의 〈Body〉가 UK 드릴 곡 최초로 Today’s Top Hits에 올랐습니다.'],
+     [0,'익숙한 팝을 묵직한 베이스의 슬랩 하우스로 편곡한 커버곡들이 대중에게 장르를 알렸습니다.'],
+     [0,'러시아 레이브 아티스트들이 잇달아 스트리밍 플랫폼에 등장하면서 지역 장면에 관심이 모였습니다.'],
+     [0,'Avicii 등 EDM 전성기 아티스트의 재생이 다시 늘면서 대표곡을 모은 플레이리스트가 생겼습니다.']],
+    [[6,'알제리 퐁크 프로듀서 Dxrk의 음악이 2022년 한 해 182개국에서 재생됐습니다.'],
+     [2,'남아프리카에서 시작된 아마피아노를 다른 나라의 아티스트들이 각자의 소리로 재해석했습니다.'],
+     [3,'2022년 8월 말 기준, Spotify에서 멕시코 음악의 전 세계 청취량이 전년 대비 56% 늘었습니다.'],
+     [4,'2022년 10월 Spotify 집계에서 브라질 트랩의 현지 재생 수는 직전 2년간 33% 늘었습니다.'],
+     [5,'Molchat Doma를 통해 1980년대 포스트펑크와 신스웨이브의 소리가 다시 주목받았습니다.']],
+    [[7,'Z세대 청취자들이 신예 Wisp와 이전 세대의 Panchiko를 함께 발견하면서 슈게이즈에 다시 관심이 모였습니다.'],
+     [7,'빠른 템포와 강한 베이스를 결합한 테크노 팝의 재생이 유럽 Z세대를 중심으로 늘었습니다.'],
+     [7,'저지 클럽 특유의 리듬이 미국 힙합에서 K팝과 전자음악까지 퍼졌습니다.'],
+     [7,'젊은 청취자들이 Korn과 Deftones의 옛 음반을 찾아 들으면서 뉴메탈이 다시 주목받았습니다.'],
+     [7,'Dylan Gossett의 〈Coal〉처럼 거친 어쿠스틱 사운드의 곡이 컨트리 팬을 넘어 대중에게 퍼졌습니다.']]
+  ];
   const genreLayer=document.createElement('div');genreLayer.className='catalog-genre-targets';
   const genreTooltip=document.createElement('span');genreTooltip.className='catalog-genre-tooltip';genreTooltip.hidden=true;
-  scene.append(genreLayer,genreTooltip);
+  const card=document.createElement('article');
+  card.className='genre-card';card.id='genre-story-card';card.hidden=true;
+  card.innerHTML='<strong></strong><p></p><a target="_blank" rel="noopener noreferrer">Spotify 원문 ↗</a>';
+  scene.append(genreLayer,genreTooltip,card);
+  let pinned=-1, previewedEntrance=false;
+  function closeGenreCard() {
+    if (pinned<0) return;
+    genreButtons[pinned].setAttribute('aria-expanded','false');
+    pinned=-1;card.hidden=true;
+  }
+  function pinGenre(index) {
+    const same=pinned===index;
+    closeGenreCard();
+    if (same || genreYear<0) return;
+    pinned=index;
+    const button=genreButtons[index], [source,note]=genreNotes[genreYear][index];
+    const title=(2021+genreYear)+' · '+genreNames[genreYear][index];
+    card.querySelector('strong').textContent=title;
+    card.querySelector('p').textContent=note;
+    card.querySelector('a').href=document.getElementById('genre-source-'+source).href;
+    card.setAttribute('aria-label',title);card.hidden=false;genreTooltip.hidden=true;
+    button.setAttribute('aria-expanded','true');
+    const x=parseFloat(button.style.left),y=parseFloat(button.style.top),gap=button.offsetHeight/2+6;
+    card.style.left=clamp(x-card.offsetWidth/2,8,geometry.width-card.offsetWidth-8)+'px';
+    card.style.top=clamp(y-gap-card.offsetHeight>=8 ? y-gap-card.offsetHeight : y+gap,8,geometry.height-card.offsetHeight-8)+'px';
+  }
+  document.addEventListener('pointerdown',e=>{
+    if(pinned>=0&&!card.contains(e.target)&&!genreLayer.contains(e.target)) closeGenreCard();
+  });
+  document.addEventListener('keydown',e=>{
+    if(e.key==='Escape'&&pinned>=0){const button=genreButtons[pinned];closeGenreCard();button.focus();}
+  });
   let genreYear=-1,genrePicks=[],hoveredGenre=-1;
   const genreButtons=Array.from({length:5},(_,index)=>{
     const button=document.createElement('button');button.type='button';button.className='catalog-genre-target';button.hidden=true;
@@ -4043,11 +4267,14 @@
     button.addEventListener('pointerleave',()=>{hoveredGenre=-1;genreTooltip.hidden=true});
     button.addEventListener('focus',()=>{hoveredGenre=index;showGenreTooltip(index)});
     button.addEventListener('blur',()=>{hoveredGenre=-1;genreTooltip.hidden=true});
+    button.setAttribute('aria-controls',card.id);
+    button.setAttribute('aria-expanded','false');
+    button.addEventListener('click',()=>pinGenre(index));
     genreLayer.append(button);return button;
   });
   function showGenreTooltip(index) {
     const button=genreButtons[index];
-    if(button.hidden){genreTooltip.hidden=true;return}
+    if(button.hidden||pinned>=0){genreTooltip.hidden=true;return}
     genreTooltip.textContent=genreNames[genreYear][index];
     genreTooltip.style.left=button.style.left;
     genreTooltip.style.top=button.dataset.labelY+'px';
@@ -4070,6 +4297,10 @@
       y>height*.12 && y<height*.87 && !obstacles.some(rect =>
         x+sceneBox.left>rect.left-24 && x+sceneBox.left<rect.right+24 &&
         y+sceneBox.top>rect.top-24 && y+sceneBox.top<rect.bottom+24));
+    if (year>0) {
+      candidates.sort((a,b)=>b.light-a.light);
+      candidates.splice(Math.max(5,Math.ceil(candidates.length*.37)));
+    }
     const anchors = [[.15,.51],[.88,.21],[.89,.74],[.46,.25],[.46,.73]];
     const picks = [];
     for (const [ax,ay] of anchors) {
@@ -4084,11 +4315,11 @@
   }
   function syncGenreTargets(bearing,opacity) {
     const year=shown-TRACKS.length;
-    if(year<0||opacity<.9){genreYear=-1;genreLayer.hidden=true;genreTooltip.hidden=true;return}
+    if(year<0||opacity<.9){closeGenreCard();previewedEntrance=false;genreYear=-1;genreLayer.hidden=true;genreTooltip.hidden=true;return}
     genreLayer.hidden=false;
     const enteringYear = genreYear !== year;
     if (enteringYear) {
-      genreYear = year;
+      closeGenreCard();genreYear = year;
       genrePicks = chooseGenrePicks(year, year * Math.PI);
       hoveredGenre = -1;
       genreTooltip.hidden = true;
@@ -4102,12 +4333,15 @@
       const x=geometry.width*.5+(cluster.x*cos-cluster.z*sin)*focus/depth;
       const y=geometry.height*.49-cluster.y*vf/depth;
       const extent=focus*cluster.scale/depth;
-      button.hidden=depth<.29||x<10||x>geometry.width-10||y<20||y>geometry.height-20;
+      button.hidden=(cluster.ignition && bearing<cluster.ignition.end) || depth<.29||x<10||x>geometry.width-10||y<20||y>geometry.height-20;
       button.style.left=x+'px';button.style.top=y+'px';
       const size=Math.max(24,Math.min(64,extent*1.4));button.style.width=size+'px';button.style.height=size+'px';
-      if (enteringYear && !reduceMotion.matches && !story.staticMode) {
-        button.animate([{opacity:.25}, {opacity:1,offset:.55}, {opacity:.82}], {duration:1100,easing:'ease-in-out'});
+      if (!previewedEntrance && !button.hidden && !reduceMotion.matches && !story.staticMode) {
+        previewedEntrance=true;
+        button.animate([{filter:'brightness(1)'},{filter:'brightness(1.65)',offset:.48},{filter:'brightness(1)'}],
+          {duration:850,easing:'ease-in-out'});
       }
+      if (button.hidden && pinned===index) closeGenreCard();
       button.dataset.labelY=String(Math.max(22,y-size/2-10));
       button.setAttribute('aria-label',(2021+year)+'년 주목받은 장르 '+genreNames[year][index]);
     });
@@ -4115,14 +4349,14 @@
   }
 
 
-  function makeSprite(color) {
+  function makeSprite(color,softCore=false) {
     const sprite = document.createElement("canvas");
     sprite.width = sprite.height = 32;
     const ctx = sprite.getContext("2d");
     if (!ctx) return sprite;
     const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
     const rgb = color.join(",");
-    gradient.addColorStop(0, "#fff");
+    gradient.addColorStop(0, softCore ? "rgb("+rgb+")" : "#fff");
     gradient.addColorStop(.16, "rgba(" + rgb + ",.85)");
     gradient.addColorStop(.32, "rgba(" + rgb + ",.26)");
     gradient.addColorStop(.63, "rgba(" + rgb + ",.06)");
@@ -4131,7 +4365,12 @@
     ctx.fillRect(0, 0, 32, 32);
     return sprite;
   }
-  const sprites = context ? starColors.map(makeSprite) : [];
+  const sprites = context ? starColors.map(color=>makeSprite(color)) : [];
+  const sphereTones=Array.from({length:12},(_,level)=>{
+    const blue=[163,187,227];
+    const colors=starColors.map(color=>color.map((v,i)=>Math.round(mix(v*.95,blue[i],level/11))));
+    return {sprites:context?colors.map(c=>makeSprite(c,true)):[],ink:colors.map(c=>'rgb('+c.join(',')+')')};
+  });
   const geometry = {width: 0, height: 0, x: 0, y: 0, radius: 0};
   let mobile = false;
   let stopPositions = [];
@@ -4201,15 +4440,15 @@
     });
   }
 
-  function dot(x, y, radius, light, tint, glowing) {
+  function dot(x, y, radius, light, tint, glowing, tones=null) {
     if (light < .012 || x < -10 || y < -10 || x > geometry.width + 10 || y > geometry.height + 10) return;
     context.globalAlpha = clamp(light);
     if (glowing) {
       const size = radius * 5.5;
-      context.drawImage(sprites[tint], x - size / 2, y - size / 2, size, size);
+      context.drawImage((tones?.sprites??sprites)[tint], x - size / 2, y - size / 2, size, size);
       return;
     }
-    context.fillStyle = starInk[tint];
+    context.fillStyle = (tones?.ink??starInk)[tint];
     const size = radius * 1.46;
     context.fillRect(x - size / 2, y - size / 2, size, size);
   }
@@ -4227,6 +4466,10 @@
   }
 
   const sphereControl = scene.querySelector('.sphere-control');
+  const lumpiness=scene.querySelector('#sphere-lumpiness');
+  const level=lumpiness.nextElementSibling;
+  lumpiness.addEventListener('input',()=>{level.value=lumpiness.value+'%';story.queue();});
+  let trackPhase=0;
   const spin = {yaw:0, pitch:0};
   let gesture = null, suppressClick = false;
   let surfaceRadius = 0, lens = 0;
@@ -4254,6 +4497,8 @@
   sphereControl.addEventListener('click', event => {
     if (suppressClick && event.detail) return;
     if (!surfaceRadius || !lens || sphereControl.hidden) return;
+    const nextYear=Math.round(trackPhase)+1;
+    if (nextYear<TRACKS.length && Math.abs(trackPhase-Math.round(trackPhase))<.02) story.animateTrackYear(nextYear);
     const rect = scene.getBoundingClientRect();
     const dx = event.detail ? (event.clientX - rect.left - geometry.x) / lens : 0;
     const dy = event.detail ? (event.clientY - rect.top - geometry.y) / lens : 0;
@@ -4272,7 +4517,14 @@
 
   function drawSphere(phase, dive, opacity) {
     const g = geometry;
+    trackPhase=phase;
     const year = Math.min(TRACKS.length - 1, Math.floor(phase));
+    const canGrow=phase<TRACKS.length-1-.02;
+    const actionLabel=canGrow ? '별 구체에 파동을 보내고 다음 연도로 성장시키기' : '별 구체에 파동 보내기';
+    if (sphereControl.getAttribute('aria-label')!==actionLabel) {
+      sphereControl.setAttribute('aria-label',actionLabel);
+      scene.querySelector('#track-metric .metric-legend').lastChild.textContent=canGrow ? '드래그로 회전 · 클릭으로 다음 연도' : '드래그로 회전 · 클릭으로 파동';
+    }
     const previous = TRACKS[year] * STARS_PER_MILLION;
     const upcoming = TRACKS[Math.min(year + 1, TRACKS.length - 1)] * STARS_PER_MILLION;
     const growth = ease(.04, .93, phase - year);
@@ -4293,6 +4545,9 @@
     sphereControl.style.cssText = `left:${g.x}px;top:${g.y}px;width:${diameter}px;height:${diameter}px`;
     const now = performance.now();
     waves = waves.filter(wave => now-wave.start < waveDuration);
+    const amplitude = reduceMotion.matches ? 0 : Number(lumpiness.value)/100 *
+      (.044+.18*Math.sin(Math.PI*growth))*(1-advance);
+    const t=now*.001;
     const fronts = waves.map(wave => {
       const t = (now-wave.start) / waveDuration;
       return {...wave, angle:t*Math.PI, strength:(1-t)**.65};
@@ -4317,6 +4572,9 @@
         ? mix(extent*(1.8+star.light*.5),extent,ease(0,.65,birth))
         : mix(extent,unitRadius*extent,ease(.65,1,birth));
       const nx = star.x/unitRadius, ny = star.y/unitRadius, nz = star.z/unitRadius;
+      const undulation=Math.sin(nx*3.7+ny*2.1+t*1.6)*Math.cos(nz*3.1-t*1.2)
+        + .45*Math.sin(ny*4.4-nz*2.2+t*1.9);
+      radial+=extent*amplitude*undulation*unitRadius*unitRadius*(incoming ? birth : 1);
       let crest = 0;
       for (const wave of fronts) {
         const angle = Math.acos(clamp(nx*wave.x + ny*wave.y + nz*wave.z, -1, 1));
@@ -4339,12 +4597,12 @@
         const tp=focus/Math.max(.12,cameraZ-tz);
         const tx=opticalX+(rx*behind-cameraX)*tp;
         const ty=opticalY+(ry*behind-cameraY)*tp;
-        context.strokeStyle='#C6DCFF';context.globalAlpha=Math.sqrt(travelGlow)*opacity*.82;context.lineWidth=mobile?.95:1.2;
+        context.strokeStyle='#b3c6e3';context.globalAlpha=Math.sqrt(travelGlow)*opacity*.74;context.lineWidth=mobile?.95:1.2;
         context.beginPath();context.moveTo(tx,ty);context.lineTo(px,py);context.stroke();
       }
       const contact=incoming ? Math.max(0,1-Math.abs(birth-.65)/.14) : 0;
       if(contact>0&&star.size>.77) {
-        context.fillStyle=starInk[star.tint];context.globalAlpha=contact*opacity*.68;
+        context.fillStyle="#b8bfd7";context.globalAlpha=contact*opacity*.48;
         for(let particle=0;particle<3;particle++){
           const angle=particle*TAU/3+star.light*TAU,spread=(1-contact)*5+1;
           context.fillRect(px+Math.cos(angle)*spread,py+Math.sin(angle)*spread,1,1);
@@ -4366,7 +4624,12 @@
         context.lineTo(mix(px, opticalX, tail), mix(py, opticalY, tail));
         context.stroke();
       }
-      dot(px, py, radius*(1+.9*crest+.85*travelGlow), alpha, star.tint, crest>.22 || star.size > .82 || flare > .16);
+      const flying=incoming && birth<.65 && !reduceMotion.matches;
+      if (flying) star.wasFlying=true;
+      else if (star.wasFlying) { star.landedAt=now; star.wasFlying=false; }
+      const blue=flying ? 1 : 1-ease(0,700,now-(star.landedAt??-Infinity));
+      dot(px,py,radius*(1+.9*crest+.85*travelGlow),alpha,star.tint,
+        crest>.22 || star.size>.82 || flare>.16,sphereTones[Math.round(11*blue)]);
     }
     context.globalCompositeOperation = "source-over";
   }
@@ -4418,7 +4681,14 @@
       const haloRadius = Math.max(1.8, extent * .45);
       const haloLight = luminosity * settle * (.13 + cluster.depth * .16)
         + opacity * flash * (.22 + cluster.depth * .27);
-      if (!capture) emit(x, y, haloRadius, haloLight, cluster.tint, true);
+      if (!capture) {
+        if (genreYear>0 && genrePicks.includes(cluster)) {
+          const cloud=clamp(extent*.85,15,44);
+          haze(x-cloud*.22,y+cloud*.12,cloud,luminosity*.23,cluster.tint);
+          haze(x+cloud*.16,y-cloud*.10,cloud*.68,luminosity*.25,2);
+        }
+        emit(x, y, haloRadius, haloLight, cluster.tint, true);
+      }
       for (const star of cluster.members) {
         const worldX = cluster.x + star.x * spread;
         const worldY = cluster.y + star.y * spread;
@@ -4453,7 +4723,7 @@
       drawSphere(phase, dive, 1 - interior);
     }
     if (interior >= 1) sphereControl.hidden = true;
-    if (waves.length && !sphereControl.hidden && !scene.inert) story.queue();
+    if (!sphereControl.hidden && !scene.inert && (waves.length || (Number(lumpiness.value)>0 && !reduceMotion.matches))) story.queue();
     syncGenreTargets(bearing,interior);
     if(interior>0)drawPanorama(bearing,interior,gather);
     context.globalAlpha = 1;
@@ -4471,6 +4741,7 @@
     const drawPhase = still ? nearest : phase;
     const cameraOrbit = clamp((drawPhase - TRACKS.length) / (GENRES.length - 1));
     showMilestone(sceneIndex);
+    updateGain(drawPhase,still);
     const transition = clamp(phase - 3);
     const copyOpacity = still ? 1 :
       1 - .93 * (ease(.05, .44, transition) - ease(.58, .93, transition));
@@ -4489,6 +4760,7 @@
 
   story.paintCatalog = render;
   story.paintCatalogExit = () => {
+    closeGenreCard();genreTooltip.hidden=true;
     if (shown !== SCROLL_STOPS.length - 1) render(stopPositions[SCROLL_STOPS.length - 1]);
   };
   story.captureCatalogExit = () => {
@@ -4557,7 +4829,8 @@
       if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       event.preventDefault();
       if (location.hash !== link.hash) history.pushState(null, "", link.hash);
-      goToMilestone(index);
+      if (shown>=0 && shown<TRACKS.length && index<TRACKS.length) story.animateTrackYear(index);
+      else goToMilestone(index);
       if (link.classList.contains("chapter-link")) {
         showMilestone(index);
         yearLinks[index].focus({preventScroll: true});
@@ -4640,11 +4913,26 @@
     dimensions:null, step:-1, focus:-1, visible:true, frame:0, previousTick:null, motionTime:0,
     motion:null, flashStart:-Infinity, scrollStart:0, scrollStep:1,
     active:false, reveal:0, revision:0, dive:0, diveSurface:null, staticBars:true,
-    zoomPhase:0, zoomFactor:1, manualStep:-1, navigation:null,
+    zoomPhase:0, zoomFactor:1, staticStage:0, navigation:null,
     selected:0, hoveredTile:-1, hoveredLabel:-1, focusedLabel:-1,
     cameraPitch:pitch, cameraRoll:roll, targetPitch:pitch, targetRoll:roll
   };
   const overrides = new Map();
+  const pressDepths = groups.map(() => 0);
+  let pressedTile = -1;
+  function pressTarget(index) {
+    if (index === pressedTile) return 1;
+    return index === view.hoveredTile ? .5 : 0;
+  }
+  function setPressed(index) {
+    pressedTile = index;
+    if (index>=0) pressDepths[index]=1;
+    if (!playing()) pressDepths.forEach((_,i) => pressDepths[i]=pressTarget(i));
+    draw(); schedule();
+  }
+  window.addEventListener("pointerup", () => { if (pressedTile>=0) setPressed(-1); });
+  window.addEventListener("pointercancel", () => { if (pressedTile>=0) setPressed(-1); });
+  window.addEventListener("blur", () => { if (pressedTile>=0) setPressed(-1); });
   let seed = 4202025;
 
   function random() {
@@ -4743,6 +5031,7 @@
   }
 
   const entryTile = tiles.at(-1);
+  const innerBandStars=Array.from({length:95},()=>makeStar(tiles[7].speed,1,1));
   detail.addEventListener("click",() => toggleTile(entryTile.index));
   const background = Array.from({length:250},() => ({
     x:random(),y:random(),size:.22+random()**4*1.2,alpha:.07+random()**2*.27
@@ -4786,6 +5075,14 @@
     button.type = "button";
     button.className = "hex-target";
     button.setAttribute("aria-label",tile.label+" · "+tile.count+"곡");
+    button.addEventListener("pointerdown",event=>{
+      if (event.isPrimary && event.button===0) setPressed(index);
+    });
+    button.addEventListener("keydown",event=>{
+      if (event.key===" " || event.key==="Enter") setPressed(index);
+    });
+    button.addEventListener("keyup",()=>setPressed(-1));
+    button.addEventListener("blur",()=>{if(pressedTile===index) setPressed(-1);});
     button.addEventListener("click",()=>toggleTile(index));
     button.title=tile.label+" · "+tile.count+"곡 · 클릭하여 막대 표시 전환";
     bindPreview(button,index,"hoveredTile");
@@ -4816,14 +5113,20 @@
     return project(position.x+x,position.y+y,position.z+z,out,angle);
   }
 
-  function tilePosition(tile) {
+  function overviewFreedom() { return 1-story.ease(0,.55,view.zoomPhase); }
+
+  function tilePosition(tile,pressed=true) {
     const scale=(view.dimensions?.scale??1)*view.zoomFactor;
     const arrival=story.ease(0,.9,view.motionTime)*view.reveal;
     const period=3.5+(tile.index*683%1900)/1000;
     const wave=Math.sin(view.motionTime/period*tau+.4+tile.index*2.37);
     const liftPixels=tileGapPixels()*.22*wave*arrival;
-    const lift=liftPixels/(Math.max(.2,Math.abs(Math.sin(view.cameraPitch)))*Math.max(1,scale));
-    return {x:tile.x,y:tile.y,z:tile.z+lift};
+    const sink=pressed ? pressDepths[tile.index]*tileThicknessPixels()*.82 : 0;
+    const lift=(liftPixels-sink)/(Math.max(.2,Math.abs(Math.sin(view.cameraPitch)))*Math.max(1,scale));
+    const free=overviewFreedom()*arrival, t=view.motionTime;
+    const drift=tileGapPixels()*.18*free/Math.max(1,scale);
+    return {x:tile.x+drift*Math.sin(t*1.37+tile.index*2.07),
+      y:tile.y+drift*Math.sin(t*1.09+tile.index*1.51),z:tile.z+lift};
   }
 
   function currentAngle() { return projectionAngle(view.cameraPitch,view.cameraRoll); }
@@ -4877,11 +5180,15 @@
 
   const zoomPanel = document.createElement("div");
   zoomPanel.className = "hex-zoom-panel";
-  zoomPanel.innerHTML = '<div class="hex-zoom-caption"><span class="hex-zoom-label"></span><strong class="hex-zoom-value"></strong><span class="hex-zoom-scale"></span></div><div class="hex-zoom-controls" role="group" aria-label="확대 단계"><button type="button" class="hex-zoom-back" aria-label="이전 배율">축소</button><div class="hex-zoom-stops"></div><button type="button" class="hex-zoom-next" aria-label="다음 배율">확대</button></div>';
+  zoomPanel.innerHTML = '<div class="hex-zoom-caption"><span class="hex-zoom-label"></span><strong class="hex-zoom-value"></strong><span class="hex-final-context" hidden></span><span class="hex-zoom-scale"></span></div><div class="hex-zoom-controls" role="group" aria-label="확대 단계"><button type="button" class="hex-zoom-back" aria-label="이전 배율">축소</button><div class="hex-zoom-stops"></div><button type="button" class="hex-zoom-next" aria-label="다음 배율">확대</button></div>';
   plot.append(zoomPanel);
   const zoomLabel = zoomPanel.querySelector(".hex-zoom-label");
   const zoomValue = zoomPanel.querySelector(".hex-zoom-value");
+  const finalContext=zoomPanel.querySelector(".hex-final-context");
+  finalContext.textContent="전체 약 "+(groups[0].tracks/1e8).toFixed(2)+"억 곡 중 "+entryTile.count+"곡";
   const zoomScale = zoomPanel.querySelector(".hex-zoom-scale");
+  zoomPanel.prepend(zoomScale);
+  scene.querySelector(".hex-footer").prepend(zoomPanel.querySelector(".hex-zoom-caption"));
   const back = zoomPanel.querySelector(".hex-zoom-back");
   const next = zoomPanel.querySelector(".hex-zoom-next");
   const stageButtons = zoomStops.map((index,stage) => {
@@ -4918,10 +5225,12 @@
     button.addEventListener("pointerenter",event=>{
       if (event.pointerType==="touch") return;
       view[field]=index;
+      if (!playing() && field==="hoveredTile") pressDepths[index]=pressTarget(index);
       updateRows();refreshReadout();draw();schedule();
     });
     button.addEventListener("pointerleave",()=>{
       view[field]=-1;
+      if (!playing() && field==="hoveredTile") pressDepths[index]=pressTarget(index);
       updateRows();refreshReadout();draw();schedule();
     });
     button.addEventListener("focus",()=>{
@@ -4946,7 +5255,7 @@
       row.classList.toggle("is-visible",shown);
       row.setAttribute("aria-hidden",String(!shown));
       row.inert=!shown;
-      buttons[index].setAttribute("aria-pressed",String(index===view.selected));
+      buttons[index].setAttribute("aria-pressed",String(shown));
       if (shown && index===current) row.setAttribute("aria-current","true");
       else row.removeAttribute("aria-current");
     }
@@ -4960,25 +5269,44 @@
     view.flashStart=index<0 ? -Infinity : performance.now();
   }
 
-  function indexAt(offset) {
-    return offset<view.scrollStart ? -1 : clamp(Math.floor((offset-view.scrollStart)/view.scrollStep+.001),0,8);
+  const beat = 540, barDelay = 145;
+  const reveals = [];
+  const journeys = [];
+  const arrivals = [0];
+  let timelineEnd = 0;
+  for (let stage = 0; stage < 3; stage++) {
+    for (let i = zoomStops[stage]; i < zoomStops[stage + 1]; i++) {
+      reveals.push(timelineEnd + 90);
+      timelineEnd += beat;
+    }
+    const start = timelineEnd + 340;
+    const ratio = Math.sqrt(groups[zoomStops[stage]].tracks / groups[zoomStops[stage + 1]].tracks);
+    timelineEnd = start + Math.max(1650, Math.log(ratio) * 1000);
+    journeys.push({start, end:timelineEnd});
+    arrivals.push(timelineEnd);
   }
+  reveals.push(timelineEnd + 60);
+  timelineEnd += beat;
+  arrivals[3] = timelineEnd;
+
+  function routeLength() { return view.scrollStart + 8 * view.scrollStep; }
 
   function readScroll(offset,still) {
-    const position=still ? view.manualStep : (offset-view.scrollStart)/view.scrollStep;
-    const index=still ? view.manualStep : indexAt(offset);
-    // Nine bar arrivals, with three camera moves between their relevant playback levels.
-    let phase=position<=3 ? 0 : position<4 ? story.ease(3,4,position)
-      : position<=5 ? 1 : position<6 ? 1+story.ease(5,6,position)
-      : position<=7 ? 2 : 2+story.ease(7,8,position);
-    if(view.navigation?.phase!==undefined) phase=view.navigation.phase;
+    const time = still ? arrivals[view.staticStage ?? 0] : clamp(offset / routeLength(), 0, 1) * timelineEnd;
+    const index = reveals.findLastIndex(start => time >= start + barDelay);
+    const lit = reveals.findLastIndex(start => time >= start);
+    const pulse = lit < 0 ? 0 : 1 - story.ease(210,beat,time - reveals[lit]);
+    const pulseChanged = pulse !== view.pulse || lit !== view.lit;
+    view.pulse = pulse; view.lit = lit;
+    let phase = 0;
+    for (const move of journeys) phase += story.ease(move.start, move.end, time);
     const lo=Math.min(2,Math.floor(phase));
     const fraction=phase-lo;
     const from=Math.sqrt(groups[0].tracks/groups[zoomStops[lo]].tracks);
     const to=Math.sqrt(groups[0].tracks/groups[zoomStops[lo+1]].tracks);
     const factor=from*(to/from)**fraction;
     const stage=Math.round(phase);
-    const changed=phase!==view.zoomPhase || index!==view.step;
+    const changed=pulseChanged || phase!==view.zoomPhase || index!==view.step;
     view.zoomPhase=phase;
     view.zoomFactor=factor;
     if (index!==view.step) {
@@ -4991,6 +5319,7 @@
     stageButtons.forEach((button,i)=>button.setAttribute("aria-pressed",String(i===stage)));
     back.disabled=stage===0;
     next.disabled=stage===3;
+    finalContext.hidden=phase<2.99999 || index!==8 || view.dive>0;
     const area=factor*factor;
     zoomScale.textContent=area<1.01 ? "조각 면적 = 누적 곡 수" : "전체 대비 면적 ×"+new Intl.NumberFormat("ko-KR",{maximumFractionDigits:1}).format(area);
     zoomScale.textContent="확대 "+(stage+1)+"/4 · "+zoomScale.textContent;
@@ -4998,46 +5327,33 @@
     return changed;
   }
 
-  function goStep(index) {
-    index=clamp(index,-1,8);
-    if (story.staticMode) {
-      view.manualStep=index;
-      view.staticBars=index>=0;
-      readScroll(0,true);draw();
-      return;
-    }
-    if (view.navigation) cancelAnimationFrame(view.navigation.frame);
-    const anchor=root.offsetTop+root.querySelector(".story-hex-start").offsetTop;
-    const from=window.scrollY;
-    const to=Math.ceil(anchor+(index<0 ? 1 : view.scrollStart+index*view.scrollStep+.5));
-    const start=performance.now();
-    const stage=zoomStops.indexOf(index);
-    const fromZoom=view.zoomFactor;
-    const toZoom=stage>=0 ? Math.sqrt(groups[0].tracks/groups[zoomStops[stage]].tracks) : fromZoom;
-    const logDistance=Math.abs(Math.log(toZoom/fromZoom));
-    const duration=logDistance>.001 ? Math.max(700,logDistance/1.05*1000) : 1200;
-    const movement=view.navigation={frame:0,stage,phase:view.zoomPhase};
-    const factors=zoomStops.map(stop=>Math.sqrt(groups[0].tracks/groups[stop].tracks));
-    const run=now=>{
-      if (view.navigation!==movement) return;
-      const u=clamp((now-start)/duration,0,1);
-      const eased=story.ease(0,1,u);
-      const factor=fromZoom*(toZoom/fromZoom)**eased;
-      if(stage>=0) {
-        let segment=0;while(segment<2&&factor>factors[segment+1])segment++;
-        movement.phase=segment+clamp(Math.log(factor/factors[segment])/Math.log(factors[segment+1]/factors[segment]),0,1);
-      }
-      window.scrollTo({top:from+(to-from)*u,behavior:"instant"});
-      if (u<1) movement.frame=requestAnimationFrame(run);
-      else view.navigation=null;
-    };
-    movement.frame=requestAnimationFrame(run);
-  }
+  function zoomStage() { return Math.round(view.zoomPhase); }
 
-  function zoomStage() {
-    return view.navigation?.stage>=0 ? view.navigation.stage : Math.round(view.zoomPhase);
+  function goZoom(requested) {
+    const stage = clamp(requested, 0, 3);
+    if (view.navigation) return;
+    if (story.staticMode) {
+      view.staticStage = stage;
+      view.staticBars = stage === 3;
+      readScroll(0,true); draw(); return;
+    }
+    const anchor = root.offsetTop + root.querySelector(".story-hex-start").offsetTop;
+    const from = window.scrollY;
+    const length = routeLength();
+    const to = anchor + Math.max(1, Math.ceil(arrivals[stage] / timelineEnd * length));
+    const duration = Math.abs(to - from) / length * timelineEnd;
+    if (duration < 10) return;
+    const start = performance.now();
+    const movement = view.navigation = {frame:0};
+    const run = now => {
+      if (view.navigation !== movement) return;
+      const progress = clamp((now-start)/duration,0,1);
+      window.scrollTo({top:from+(to-from)*progress,behavior:"instant"});
+      if (progress < 1) movement.frame = requestAnimationFrame(run);
+      else view.navigation = null;
+    };
+    movement.frame = requestAnimationFrame(run);
   }
-  function goZoom(stage) { goStep(zoomStops[clamp(stage,0,3)]); }
 
   function selectTile(index) {
     // Selection stays at the current magnification, just as P1 selects a year in place.
@@ -5047,8 +5363,7 @@
 
   function toggleTile(index) {
     const next=!isShown(index);
-    if (next===(index<=view.step)) overrides.delete(index);
-    else overrides.set(index,next);
+    overrides.set(index,next);
     selectTile(index);
     status.textContent=groups[index].label+(next ? " 막대 추가" : " 막대 숨김");
   }
@@ -5093,12 +5408,16 @@
 
   function cameraFrame() {
     const base=view.dimensions;
+    const scale=base.scale*view.zoomFactor, free=overviewFreedom();
     const rest=project(cornerAnchor.x,cornerAnchor.y,0,{},baseAngle);
-    const anchor=project(cornerAnchor.x,cornerAnchor.y,0);
-    const scale=base.scale*view.zoomFactor;
+    const half=base.windowSide*.5*free;
+    const x=cornerAnchor.x+half,y=cornerAnchor.y-half;
+    const neutral=project(x,y,0,{},baseAngle),turned=project(x,y,0);
+    const t=view.motionTime, amplitude=free*story.ease(0,1,t)*view.reveal;
     return {...base,scale,
-      cx:base.cx+rest.x*base.scale-anchor.x*scale,
-      cy:base.cy+rest.y*base.scale-anchor.y*scale};
+      cx:base.cx+rest.x*(base.scale-scale)+(neutral.x-turned.x)*scale+amplitude*5*Math.sin(t*.87),
+      cy:base.cy+rest.y*(base.scale-scale)+(neutral.y-turned.y)*scale+amplitude*4*Math.sin(t*1.04)};
+
   }
 
   function windowPolygon(frame=cameraFrame(),bottom=false) {
@@ -5163,7 +5482,8 @@
   }
 
   function placeTarget(body,layer) {
-    const polygon = body.top.map(point=>screenPoint(point));
+    const position=tilePosition(body.tile,false);
+    const polygon=footprint(body.tile).map(([x,y])=>screenPoint(localPoint(x,y,0,position)));
     const left = Math.min(...polygon.map(point=>point[0]));
     const right = Math.max(...polygon.map(point=>point[0]));
     const top = Math.min(...polygon.map(point=>point[1]));
@@ -5177,6 +5497,7 @@
   }
 
   function brightness(tile,now) {
+    if (tile.index===view.lit && view.pulse>0) return 1.9*view.pulse+.3;
     const preview=previewIndex();
     if (tile.index===preview) return 1;
     if (tile.index===view.selected) return .64;
@@ -5261,15 +5582,23 @@
     const dotScale=clamp(Math.sqrt(frame.scale/184),.48,1.18)*(frame.starScale??1);
     screenPath(body.top,ctx,frame);
     ctx.save();ctx.clip();ctx.globalCompositeOperation="screen";
-    for (const star of tile.stars) {
-      const point=localPoint(star.x*tile.halfWidth,star.y*tile.halfHeight,body.thickness*.01,position,{},angle);
+    const nearCorner=tile.index===7 && view.zoomPhase>2 && !tile.proxy;
+    const fieldHalf=tile.innerSide*1.22;
+    const cornerX=-tile.halfWidth+fieldHalf, cornerY=tile.halfHeight-fieldHalf;
+    const count=tile.stars.length+(nearCorner ? innerBandStars.length : 0);
+    for (let i=0;i<count;i++) {
+      const local=i>=tile.stars.length;
+      const star=local ? innerBandStars[i-tile.stars.length] : tile.stars[i];
+      const half=local ? fieldHalf : tile.halfWidth;
+      const ox=local ? cornerX : 0, oy=local ? cornerY : 0;
+      const point=localPoint(ox+star.x*half,oy+star.y*half,body.thickness*.01,position,{},angle);
       const [x,y]=screenPoint(point,frame);
       if (x<-8 || y<-8 || x>frame.width+8 || y>frame.height+8) continue;
       const flicker=.84+.16*Math.sin(view.motionTime*.65+star.phase);
       const size=star.size*dotScale;
-      const alpha=(.20+star.alpha*.67)*flicker*(.78+.25*emphasis)*view.reveal;
+      const alpha=(.20+star.alpha*.67)*flicker*(.78+.25*emphasis)*view.reveal*(local ? story.ease(2,2.45,view.zoomPhase) : 1);
       if (playing() && tile.speed>=.071) {
-        const tail=localPoint(star.tailX*tile.halfWidth,star.tailY*tile.halfHeight,body.thickness*.01,position,{},angle);
+        const tail=localPoint(ox+star.tailX*half,oy+star.tailY*half,body.thickness*.01,position,{},angle);
         const [tx,ty]=screenPoint(tail,frame);
         const distance=Math.hypot(x-tx,y-ty),portion=Math.min(1,(9+15*tile.speed)/Math.max(.001,distance));
         if (distance>.6) {
@@ -5386,8 +5715,9 @@
     const {width,height}=view.dimensions;
     const frame=cameraFrame();
     ctx.clearRect(0,0,width,height);drawBackground();
-    ctx.save();clipComposition(ctx,frame);
-    for (const button of buttons) button.hidden=true;
+    const crop=view.zoomPhase>.0001;
+    ctx.save();if (crop) clipComposition(ctx,frame);
+    const visibleTargets=new Set();
     const windowSide=view.dimensions.windowSide/view.zoomFactor;
     const wallMargin=2*(tileThicknessPixels()+tileGapPixels())/frame.scale;
     bodies.forEach((body,layer)=>{
@@ -5395,15 +5725,17 @@
       if (body.tile.innerSide>windowSide+wallMargin) return;
       const emphasis=brightness(body.tile,now);
       drawBody(body,emphasis,ctx,frame);drawStars(body,ctx,frame);placeTarget(body,layer);
+      visibleTargets.add(body.tile.index);
       const button=buttons[body.tile.index];button.hidden=false;
       button.setAttribute("aria-label",body.tile.proxy
         ? groups[body.tile.index].label+"부터 더 높은 재생횟수 구간을 합쳐 보여주는 정사각형"
         : groups[body.tile.index].label+" · "+groups[body.tile.index].count+"곡");
     });
     ctx.restore();
+    buttons.forEach((button,i)=>{button.hidden=!visibleTargets.has(i);});
     const boundary=windowPolygon(frame);
-    screenPath(boundary,ctx,frame);ctx.strokeStyle=silverInk(.32);ctx.lineWidth=.75;ctx.stroke();
-    targets.style.clipPath="polygon("+boundary.map(point=>screenPoint(point,frame).map(n=>n+"px").join(" ")).join(",")+")";
+    if (crop) { screenPath(boundary,ctx,frame);ctx.strokeStyle=silverInk(.32*(1-overviewFreedom()));ctx.lineWidth=.75;ctx.stroke(); }
+    targets.style.clipPath=!crop ? "none" : "polygon("+boundary.map(point=>screenPoint(point,frame).map(n=>n+"px").join(" ")).join(",")+")";
     drawDetail(now);drawDive(bodies,now);
   }
 
@@ -5451,20 +5783,33 @@
     if (!view.visible || !view.active || document.hidden) return;
     const elapsed = view.previousTick === null ? 0 : Math.min((now-view.previousTick)/1000,.05);
     view.previousTick=now;
+    pressDepths.forEach((depth,i)=>{
+      pressDepths[i] = playing() ? depth+(pressTarget(i)-depth)*(1-Math.exp(-elapsed/.045)) : pressTarget(i);
+    });
     if (playing() && elapsed>0 && view.dive<=0) {
       const smoothing=1-Math.exp(-elapsed/.14);
-      view.cameraPitch+=(view.targetPitch-view.cameraPitch)*smoothing;
-      view.cameraRoll+=(view.targetRoll-view.cameraRoll)*smoothing;
+      const free=overviewFreedom(),t=view.motionTime;
+      view.cameraPitch+=(view.targetPitch+.023*free*Math.sin(t*.94)-view.cameraPitch)*smoothing;
+      view.cameraRoll+=(view.targetRoll+.012*free*Math.sin(t*.76)-view.cameraRoll)*smoothing;
     }
     if (playing() && elapsed>0) {
       view.motionTime+=elapsed*(1-story.ease(.14,.74,view.dive));
       const scale=view.dimensions.scale*view.zoomFactor;
-      // As the 29-track square fills the frame, maintain a perceptible crossing rate.
+      // Use projected pixels per second, accelerating both visible bands through the final zoom.
       const squareWidth=entryTile.halfWidth*2*scale;
       const exposure=Math.min(2.5,squareWidth/180);
       const fade=Math.exp(-elapsed/.075);
       for (const tile of renderTiles()) {
-        const rate=1+exposure*tile.speed;
+        const finalBoost=1+story.ease(2,3,view.zoomPhase)*tile.speed*2.4;
+        const rate=(1+exposure*tile.speed)*finalBoost;
+        if (tile.index===7 && view.zoomPhase>2) {
+          const localStep=elapsed*rate/Math.max(1,tile.innerSide*1.22*scale);
+          for (const star of innerBandStars) {
+            bounce(star,"x","vx",localStep); bounce(star,"y","vy",localStep);
+            star.tailX=star.x+(star.tailX-star.x)*fade;
+            star.tailY=star.y+(star.tailY-star.y)*fade;
+          }
+        }
         const step=elapsed*rate/Math.max(1,tile.halfWidth*scale);
         for (const star of tile.stars) advance(star,step,fade,tile);
       }
@@ -5501,6 +5846,7 @@
   });
 
   story.moveHexZoom = direction => {
+    if (view.navigation) return true;
     const stage=zoomStage();
     if ((stage===0 && direction<0)||(stage===3 && direction>0)) return Boolean(view.navigation);
     goZoom(stage+direction);
@@ -5516,7 +5862,7 @@
   story.showStaticHexBars = show => {
     story.resetHexSelection();
     view.staticBars = show;
-    view.manualStep=show ? tiles.length-1 : -1;
+    view.staticStage=show ? 3 : 0;
     readScroll(0, true);
     draw();
   };
@@ -5548,7 +5894,7 @@
         const localX = star.x*tile.halfWidth, localY = star.y*tile.halfHeight;
         const point=localPoint(localX,localY,0,tile,{},baseAngle);
         const [x, y] = screenPoint(point,view.dimensions);
-        return {x:x+dx,y:y+dy,flatX:flatX(tile.x+localX),flatY:flatY(tile.y+localY),
+        return {firstTile:tile.index===0,x:x+dx,y:y+dy,flatX:flatX(tile.x+localX),flatY:flatY(tile.y+localY),
           size:star.size*dotScale,
           opacity: Math.min(.97,star.alpha*tile.starlight), color: starInk[star.tint]};
       });
@@ -5561,6 +5907,11 @@
     const activationChanged = view.active !== active;
     if (activationChanged) {
       view.active = active;
+      if (!active) {
+        if (view.navigation) cancelAnimationFrame(view.navigation.frame);
+        view.navigation=null; pressedTile=-1; pressDepths.fill(0);
+        view.hoveredTile=-1;
+      }
       view.previousTick = null;
       view.revision++;
     }
@@ -5613,12 +5964,13 @@ story.queue();
   const reboundDuration = 660;
   const maxPitch = Math.PI / 2 - .019;
   const automaticDirections = [1, -1];
-  const camera = { yaw: 0, pitch: -.025, z: 0, aimYaw: 0, aimPitch: -.025 };
+  const roomYaw = .23;
+  const camera = { yaw: roomYaw, pitch: -.025, z: 0, aimYaw: roomYaw, aimPitch: -.025 };
   const view = { w: 1, h: 1, x: 1, y: 1, focal: 1 };
   const basis = { sy: 0, cy: 1, sp: 0, cp: 1, roll: 0 };
   const walls = [
-    [-1.93, wallDepth], [1.93, wallDepth], [3.50, 0],
-    [1.93, -wallDepth], [-1.93, -wallDepth], [-3.50, 0]
+    [-2.35, wallDepth], [2.35, wallDepth],
+    [2.35, -wallDepth], [-2.35, -wallDepth]
   ];
   const roomHeight = 1.08;
   let seed = 3062025;
@@ -5876,7 +6228,7 @@ story.queue();
   const silverRgb = silverChannels.join(",");
   const silver = opacity => "rgba(" + silverRgb + "," + opacity + ")";
 
-  function fillPane(points, amount, kind) {
+  function fillPane(points, kind) {
     if (!path(points, true)) return;
     ctx.save();
     ctx.clip();
@@ -5900,17 +6252,13 @@ story.queue();
     sheen.addColorStop(1, "transparent");
     ctx.fillStyle = sheen;
     ctx.fillRect(0, 0, view.w, view.h);
-    if (amount) {
-      ctx.fillStyle = silver(amount * (end ? .088 : .045));
-      ctx.fillRect(0, 0, view.w, view.h);
-    }
     ctx.restore();
   }
 
   function drawGlass(amount) {
     const cap = level => walls.map(([x, z]) => toView(x, level, z));
-    fillPane(clip(cap(roomHeight), true).map(project), amount, "ceiling");
-    fillPane(clip(cap(-roomHeight), true).map(project), amount, "floor");
+    fillPane(clip(cap(roomHeight), true).map(project), "ceiling");
+    fillPane(clip(cap(-roomHeight), true).map(project), "floor");
     const panels = walls.map((a, i) => {
       const b = walls[(i + 1) % walls.length];
       const corners = [[a[0], roomHeight, a[1]], [b[0], roomHeight, b[1]],
@@ -5921,15 +6269,29 @@ story.queue();
 
     for (const pane of panels) {
       if (pane.points.length < 3) continue;
-      const endFace = pane.i === 0 || pane.i === 3;
-      const hitFace = impact && (impact.direction > 0 ? pane.i === 0 : pane.i === 3);
-      fillPane(pane.points, amount * (hitFace ? 1 : .4), endFace ? "end" : "side");
+      const endFace = pane.i === 0 || pane.i === 2;
+      const hitFace = impact && (impact.direction > 0 ? pane.i === 0 : pane.i === 2);
+      fillPane(pane.points, endFace ? "end" : "side");
+      if (hitFace && amount > .002) {
+        const contact = toView(0, -.027, impact.direction * wallDepth);
+        if (contact.z > nearPlane && path(pane.points, true)) {
+          ctx.save(); ctx.clip();
+          const {x, y} = project(contact);
+          const radius = Math.min(view.w, view.h) * .24;
+          const shine = ctx.createRadialGradient(x, y, 0, x, y, radius);
+          shine.addColorStop(0, silver(amount * .31));
+          shine.addColorStop(1, silver(0));
+          ctx.fillStyle = shine;
+          ctx.fillRect(x-radius, y-radius, radius*2, radius*2);
+          ctx.restore();
+        }
+      }
     }
     for (const pane of panels) {
       if (pane.points.length < 3) continue;
-      const end = pane.i === 0 || pane.i === 3;
-      const horizontal = silver((end ? .48 : .32) + amount * .17);
-      const vertical = silver((end ? .48 : .31) + amount * .14);
+      const end = pane.i === 0 || pane.i === 2;
+      const horizontal = silver((end ? .48 : .32));
+      const vertical = silver((end ? .48 : .31));
       const {a, b} = pane;
       for (const direction of [1, -1]) {
         const level = direction * roomHeight;
@@ -5946,7 +6308,7 @@ story.queue();
             const { x, y } = project(point);
             if (x < -30 || x > view.w + 30 || y < -30 || y > view.h + 30) continue;
             const glint = ctx.createRadialGradient(x, y, 0, x, y, 24);
-            glint.addColorStop(0, silver(.23 + amount * .17));
+            glint.addColorStop(0, silver(.23));
             glint.addColorStop(1, silver(0));
             ctx.fillStyle = glint;
             ctx.fillRect(x - 24, y - 24, 48, 48);
@@ -6240,7 +6602,7 @@ story.queue();
     requestFrame();
   });
   look.addEventListener("dblclick", () => {
-    camera.aimYaw = 0;
+    camera.aimYaw = roomYaw;
     camera.aimPitch = -.025;
     driftX = 0;
     driftY = 0;
@@ -6292,7 +6654,7 @@ story.queue();
         const arrival = story.ease(.62, .995, dive);
         const carry = Math.sin(Math.PI * arrival);
         camera.z = -1.68 * (1 - arrival) + carry * .47;
-        camera.yaw = camera.aimYaw = -.08 * carry;
+        camera.yaw = camera.aimYaw = roomYaw * arrival - .08 * carry;
         camera.pitch = camera.aimPitch = -.025 - .112 * carry;
         driftX = driftY = 0;
         entry = dive;
