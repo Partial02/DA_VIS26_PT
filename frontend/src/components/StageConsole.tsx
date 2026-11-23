@@ -4,6 +4,7 @@ import { cellKey, crossCells } from '../domain/category'
 import { rankRecommendations } from '../domain/recommendations'
 import type { RecommendationTarget } from '../domain/recommendations'
 import { useExperience } from '../state/ExperienceContext'
+import { Icon } from './Icon'
 import { SessionGlyph } from './SessionGlyph'
 import styles from './Interface.module.css'
 
@@ -117,7 +118,7 @@ export function SubgenreRanking({ perPage = 6, onChoose }: { perPage?: number; o
   useEffect(() => { setPage(0) }, [selectionKey])
   const pages = Math.max(1, Math.ceil(ranked.length / perPage))
   const current = Math.min(page, pages - 1)
-  if (!ranked.length) return <p className={styles.stageEmpty}>장르와 악기를 고르면 그 조합에 어울리는 세부장르가 점수 순으로 떠요.</p>
+  if (!ranked.length) return <p className={styles.stageEmpty}>장르를 고르고 악기 구슬을 누르면 어울리는 세부장르가 점수 순으로 떠요.</p>
   return <>
     <ol className={styles.rankList} start={current * perPage + 1}>{ranked.slice(current * perPage, (current + 1) * perPage).map((result, i) => {
       const genre = catalog.genreById.get(result.genreId)!
@@ -140,60 +141,95 @@ export function SubgenreRanking({ perPage = 6, onChoose }: { perPage?: number; o
   </>
 }
 
+/** Orbs shown per genre before the "+n" orb (one line at the default panel width). */
+const FIRST_ORBS = 6
+
+/** Orb diameter in px: area grows with the share of the genre's songs using the session. */
+function orbSize(rate: number) {
+  return Math.round(22 + 30 * Math.sqrt(Math.min(1, rate)))
+}
+
 /**
- * Two-step picker: genre chips × instrument chips. The selection is their cross product
- * (plus any cell picked by hand in the table). A chip shows how many of its cells are picked.
+ * Step 1 asks for genres. Each opened genre pops out a row of instrument orbs, most used first:
+ * size = share of the genre's songs using it, depth = lift. Orbs are the buttons that pick cells.
  */
-export function ChipPicker() {
+export function BubblePicker() {
   const { catalog, state, dispatch } = useExperience()
   const index = catalog.categories!
-  const { sessions, genres } = index.model
+  const { sessions, genres, categories } = index.model
+  const [hover, setHover] = useState<number | null>(null)
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set())
+  const picked = useMemo(() => new Set(state.selection), [state.selection])
   const allSessions = sessions.map((_, s) => s)
-  const allGenres = genres.map(g => g.id)
-  const picked = useMemo(() => state.selection.map(id => index.cells[id]), [index, state.selection])
-  const genresOn = new Set(state.pickedGenres), sessionsOn = new Set(state.pickedSessions)
-  const line = (ids: number[]) => ids.map(id => ({ id, ...index.cells[id] }))
-  const pickGenre = (genreId: string) => dispatch({ type: 'pickChip', chip: { genreId }, line: line(crossCells(index, [genreId], allSessions)) })
-  const pickSession = (session: number) => dispatch({ type: 'pickChip', chip: { session }, line: line(crossCells(index, allGenres, [session])) })
-  const g = state.pickedGenres.length, n = state.pickedSessions.length
-  const hint = !g && !n && state.selection.length ? `표에서 고른 ${state.selection.length}칸으로 찾는 중이에요.`
-    : !g && !n ? '장르와 악기를 하나 이상씩 고르면, 그 조합에 맞는 세부장르를 바로 찾아 드려요.'
-    : !n ? '이제 듣고 싶은 악기를 골라 보세요.'
-    : !g ? '어느 장르에서 찾을지 골라 보세요.'
-    : `장르 ${g}개 × 악기 ${n}개로 찾는 중이에요. 칩을 더 누르면 조합이 늘어나요.`
+  const rowIds = (genreId: string) => crossCells(index, [genreId], allSessions)
+  const holding = new Set(state.selection.map(id => index.cells[id].genreId))
+  // Newest genre on top, so its orbs pop right under the chips; genres opened only by table picks follow.
+  const open = [...state.pickedGenres].reverse().concat(genres.map(g => g.id).filter(id => holding.has(id) && !state.pickedGenres.includes(id)))
+  const isOpen = (genreId: string) => open.includes(genreId)
+  const info = hover !== null ? categories[hover] : null
+  const hint = !open.length ? '장르를 고르면 그 장르의 악기 구슬이 나와요.'
+    : !state.selection.length ? '구슬을 눌러 듣고 싶은 악기를 담아 보세요. 크고 진한 구슬이 그 장르의 대표 악기예요.'
+    : `${state.selection.length}개 담았어요. 아래 추천에서 바로 떠날 수 있어요.`
   return <div className={styles.chipPicker}>
     <fieldset>
-      <legend><b>1</b> 장르</legend>
-      <div className={styles.chipRow}>{genres.map(genre => {
-        const count = picked.filter(cell => cell.genreId === genre.id).length
-        return <button key={genre.id} className={styles.chip} aria-pressed={genresOn.has(genre.id)} title={genre.name}
-          style={{ '--genre-color': genre.color } as CSSProperties} onClick={() => pickGenre(genre.id)}>
-          <i className={styles.chipDot} aria-hidden="true" />{shortGenreName(genre.name)}{count > 0 && !genresOn.has(genre.id) && <small aria-label={`표에서 ${count}칸`}>{count}</small>}
-        </button>
-      })}</div>
+      <legend><b>1</b> 어떤 장르?</legend>
+      <div className={styles.chipRow}>{genres.map(genre =>
+        <button key={genre.id} className={styles.chip} aria-pressed={isOpen(genre.id)} title={genre.name}
+          style={{ '--genre-color': genre.color } as CSSProperties} onClick={() => dispatch({ type: 'pickGenre', genreId: genre.id, rowIds: rowIds(genre.id) })}>
+          <i className={styles.chipDot} aria-hidden="true" />{shortGenreName(genre.name)}
+        </button>)}</div>
     </fieldset>
-    <fieldset>
-      <legend><b>2</b> 악기</legend>
-      <div className={styles.chipRow}>{sessions.map((session, s) => {
-        const count = picked.filter(cell => cell.session === s).length
-        return <button key={session.key} className={`${styles.chip} ${styles.sessionChip}`} aria-pressed={sessionsOn.has(s)} onClick={() => pickSession(s)}>
-          <SessionGlyph session={session.key} size={13} />{session.name}{count > 0 && !sessionsOn.has(s) && <small aria-label={`표에서 ${count}칸`}>{count}</small>}
-        </button>
+    {open.length > 0 && <fieldset>
+      <legend><b>2</b> 어떤 악기?
+        <span className={styles.orbLegend} aria-hidden="true"><i style={{ width: 6 }} /><i style={{ width: 12 }} />크기 = 자주 씀<i style={{ opacity: .35 }} /><i />진하기 = 이 장르만의 색</span></legend>
+      <div className={styles.orbRows} onPointerLeave={() => setHover(null)}>{open.map(genreId => {
+        const genre = catalog.genreById.get(genreId)!
+        const cells = rowIds(genreId).toSorted((a, b) => categories[b].rate - categories[a].rate)
+        const count = cells.filter(id => picked.has(id)).length
+        // The most used instruments first; rarer ones wait behind a "+n" orb unless already picked.
+        const all = expanded.has(genreId)
+        const visible = all ? cells : cells.filter((id, i) => i < FIRST_ORBS || picked.has(id))
+        const hidden = cells.length - visible.length
+        return <section key={genreId} className={styles.orbRow} style={{ '--genre-color': genre.color } as CSSProperties} aria-label={`${genre.name} 악기`}>
+          <header><i className={styles.chipDot} aria-hidden="true" /><b>{shortGenreName(genre.name)}</b>{count > 0 && <small>{count}개 담음</small>}
+            <button onClick={() => dispatch({ type: 'pickGenre', genreId, rowIds: cells })} aria-label={`${genre.name} 닫기`} title="이 장르 빼기"><Icon name="close" size={12} /></button></header>
+          <div className={styles.orbField}>{visible.map((id, i) => {
+            const category = categories[id]
+            const session = sessions[category.session]
+            const on = picked.has(id)
+            return <button key={id} className={styles.orbButton} aria-pressed={on}
+              style={{ '--size': `${orbSize(category.rate)}px`, '--lift': liftStrength(category.lift), '--i': i } as CSSProperties}
+              aria-label={`${genre.name} × ${session.name}, 장르 곡의 ${Math.round(category.rate * 100)}%, 평균의 ${category.lift.toFixed(1)}배, ${on ? '담김' : '담기'}`}
+              onPointerEnter={() => setHover(id)} onFocus={() => setHover(id)} onBlur={() => setHover(null)}
+              onClick={() => dispatch({ type: 'toggleCell', id })}>
+              <span className={styles.orb}><SessionGlyph session={session.key} size={13} /></span>
+              <span className={styles.orbName}>{shortSessionName(session.name)}</span>
+            </button>
+          })}
+          {(hidden > 0 || all) && <button className={`${styles.orbButton} ${styles.orbMore}`} aria-expanded={all}
+            style={{ '--i': visible.length } as CSSProperties}
+            aria-label={all ? `${genre.name} 드문 악기 접기` : `${genre.name} 악기 ${hidden}개 더 보기`}
+            onClick={() => setExpanded(previous => { const next = new Set(previous); if (all) next.delete(genreId); else next.add(genreId); return next })}>
+            <span className={styles.orb}>{all ? '−' : `+${hidden}`}</span><span className={styles.orbName}>{all ? '접기' : '더 보기'}</span>
+          </button>}</div>
+        </section>
       })}</div>
-    </fieldset>
-    <p className={styles.pickerHint} aria-live="polite">{hint}</p>
+    </fieldset>}
+    <p className={styles.pickerHint} aria-live="polite">{info
+      ? <><b style={{ color: catalog.genreById.get(info.genreId)!.color }}>{shortGenreName(catalog.genreById.get(info.genreId)!.name)}</b> × {sessions[info.session].name} · 장르 곡의 {Math.round(info.rate * 100)}%가 사용 · 전체 평균의 {info.lift.toFixed(1)}배</>
+      : hint}</p>
   </div>
 }
 
-/** Pick genres × instruments → see the subgenre ranking; the full table folds below. */
+/** Pick a genre → pick its instrument orbs → see the subgenre ranking; the full table folds below. */
 export function StageConsole({ onChoose, perPage = 6 }: { onChoose?: () => void; perPage?: number }) {
   const { state, dispatch } = useExperience()
-  const empty = !state.selection.length && !state.pickedGenres.length && !state.pickedSessions.length
+  const empty = !state.selection.length && !state.pickedGenres.length
   return <div className={styles.stageConsole}>
     <section aria-labelledby="pickHeading">
       <div className={styles.stageHeader}><h3 id="pickHeading">무엇을 듣고 싶나요? {state.selection.length > 0 && <span>{state.selection.length}칸</span>}</h3>
         <button className={styles.inlineAction} onClick={() => dispatch({ type: 'clearSelection' })} disabled={empty}>비우기</button></div>
-      <ChipPicker />
+      <BubblePicker />
     </section>
     <section aria-labelledby="rankHeading">
       <h3 id="rankHeading">세부장르 추천</h3>

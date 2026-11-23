@@ -251,11 +251,38 @@
 .chipRow { display: flex; flex-wrap: wrap; gap: 5px; }
 .chip { display: inline-flex; align-items: center; gap: 5px; padding: 5px 9px; border: 1px solid #ffffff1c; border-radius: 999px; color: #c9c0d6; font-size: 11px; line-height: 1.2; white-space: nowrap; transition: background .2s, border-color .2s, color .2s; }
 .chip:hover { background: #ffffff0d; color: #fff; }
-.chip small { min-width: 14px; padding: 0 4px; border-radius: 7px; background: #ffffff1a; color: #e5ddf0; font-size: 9px; text-align: center; }
 .chipDot { width: 8px; height: 8px; border-radius: 50%; background: var(--genre-color); box-shadow: 0 0 6px color-mix(in srgb, var(--genre-color) 60%, transparent); }
 .chip[aria-pressed='true'] { color: #fff; border-color: color-mix(in srgb, var(--genre-color, #fff) 70%, transparent); background: color-mix(in srgb, var(--genre-color, #fff) 24%, transparent); }
-.sessionChip svg { color: #b9b1c8; }
-.sessionChip[aria-pressed='true'] svg { color: #fff; }
+/* Step 2: each opened genre pops out a row of instrument orbs (size = rate, depth = lift). */
+.chipPicker legend { flex-wrap: wrap; }
+.orbLegend { display: inline-flex; align-items: center; gap: 4px; margin-left: 6px; color: #6f6680; font-size: 9px; }
+.orbLegend i { display: block; width: 9px; aspect-ratio: 1; border-radius: 50%; background: #e9e2f3; }
+.orbLegend i:nth-of-type(3) { margin-left: 6px; }
+.orbRows { display: grid; gap: 10px; }
+.orbRow { padding: 8px 10px 10px; border-radius: 16px; background: color-mix(in srgb, var(--genre-color) 6%, #ffffff05); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--genre-color) 18%, transparent); animation: rowIn .35s var(--ease) both; }
+.orbRow header { display: flex; align-items: center; gap: 6px; margin-bottom: 4px; color: #e5ddf0; font-size: 11px; }
+.orbRow header b { font-weight: 500; }
+.orbRow header small { color: #a99fb8; font-size: 10px; }
+.orbRow header button { margin-left: auto; display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; color: #8f86a0; }
+.orbRow header button:hover { background: #ffffff12; color: #fff; }
+.orbField { display: grid; grid-template-columns: repeat(auto-fill, minmax(50px, 1fr)); gap: 2px 0; }
+.orbButton { display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 4px 0; border-radius: 12px; }
+.orbButton:focus-visible { outline: 1px solid #ffffff66; outline-offset: -1px; }
+.orb { display: grid; place-items: center; width: var(--size); height: var(--size); margin: calc((52px - var(--size)) / 2) 0; border-radius: 50%; color: #fff;
+  background: radial-gradient(circle at 34% 28%, color-mix(in srgb, var(--genre-color) 35%, #fff) 0, var(--genre-color) 48%, color-mix(in srgb, var(--genre-color) 55%, #000) 100%);
+  opacity: max(.35, var(--lift)); box-shadow: inset 0 -3px 6px #0000003a, 0 0 10px color-mix(in srgb, var(--genre-color) 35%, transparent);
+  animation: orbPop .55s cubic-bezier(.34, 1.56, .64, 1) both; animation-delay: calc(var(--i, 0) * 28ms); transition: transform .2s var(--ease), box-shadow .2s, opacity .2s; }
+.orb svg { opacity: .8; filter: drop-shadow(0 1px 1px #0006); }
+.orbName { color: #8f86a0; font-size: 9px; white-space: nowrap; transition: color .2s; }
+.orbButton:hover .orb { transform: scale(1.12); opacity: 1; }
+.orbButton:hover .orbName { color: #e5ddf0; }
+.orbButton[aria-pressed='true'] .orb { opacity: 1; box-shadow: inset 0 -3px 6px #0000003a, 0 0 0 2px #fff, 0 0 16px color-mix(in srgb, var(--genre-color) 80%, transparent); }
+.orbButton[aria-pressed='true'] .orb svg { opacity: 1; }
+.orbButton[aria-pressed='true'] .orbName { color: #fff; }
+.orbMore .orb { --size: 30px; background: transparent; opacity: 1; box-shadow: inset 0 0 0 1px #ffffff2e; color: #c9c0d6; font-size: 10px; }
+.orbMore[aria-expanded='true'] .orb { font-size: 14px; }
+@keyframes orbPop { from { transform: scale(0); opacity: 0; } }
+@keyframes rowIn { from { opacity: 0; transform: translateY(-6px); } }
 .pickerHint { margin: 0; color: #8f86a0; font-size: 10px; line-height: 1.6; }
 .tableDetails { border-top: 1px solid #ffffff0d; padding-top: 12px; }
 .tableDetails summary { display: flex; align-items: baseline; gap: 8px; color: #c9c0d6; font-size: 11px; cursor: pointer; list-style: none; }

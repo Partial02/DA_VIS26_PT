@@ -14,9 +14,8 @@ export interface ExperienceState {
   history: string[]
   /** Picked genre × session cells (category indices), in the order they were picked. */
   selection: number[]
-  /** Genre and session chips of the two-step picker; the selection holds their cross product. */
+  /** Genres opened in the picker (their instrument bubbles are shown), in the order they were opened. */
   pickedGenres: string[]
-  pickedSessions: number[]
 }
 
 export type Action =
@@ -27,15 +26,15 @@ export type Action =
   /** Pick every given cell, or drop them all when every one is already picked. */
   | { type: 'toggleCells'; ids: number[] }
   /**
-   * Toggle one picker chip. `line` is every cell of its row (genre chip) or column (session chip).
-   * Turning it on picks the cells that pair with the other dimension's chips; off drops the whole line.
+   * Open a genre's bubbles, or close it when it is open (picked, or holding picked cells):
+   * closing drops every cell of its row (`rowIds`).
    */
-  | { type: 'pickChip'; chip: { genreId: string } | { session: number }; line: { id: number; genreId: string; session: number }[] }
+  | { type: 'pickGenre'; genreId: string; rowIds: number[] }
   | { type: 'clearSelection' }
 
 export const initialState: ExperienceState = {
   view: { level: 'universe' }, transition: 0, arrivedTransition: 0,
-  selectedTrackId: null, visits: {}, genreVisits: {}, arrivedGenreId: null, history: [], selection: [], pickedGenres: [], pickedSessions: [],
+  selectedTrackId: null, visits: {}, genreVisits: {}, arrivedGenreId: null, history: [], selection: [], pickedGenres: [],
 }
 
 export function experienceReducer(state: ExperienceState, action: Action): ExperienceState {
@@ -65,20 +64,14 @@ export function experienceReducer(state: ExperienceState, action: Action): Exper
       return { ...state, selection: all ? state.selection.filter(id => !action.ids.includes(id))
         : [...state.selection, ...action.ids.filter(id => !state.selection.includes(id))] }
     }
-    case 'pickChip': {
-      const { chip, line } = action
-      const on = 'genreId' in chip ? !state.pickedGenres.includes(chip.genreId) : !state.pickedSessions.includes(chip.session)
-      const ids = (on ? line.filter(cell => 'genreId' in chip ? state.pickedSessions.includes(cell.session) : state.pickedGenres.includes(cell.genreId)) : line)
-        .map(cell => cell.id)
-      const selection = on ? [...state.selection, ...ids.filter(id => !state.selection.includes(id))]
-        : state.selection.filter(id => !ids.includes(id))
-      if ('genreId' in chip) return { ...state, selection,
-        pickedGenres: on ? [...state.pickedGenres, chip.genreId] : state.pickedGenres.filter(id => id !== chip.genreId) }
-      return { ...state, selection,
-        pickedSessions: on ? [...state.pickedSessions, chip.session] : state.pickedSessions.filter(s => s !== chip.session) }
+    case 'pickGenre': {
+      const open = state.pickedGenres.includes(action.genreId) || action.rowIds.some(id => state.selection.includes(id))
+      if (!open) return { ...state, pickedGenres: [...state.pickedGenres, action.genreId] }
+      return { ...state, pickedGenres: state.pickedGenres.filter(id => id !== action.genreId),
+        selection: state.selection.filter(id => !action.rowIds.includes(id)) }
     }
     case 'clearSelection':
-      if (!state.selection.length && !state.pickedGenres.length && !state.pickedSessions.length) return state
-      return { ...state, selection: [], pickedGenres: [], pickedSessions: [] }
+      if (!state.selection.length && !state.pickedGenres.length) return state
+      return { ...state, selection: [], pickedGenres: [] }
   }
 }
