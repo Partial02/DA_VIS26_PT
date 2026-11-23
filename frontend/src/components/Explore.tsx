@@ -64,7 +64,7 @@ export function Explore() {
   ] as const
   const panelLabel = tools.find(tool => tool.id === activePanel)?.label
   const clampWidth = (width: number, main: Element) => Math.max(380, Math.min(main.getBoundingClientRect().width * .6, width))
-  return <main className={styles.explorer} data-traveling={transitioning} data-system={Boolean(subgenre)} data-dock={dockOpen} data-map={mapOpen}
+  return <main className={styles.explorer} data-traveling={transitioning} data-system={Boolean(subgenre)} data-dock={dockOpen}
     style={{ '--dock-width': `${dockWidth}px` } as CSSProperties}>
     {webgl ? <Suspense fallback={<div className={styles.sceneLoading}>GATHERING THE STARS<span /></div>}><Scene reduced={reduced} onUnavailable={() => setWebgl(false)} onBoundsChange={setMapBounds} zoomRef={zoom} /></Suspense>
       : <div className={styles.sceneFallback}><Icon name="star" size={32} /><h2>소리의 지도를 목록으로 만나보세요.</h2><p>이 브라우저에서 3D 지도를 표시할 수 없습니다.<br />장르 탐색과 추천은 계속 사용할 수 있어요.</p><button className="outlinedButton" onClick={() => setActivePanel('genres')}>장르 목록 열기 <Icon name="arrow" /></button></div>}
@@ -76,10 +76,10 @@ export function Explore() {
       </div>}
     </div>
     <LiquidGlass as="nav" elementRef={toolbar} className={styles.toolRail} aria-label="탐색 도구">
+      <button aria-label="전체 지도" title="전체 지도" aria-pressed={mapOpen} aria-controls="miniMapDock" onClick={() => setMapOpen(!mapOpen)}><Icon name="map" size={20} /></button>
       {tools.map(tool => <button key={tool.id} aria-label={tool.label} title={tool.label} aria-expanded={activePanel === tool.id} aria-controls="exploreTools"
         onClick={() => setActivePanel(activePanel === tool.id ? null : tool.id)}><Icon name={tool.icon} size={20} /></button>)}
       <button aria-label="추천 패널" title="추천 패널" aria-pressed={dockOpen} aria-controls="recommendationDock" onClick={() => setDockOpen(!dockOpen)}><Icon name="mix" size={20} /></button>
-      <button aria-label="전체 지도" title="전체 지도" aria-pressed={mapOpen} aria-controls="miniMapDock" onClick={() => setMapOpen(!mapOpen)}><Icon name="map" size={20} /></button>
     </LiquidGlass>
     {activePanel && <LiquidGlass as="section" id="exploreTools" className={styles.utilityPanel} aria-label={panelLabel}
       onKeyDown={event => { if (event.key === 'Escape' && !(event.target as Element).closest('dialog')) { event.stopPropagation(); closePanel() } }}>
