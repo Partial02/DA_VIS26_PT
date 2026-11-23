@@ -34,12 +34,12 @@ export function Header({ story, chapter }: { story: boolean; chapter: number }) 
       <nav id="partNavigation" hidden={!open} className={styles.mainNav} aria-label="발표 목차 및 파트 이동">
         <a href="#/story" onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={story && chapter === 0 ? 'page' : undefined}>Part 1 · 발표</a>
         <ol className={styles.chapterNav}>
-          <li><a href="#/story" onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={story && chapter === 0 ? 'page' : undefined}><span>00</span>표지</a></li>
+          <li><a href="#/story" onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={story && chapter === 0 ? 'page' : undefined}><span>00</span>인트로</a></li>
           {storyPages.map((item, index) => <li key={item.title}><a href={`#/story/${index + 1}`} onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={story && chapter === index + 1 ? 'page' : undefined}><span>{String(index + 1).padStart(2, '0')}</span>{item.title}</a></li>)}
         </ol>
         <a href="#/explore" onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={!story ? 'page' : undefined}>Part 2 · 음악 탐색</a>
         <details className={styles.menuDetails}><summary>사용법</summary>
-          <p>표지는 화면 클릭·스크롤·방향키로 넘깁니다. 발표는 아래로 스크롤하면 이어지고, 위로 스크롤하면 이전 내용으로 돌아갑니다. 햄버거 메뉴의 목차에서 파트와 페이지를 선택할 수 있습니다.</p>
+          <p>인트로는 아래로 스크롤하거나 방향키를 누르면 넘어갑니다. 발표는 아래로 스크롤하면 이어지고, 위로 스크롤하면 이전 내용으로 돌아갑니다. 햄버거 메뉴의 목차에서 파트와 페이지를 선택할 수 있습니다.</p>
           <p>전체 지도·장르·항성계에서 드래그 또는 방향키로 회전하고 우클릭 드래그·두 손가락으로 이동합니다. 휠 또는 +/−로 접근·후퇴하고 지도에 포커스를 둔 상태에서 0으로 원래 보기를 복원합니다.</p>
           <p>장르 안의 연한 별 영역을 호버하면 세부장르가 진한 색으로 강조되고, 클릭하면 같은 공간에서 줌인합니다. 오른쪽 플레이리스트·추천 패널은 세부장르 진입 시 표시됩니다. 세부장르에 도착하면 세 곡이 천천히 공전하며, 다른 곡을 선택하면 궤도에도 반영됩니다.</p>
           <p>미니맵의 장르를 눌러 이동할 수 있습니다. 오른쪽 위 방문 기록에서 장르별 누적 횟수를 확인합니다. 다시 찾을수록 별에 장르색이 남고 밝아집니다.</p>
