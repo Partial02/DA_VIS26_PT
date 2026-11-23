@@ -23,7 +23,7 @@ export function RecommendationJar({ onPick }: { onPick: () => void }) {
     <div className={styles.recommendationHeader}><span>다음 추천{state.selection.length > 0 && <small> · {state.selection.length}칸</small>}</span>
       <button data-pick-entry onClick={onPick} aria-label="장르 × 악기 고르기 열기" title="장르 × 악기 고르기"><Icon name="mix" size={16} /></button></div>
     <ol className={styles.genreRecommendations}>{results.map(result => <li key={result.genreId}><NextCard result={result} onChoose={() => choose(result)} /></li>)}</ol>
-    {!results.length && <p className={styles.emptyMix}>장르와 악기를 고르면 어울리는 세부장르가 떠요.<br /><button className={styles.inlineAction} onClick={onPick}>고르기 열기 <Icon name="arrow" size={13} /></button></p>}
+    {!results.length && <p className={styles.emptyMix}>장르와 악기를 고르면 어울리는 세부장르가 떠요.</p>}
   </aside>
 }
 
