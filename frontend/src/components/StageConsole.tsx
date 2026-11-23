@@ -33,13 +33,18 @@ export function CategoryTable() {
   const index = catalog.categories!
   const { sessions, genres, categories } = index.model
   const [hover, setHover] = useState<number | null>(null)
+  const [bubbles, setBubbles] = useState(false)
   const picked = useMemo(() => new Set(state.selection), [state.selection])
   const rowIds = (genreId: string) => sessions.map((_, s) => index.cellOf.get(cellKey(genreId, s))).filter((id): id is number => id !== undefined)
   const columnIds = (session: number) => genres.map(g => index.cellOf.get(cellKey(g.id, session))).filter((id): id is number => id !== undefined)
   const info = hover !== null ? categories[hover] : null
   const infoGenre = info ? catalog.genreById.get(info.genreId)! : null
   return <div className={styles.categoryTableWrap}>
-    <div className={styles.categoryTable} role="group" aria-label={`장르 ${genres.length}개 × 세션 ${sessions.length}개 범주 선택표`}
+    <div className={styles.viewSwitch} role="group" aria-label="표 보기 방식">
+      <button aria-pressed={!bubbles} onClick={() => setBubbles(false)}>히트맵</button>
+      <button aria-pressed={bubbles} onClick={() => setBubbles(true)}>버블</button>
+    </div>
+    <div className={styles.categoryTable} data-bubbles={bubbles} role="group" aria-label={`장르 ${genres.length}개 × 세션 ${sessions.length}개 범주 선택표`}
       style={{ '--sessions': sessions.length } as CSSProperties} onPointerLeave={() => setHover(null)}>
       <span className={styles.tableCorner} aria-hidden="true">장르 \ 악기</span>
       {sessions.map((session, s) => {
@@ -64,24 +69,38 @@ export function CategoryTable() {
             const category = categories[id]
             const on = picked.has(id)
             return <button key={session.key} className={styles.cell} aria-pressed={on}
-              style={{ '--heat': `${heat(category.rate)}%` } as CSSProperties}
+              style={{ '--heat': `${heat(category.rate)}%`, '--size': `${bubbleSize(category.rate)}%`, '--lift': liftStrength(category.lift) } as CSSProperties}
               aria-label={`${genre.name} × ${session.name}, ${category.tracks}곡, 장르 곡의 ${Math.round(category.rate * 100)}%, ${on ? '선택됨' : '선택 안 됨'}`}
               onPointerEnter={() => setHover(id)} onFocus={() => setHover(id)} onBlur={() => setHover(null)}
               onClick={() => dispatch({ type: 'toggleCell', id })}>
-              <SessionGlyph session={session.key} size={13} />
+              {bubbles ? <i className={styles.bubble} aria-hidden="true" /> : <SessionGlyph session={session.key} size={13} />}
             </button>
           })}
         </div>
       })}
     </div>
-    <div className={styles.heatLegend} aria-hidden="true">
+    {bubbles ? <div className={styles.heatLegend} aria-hidden="true">
+      <span className={styles.bubbleKey}><i style={{ width: 5 }} /><i style={{ width: 12 }} /></span><span>원 크기 = 장르 곡 중 사용 비율</span>
+      <span className={styles.bubbleKey}><i style={{ opacity: .3 }} /><i /></span><span>진하기 = 다른 장르보다 유독 많이 씀</span>
+      <small>크고 진한 원이 그 장르를 대표하는 악기예요</small>
+    </div> : <div className={styles.heatLegend} aria-hidden="true">
       <span>드물게 씀</span><i /><span>자주 씀</span>
       <small>칸이 진할수록 그 장르 곡에서 그 악기가 자주 쓰여요</small>
-    </div>
+    </div>}
     <p className={styles.cellInfo} aria-live="polite">{info && infoGenre
       ? <><b style={{ color: infoGenre.color }}>{shortGenreName(infoGenre.name)}</b> × {sessions[info.session].name} · {info.tracks}곡 · 장르 곡의 {Math.round(info.rate * 100)}%가 사용 · 전체 평균의 {info.lift.toFixed(1)}배<small>{info.instruments.join(', ')}</small></>
       : <>칸을 누르면 그 장르 × 악기 조합이 담겨요. 행·열 머리를 누르면 한 줄 전체가 담겨요.</>}</p>
   </div>
+}
+
+/** Bubble diameter (percent of the cell): area grows with the share of the genre's songs using the session. */
+function bubbleSize(rate: number) {
+  return Math.round(18 + 82 * Math.sqrt(Math.min(1, rate)))
+}
+
+/** Bubble opacity from lift on a log scale: ≤ 0.37× is faint, 1× is middling, ≥ 2.7× is full. */
+function liftStrength(lift: number) {
+  return +(.22 + .78 * Math.min(1, Math.max(0, (Math.log(lift) + 1) / 2))).toFixed(2)
 }
 
 /** Fill strength (percent of the genre color) for a cell: share of the genre's songs using the session. */
@@ -137,7 +156,8 @@ export function ChipPicker() {
   const pickGenre = (genreId: string) => dispatch({ type: 'pickChip', chip: { genreId }, line: line(crossCells(index, [genreId], allSessions)) })
   const pickSession = (session: number) => dispatch({ type: 'pickChip', chip: { session }, line: line(crossCells(index, allGenres, [session])) })
   const g = state.pickedGenres.length, n = state.pickedSessions.length
-  const hint = !g && !n ? '장르와 악기를 하나 이상씩 고르면, 그 조합에 맞는 세부장르를 바로 찾아 드려요.'
+  const hint = !g && !n && state.selection.length ? `표에서 고른 ${state.selection.length}칸으로 찾는 중이에요.`
+    : !g && !n ? '장르와 악기를 하나 이상씩 고르면, 그 조합에 맞는 세부장르를 바로 찾아 드려요.'
     : !n ? '이제 듣고 싶은 악기를 골라 보세요.'
     : !g ? '어느 장르에서 찾을지 골라 보세요.'
     : `장르 ${g}개 × 악기 ${n}개로 찾는 중이에요. 칩을 더 누르면 조합이 늘어나요.`
