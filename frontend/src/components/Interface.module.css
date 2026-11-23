@@ -305,19 +305,17 @@
 .cellInfo b { font-weight: 500; }
 .cellInfo small { display: block; color: #776e88; font-size: 9px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
-/* Docked minimap, lower right of the star map; folds into its title bar. */
-.miniMapDock { position: absolute; right: calc(var(--dock-space) + 14px); bottom: 14px; z-index: 15; width: 220px; border-radius: 20px; overflow: hidden; transition: right .3s var(--ease); }
+/* Overview minimap, lower left beside the tool rail (which toggles it). Sits under the tool panels. */
+.miniMapDock { position: absolute; left: 76px; bottom: 14px; z-index: 15; width: 220px; border-radius: 20px; overflow: hidden; }
 .miniMapDock:global(.liquidGlass) { background: #0c0a1699; }
-.miniMapToggle { width: 100%; display: flex; align-items: center; gap: 8px; padding: 9px 14px; color: #c5bdd3; font-size: 11px; }
-.miniMapToggle span { flex: 1; text-align: left; }
-.miniMapToggle svg:last-child { transition: transform .25s var(--ease); }
-.miniMapToggle[aria-expanded='true'] svg:last-child { transform: rotate(180deg); }
-.miniMapToggle:hover { color: #fff; }
+.miniMapHeader { display: flex; align-items: center; gap: 8px; padding: 8px 8px 6px 14px; color: #c5bdd3; font-size: 11px; }
+.miniMapHeader span { flex: 1; }
+.miniMapHeader button { display: grid; place-items: center; width: 24px; height: 24px; border-radius: 50%; color: #b8afc6; }
+.miniMapHeader button:hover { background: #ffffff12; color: #fff; }
 .miniMapBody { padding: 0 10px 10px; }
-.miniMapBody[hidden] { display: none; }
 
 @media (max-width: 900px) {
   .explorer[data-dock='true'] { --dock-space: 0px; }
   .rightDock { top: auto; left: 12px; right: 12px; width: auto; height: 52%; }
-  .miniMapDock { width: 180px; bottom: auto; top: 60px; right: 12px; }
+  .miniMapDock { width: 180px; bottom: auto; top: 60px; left: 64px; }
 }

@@ -32,6 +32,7 @@ export function Explore() {
   const [activePanel, setActivePanel] = useState<'genres' | 'visits' | null>(null)
   // The recommendation dock sits on the right and starts open.
   const [dockOpen, setDockOpen] = useState(true)
+  const [mapOpen, setMapOpen] = useState(true)
   const [dockWidth, setDockWidth] = useState(440)
   const resizeStart = useRef<{ x: number; width: number } | null>(null)
   const [mapBounds, setMapBounds] = useState<Position[] | null>(null)
@@ -76,6 +77,7 @@ export function Explore() {
       {tools.map(tool => <button key={tool.id} aria-label={tool.label} title={tool.label} aria-expanded={activePanel === tool.id} aria-controls="exploreTools"
         onClick={() => setActivePanel(activePanel === tool.id ? null : tool.id)}><Icon name={tool.icon} size={20} /></button>)}
       <button aria-label="추천 패널" title="추천 패널" aria-pressed={dockOpen} aria-controls="recommendationDock" onClick={() => setDockOpen(!dockOpen)}><Icon name="mix" size={20} /></button>
+      <button aria-label="전체 지도" title="전체 지도" aria-pressed={mapOpen} aria-controls="miniMapDock" onClick={() => setMapOpen(!mapOpen)}><Icon name="map" size={20} /></button>
     </LiquidGlass>
     {activePanel && <LiquidGlass as="section" id="exploreTools" className={styles.utilityPanel} aria-label={panelLabel}
       onKeyDown={event => { if (event.key === 'Escape' && !(event.target as Element).closest('dialog')) { event.stopPropagation(); closePanel() } }}>
@@ -108,7 +110,10 @@ export function Explore() {
         {subgenre ? <><TrackDock /><RecommendationJar /></> : <StageConsole />}
       </div>
     </LiquidGlass>}
-    <MiniMapDock bounds={webgl ? mapBounds : null} />
+    {mapOpen && <MiniMapDock bounds={webgl ? mapBounds : null} onClose={() => {
+      toolbar.current?.querySelector<HTMLButtonElement>('[aria-controls="miniMapDock"]')?.focus()
+      setMapOpen(false)
+    }} />}
     <div className="srOnly" role="status" aria-live="polite">{!transitioning && (subgenre ? `${genre!.name}, ${subgenre.name}. ${subgenre.trackIds.length}곡. 방문 ${state.visits[subgenre.id] ?? 0}회.` : genre ? `${genre.name}. 방문 ${state.genreVisits[genre.id] ?? 0}회. 세부장르 ${genre.subgenreIds.length}개.` : '전체 음악 지도. 15개 장르, 4961곡.')}</div>
   </main>
 }
