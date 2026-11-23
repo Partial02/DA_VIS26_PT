@@ -106,7 +106,7 @@
 .genreRecommendations li { display: flex; min-width: 0; }
 .genreGlass { position: relative; display: flex; flex-direction: column; gap: 9px; align-items: center; justify-content: center; width: 100%; aspect-ratio: 1.15; min-height: 0; padding: 12px 8px; overflow: hidden; border-radius: 20px; text-align: center; transition: transform .25s var(--ease); }
 .genreGlassLabel { position: relative; z-index: 1; min-width: 0; overflow-wrap: anywhere; }
-.genreGlassLabel strong { display: block; color: #f6f1fa; font-family: 'Instrument Serif', serif; font-weight: 400; font-style: italic; font-size: 19px; line-height: 1.1; text-shadow: 0 1px 6px #0008; }
+.genreGlassLabel strong { display: block; color: #f6f1fa; font-weight: 600; font-size: 16px; line-height: 1.15; letter-spacing: -.3px; text-shadow: 0 1px 6px #0008; }
 .genreGlassLabel small { display: block; margin-top: 6px; color: color-mix(in srgb, var(--genre-color) 60%, #fff); font-size: 10px; text-shadow: 0 1px 4px #0009; }
 .genreGlass:hover, .genreGlass:focus-visible { transform: translateY(-2px) scale(1.03); }
 .cardBlobs { position: absolute; inset: 0; z-index: 0; pointer-events: none; }
@@ -227,7 +227,7 @@
   .utilityPanel { left: 64px; top: 96px; width: calc(100% - 76px); max-height: calc(100% - 112px); }
   .utilityPanelBody { padding: 12px; }
   .genreGlass { padding: 12px 8px; border-radius: 0; }
-  .genreGlassLabel strong { font-size: 21px; }
+  .genreGlassLabel strong { font-size: 17px; }
 }
 
 /* Right dock: the selection table + ranking, or the subgenre playlist. */
