@@ -6,6 +6,7 @@ import type { RecommendationTarget } from '../domain/recommendations'
 import { useExperience } from '../state/ExperienceContext'
 import { Icon } from './Icon'
 import { SessionGlyph } from './SessionGlyph'
+import { SignatureOrbs, usePickedSessions, useSignature } from './SignatureOrbs'
 import styles from './Interface.module.css'
 
 export function useChooseRecommendation() {
@@ -120,25 +121,33 @@ export function SubgenreRanking({ perPage = 6, onChoose }: { perPage?: number; o
   const current = Math.min(page, pages - 1)
   if (!ranked.length) return <p className={styles.stageEmpty}>장르를 고르고 악기 구슬을 누르면 어울리는 세부장르가 점수 순으로 떠요.</p>
   return <>
-    <ol className={styles.rankList} start={current * perPage + 1}>{ranked.slice(current * perPage, (current + 1) * perPage).map((result, i) => {
-      const genre = catalog.genreById.get(result.genreId)!
-      const subgenre = catalog.subgenreById.get(result.subgenreId)!
-      const percent = Math.round(result.score * 100)
-      return <li key={result.subgenreId}>
-        <button style={{ '--genre-color': genre.color } as CSSProperties} onClick={() => { choose(result); onChoose?.() }}
-          aria-label={`${current * perPage + i + 1}위 ${subgenre.name}, ${genre.name}, ${subgenre.trackIds.length}곡, 점수 ${percent}. 이 세부장르로 이동`}>
-          <span className={styles.rankName}><i className={styles.rankDot} aria-hidden="true" />{subgenre.name}</span><span className={styles.rankScore}>{percent}</span>
-          <span className={styles.rankMeta}>{genre.name} · {subgenre.trackIds.length}곡{!state.genreVisits[genre.id] && ' · 미방문'}</span>
-          <span className={styles.rankBar} aria-hidden="true"><i style={{ width: `${Math.max(3, percent)}%` }} /></span>
-        </button>
-      </li>
-    })}</ol>
+    <ol className={styles.rankList} start={current * perPage + 1}>{ranked.slice(current * perPage, (current + 1) * perPage).map((result, i) =>
+      <li key={result.subgenreId}><RankRow result={result} rank={current * perPage + i + 1} onChoose={() => { choose(result); onChoose?.() }} /></li>)}</ol>
     {pages > 1 && <nav className={styles.pager} aria-label="세부장르 추천 페이지">
       <button onClick={() => setPage(current - 1)} disabled={current === 0} aria-label="이전 페이지">‹</button>
       <span>{current + 1} / {pages}</span>
       <button onClick={() => setPage(current + 1)} disabled={current >= pages - 1} aria-label="다음 페이지">›</button>
     </nav>}
   </>
+}
+
+/** One ranked subgenre: name, signature orbs and score; the meta line names the signature instruments, matches lit. */
+function RankRow({ result, rank, onChoose }: { result: RecommendationTarget; rank: number; onChoose: () => void }) {
+  const { catalog, state } = useExperience()
+  const genre = catalog.genreById.get(result.genreId)!
+  const subgenre = catalog.subgenreById.get(result.subgenreId)!
+  const signature = useSignature(subgenre.id)
+  const picked = usePickedSessions()
+  const percent = Math.round(result.score * 100)
+  return <button className={styles.rankRow} style={{ '--genre-color': genre.color } as CSSProperties} onClick={onChoose}
+    aria-label={`${rank}위 ${subgenre.name}, ${genre.name}, ${subgenre.trackIds.length}곡, 점수 ${percent}${signature.length ? `, 대표 악기 ${signature.map(s => s.name).join(', ')}` : ''}. 이 세부장르로 이동`}>
+    <span className={styles.rankName}><i className={styles.rankDot} aria-hidden="true" />{subgenre.name}</span>
+    <SignatureOrbs signature={signature} picked={picked} min={15} span={7} />
+    <span className={styles.rankScore}>{percent}</span>
+    <span className={styles.rankMeta}>{genre.name} · {subgenre.trackIds.length}곡{signature.map(item =>
+      <span key={item.session}> · <span data-matched={picked.has(item.session)}>{item.name}</span></span>)}{!state.genreVisits[genre.id] && ' · 미방문'}</span>
+    <span className={styles.rankBar} aria-hidden="true"><i style={{ width: `${Math.max(3, percent)}%` }} /></span>
+  </button>
 }
 
 /** Orbs shown per genre before the "+n" orb (one line at the default panel width). */

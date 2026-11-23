@@ -137,12 +137,14 @@
 .inlineAction:hover:not(:disabled) { color: #f1e8ff; }
 .stageEmpty { margin: 0; color: #8f809f; font-size: 11px; line-height: 1.8; }
 .rankList { display: grid; list-style: none; padding: 0; margin: 0; }
-.rankList button { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; padding: 9px 10px; text-align: left; border-radius: 12px; transition: background .2s; }
+.rankList button { width: 100%; display: grid; grid-template-columns: minmax(0, 1fr) auto auto; align-items: center; gap: 4px 10px; padding: 9px 10px; text-align: left; border-radius: 12px; transition: background .2s; }
 .rankList button:hover { background: color-mix(in srgb, var(--genre-color) 9%, transparent); }
 .rankDot { display: inline-block; width: 7px; height: 7px; margin-right: 8px; border-radius: 50%; background: var(--genre-color); box-shadow: 0 0 8px var(--genre-color); vertical-align: 1px; }
 .rankName { color: #ddd5e5; font-size: 13px; overflow-wrap: anywhere; }
-.rankScore { color: var(--genre-color); font-size: 12px; font-variant-numeric: tabular-nums; }
+.rankScore { min-width: 18px; text-align: right; color: var(--genre-color); font-size: 12px; font-variant-numeric: tabular-nums; }
 .rankMeta { grid-column: 1 / -1; color: #8f809f; font-size: 10px; }
+.rankMeta [data-matched='true'] { color: #fff; font-weight: 500; }
+.rankRow .cardOrbRow { gap: 4px; }
 .rankBar { grid-column: 1 / -1; height: 3px; border-radius: 3px; overflow: hidden; background: #ffffff0a; }
 .rankBar i { display: block; height: 100%; background: linear-gradient(90deg, color-mix(in srgb, var(--genre-color) 45%, transparent), var(--genre-color)); }
 .rankList button:hover .rankName { color: #fff; }

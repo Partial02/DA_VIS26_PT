@@ -1,11 +1,11 @@
 import { useMemo } from 'react'
 import type { CSSProperties } from 'react'
-import { subgenreProfile } from '../domain/category'
+import type { RecommendationTarget } from '../domain/recommendations'
 import { rankRecommendations, topGenreDestinations } from '../domain/recommendations'
 import { useExperience } from '../state/ExperienceContext'
 import { Icon } from './Icon'
 import { LiquidGlass } from './LiquidGlass'
-import { SessionGlyph } from './SessionGlyph'
+import { SignatureOrbs, usePickedSessions, useSignature } from './SignatureOrbs'
 import { shortGenreName, useChooseRecommendation } from './StageConsole'
 import styles from './Interface.module.css'
 
@@ -19,41 +19,30 @@ export function RecommendationJar({ onPick }: { onPick: () => void }) {
   const current = state.view.level === 'system' ? state.view.subgenreId : null
   const results = useMemo(() => topGenreDestinations(rankRecommendations(catalog, state.selection, state.genreVisits)
     .filter(result => result.subgenreId !== current)), [catalog, current, state.selection, state.genreVisits])
-  const index = catalog.categories
-  const pickedSessions = useMemo(() => new Set(index ? state.selection.map(id => index.cells[id].session) : []), [index, state.selection])
   return <aside className={styles.recommendation} aria-label="고른 범주로 찾은 세부장르 추천">
     <div className={styles.recommendationHeader}><span>다음 추천{state.selection.length > 0 && <small> · {state.selection.length}칸</small>}</span>
       <button data-pick-entry onClick={onPick} aria-label="장르 × 악기 고르기 열기" title="장르 × 악기 고르기"><Icon name="mix" size={16} /></button></div>
-    <ol className={styles.genreRecommendations}>{results.map(result => {
-      const genre = catalog.genreById.get(result.genreId)!
-      const subgenre = catalog.subgenreById.get(result.subgenreId)!
-      const signature = index ? signatureSessions(subgenreProfile(index, catalog, subgenre.id)) : []
-      const names = signature.map(({ session }) => index!.model.sessions[session].name)
-      const seed = [...subgenre.id].reduce((sum, char) => sum * 31 + char.charCodeAt(0) >>> 0, 7)
-      return <li key={result.genreId}>
-        <LiquidGlass as="button" className={styles.genreGlass} tint={genre.color} style={{ '--genre-color': genre.color } as CSSProperties}
-          aria-label={`${genre.name} 추천: ${subgenre.name} 탐색하기, 점수 ${Math.round(result.score * 100)}${names.length ? `, 대표 악기 ${names.join(', ')}` : ''}`}
-          onClick={() => choose(result)}>
-          {/* The subgenre's signature instruments as genre-colored orbs melting into the glass. */}
-          <span className={styles.cardBlobs} aria-hidden="true">{signature.map(({ weight }, i) =>
-            <i key={i} style={{ ...blobPlace(i, seed), '--d': `${Math.round(36 + 40 * weight)}%`, '--o': (.16 + .24 * weight).toFixed(2) } as CSSProperties} />)}</span>
-          <span className={styles.genreGlassLabel}><strong>{subgenre.name}</strong><small>{shortGenreName(genre.name)} · {Math.round(result.score * 100)}</small></span>
-          {signature.length > 0 && <span className={styles.cardOrbRow} aria-hidden="true">{signature.map(({ session, weight }) =>
-            <i key={session} className={styles.cardOrb} data-matched={pickedSessions.has(session)} title={index!.model.sessions[session].name}
-              style={{ '--d': `${Math.round(16 + 8 * weight)}px` } as CSSProperties}>
-              <SessionGlyph session={index!.model.sessions[session].key} size={10} />
-            </i>)}</span>}
-        </LiquidGlass>
-      </li>
-    })}</ol>
+    <ol className={styles.genreRecommendations}>{results.map(result => <li key={result.genreId}><NextCard result={result} onChoose={() => choose(result)} /></li>)}</ol>
     {!results.length && <p className={styles.emptyMix}>장르와 악기를 고르면 어울리는 세부장르가 떠요.<br /><button className={styles.inlineAction} onClick={onPick}>고르기 열기 <Icon name="arrow" size={13} /></button></p>}
   </aside>
 }
 
-/** The three sessions most typical of a subgenre (profile already scaled so the top one is 1). */
-function signatureSessions(profile: readonly number[]) {
-  return profile.map((weight, session) => ({ session, weight })).filter(({ weight }) => weight > 0)
-    .sort((a, b) => b.weight - a.weight).slice(0, 3)
+/** One next-recommendation card: the subgenre's signature orbs melt into the glass and sit under its name. */
+function NextCard({ result, onChoose }: { result: RecommendationTarget; onChoose: () => void }) {
+  const { catalog } = useExperience()
+  const genre = catalog.genreById.get(result.genreId)!
+  const subgenre = catalog.subgenreById.get(result.subgenreId)!
+  const signature = useSignature(subgenre.id)
+  const picked = usePickedSessions()
+  const seed = [...subgenre.id].reduce((sum, char) => sum * 31 + char.charCodeAt(0) >>> 0, 7)
+  return <LiquidGlass as="button" className={styles.genreGlass} tint={genre.color} style={{ '--genre-color': genre.color } as CSSProperties}
+    aria-label={`${genre.name} 추천: ${subgenre.name} 탐색하기, 점수 ${Math.round(result.score * 100)}${signature.length ? `, 대표 악기 ${signature.map(s => s.name).join(', ')}` : ''}`}
+    onClick={onChoose}>
+    <span className={styles.cardBlobs} aria-hidden="true">{signature.map(({ weight }, i) =>
+      <i key={i} style={{ ...blobPlace(i, seed), '--d': `${Math.round(36 + 40 * weight)}%`, '--o': (.16 + .24 * weight).toFixed(2) } as CSSProperties} />)}</span>
+    <span className={styles.genreGlassLabel}><strong>{subgenre.name}</strong><small>{shortGenreName(genre.name)} · {Math.round(result.score * 100)}</small></span>
+    <SignatureOrbs signature={signature} picked={picked} />
+  </LiquidGlass>
 }
 
 /** Blob centers: three loose slots, nudged per subgenre so no two cards look alike. */

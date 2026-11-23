@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs'
 import { test } from 'node:test'
 import { indexCatalog, scoredPlaylist } from '../src/domain/catalog.ts'
 import type { MusicData } from '../src/domain/catalog.ts'
-import { ARTIST_PENALTY, cellKey, crossCells, lengthFit, rankSubgenres, sessionsOf, subgenreScore, trackMatch } from '../src/domain/category.ts'
+import { ARTIST_PENALTY, cellKey, crossCells, lengthFit, signatureSessions, subgenreProfile, rankSubgenres, sessionsOf, subgenreScore, trackMatch } from '../src/domain/category.ts'
 import type { CategoryModel } from '../src/domain/category.ts'
 
 const read = (file: string) => JSON.parse(readFileSync(new URL(`../public/data/${file}`, import.meta.url), 'utf8'))
@@ -87,4 +87,13 @@ test('the picker cross product keeps only existing cells', () => {
   const metalAndRock = crossCells(index, ['metal', 'rock'], [session('drums'), session('ethnic')])
   assert.deepEqual(metalAndRock, [cell('metal', 'drums'), cell('rock', 'drums'), cell('rock', 'ethnic')]) // Metal × ethnic does not exist.
   assert.deepEqual(crossCells(index, ['rock'], []), [])
+})
+
+test('a subgenre signature is its three strongest sessions, strongest first, ties by session order', () => {
+  assert.deepEqual(signatureSessions([0, .5, 1, .5, 0, .2]), [{ session: 2, weight: 1 }, { session: 1, weight: .5 }, { session: 3, weight: .5 }])
+  assert.deepEqual(signatureSessions([0, 0]), [])
+  const orchestral = catalog.subgenres.find(s => s.name === 'Orchestral')!
+  const signature = signatureSessions(subgenreProfile(index, catalog, orchestral.id))
+  assert.equal(signature[0].weight, 1)
+  assert.ok(signature.some(item => item.session === session('strings')))
 })

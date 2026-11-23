@@ -104,6 +104,12 @@ export function subgenreProfile(index: CategoryIndex, catalog: Catalog, subgenre
   return top ? blended.map(rate => rate / top) : blended
 }
 
+/** A subgenre's most typical sessions (from its scaled profile), strongest first. */
+export function signatureSessions(profile: readonly number[], count = 3): { session: number; weight: number }[] {
+  return profile.map((weight, session) => ({ session, weight })).filter(({ weight }) => weight > 0)
+    .sort((a, b) => b.weight - a.weight || a.session - b.session).slice(0, count)
+}
+
 /** Soft F1 between the picked cells and a subgenre profile. */
 export function profileFit(index: CategoryIndex, profile: readonly number[], genreId: string, selection: readonly number[]): number {
   if (!selection.length) return 0
