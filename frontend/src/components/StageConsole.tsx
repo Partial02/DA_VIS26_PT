@@ -19,9 +19,16 @@ export function shortGenreName(name: string) {
     .replace(' / Caribbean', '').replace(' / Country', ' · Country')
 }
 
-/** Column-head label: at most three syllables so the vertical labels line up. */
+/** Short instrument name for orb captions. */
 export function shortSessionName(name: string) {
   return ({ '일렉 기타': '일렉', '어쿠스틱 기타': '통기타', '민속 악기': '민속' } as Record<string, string>)[name] ?? name
+}
+
+/** English column-head labels for the table, keyed by session. */
+const sessionEnglish: Record<string, string> = {
+  drums: 'Drums', beats: 'Beats', percussion: 'Percussion', bass: 'Bass', electric_guitar: 'E. Guitar', acoustic_guitar: 'A. Guitar',
+  piano: 'Piano', keys: 'Keys', synth: 'Synth', strings: 'Strings', brass: 'Brass', woodwind: 'Woodwind', mallets: 'Mallets',
+  folk_reed: 'Reed', ethnic: 'Ethnic', vocal: 'Vocal',
 }
 
 /**
@@ -47,13 +54,13 @@ export function CategoryTable() {
     </div>
     <div className={styles.categoryTable} data-bubbles={bubbles} role="group" aria-label={`장르 ${genres.length}개 × 세션 ${sessions.length}개 범주 선택표`}
       style={{ '--sessions': sessions.length } as CSSProperties} onPointerLeave={() => setHover(null)}>
-      <span className={styles.tableCorner} aria-hidden="true">장르 \ 악기</span>
+      <span className={styles.tableCorner} aria-hidden="true">Genre \ Inst.</span>
       {sessions.map((session, s) => {
         const ids = columnIds(s)
         const on = ids.every(id => picked.has(id))
         return <button key={session.key} className={styles.sessionHead} aria-pressed={on} title={`${session.name} 열 전체 ${on ? '해제' : '선택'}`}
           aria-label={`${session.name} 열 전체 ${on ? '해제' : '선택'}`} onClick={() => dispatch({ type: 'toggleCells', ids })}>
-          <span aria-hidden="true">{shortSessionName(session.name)}</span><SessionGlyph session={session.key} size={14} />
+          <span aria-hidden="true">{sessionEnglish[session.key] ?? session.name}</span><SessionGlyph session={session.key} size={14} />
         </button>
       })}
       {genres.map(genre => {
