@@ -1,5 +1,5 @@
-import { indexAtlas, orderSubgenreTracks } from './atlas.ts'
-import type { Atlas, AtlasModel } from './atlas.ts'
+import { indexCategories, scoreSubgenreTracks } from './category.ts'
+import type { CategoryIndex, CategoryModel, ScoredTrack } from './category.ts'
 
 export type Position = [number, number]
 export type SpacePosition = [number, number, number]
@@ -55,35 +55,43 @@ export interface Catalog extends MusicData {
   trackById: Map<string, Track>
   genreById: Map<string, Genre>
   subgenreById: Map<string, Subgenre>
-  /** Genre Atlas v4 recommendation model; absent only in small test fixtures. */
-  atlas?: Atlas
+  /** Genre × session category model; absent only in small test fixtures. */
+  categories?: CategoryIndex
 }
 
-export function indexCatalog(data: MusicData, atlasModel?: AtlasModel): Catalog {
+export function indexCatalog(data: MusicData, categoryModel?: CategoryModel): Catalog {
   const catalog: Catalog = {
     ...data,
     trackById: new Map(data.tracks.map(t => [t.id, t])),
     genreById: new Map(data.genres.map(g => [g.id, g])),
     subgenreById: new Map(data.subgenres.map(s => [s.id, s])),
   }
-  if (atlasModel) catalog.atlas = indexAtlas(atlasModel, catalog)
+  if (categoryModel) catalog.categories = indexCategories(categoryModel, catalog)
   return catalog
 }
 
-/** Playlist order of a subgenre: Genre Atlas stage ordering, or track ID order without the model. */
-export function subgenrePlaylist(catalog: Catalog, subgenreId: string, stage: readonly number[] = []): Track[] {
-  if (catalog.atlas) return orderSubgenreTracks(catalog.atlas, catalog, subgenreId, stage)
-  return (catalog.subgenreById.get(subgenreId)?.trackIds ?? []).toSorted().map(id => catalog.trackById.get(id)!)
+// The playlist panel and the subgenre stars ask for the same ordering; the reducer
+// replaces `selection` on every change, so the array itself is a safe cache key.
+const playlistCache = new WeakMap<Catalog, WeakMap<readonly number[], Map<string, ScoredTrack[]>>>()
+
+/** Scored playlist of a subgenre for the picked cells, or track ID order without the model. Treat the result as read-only. */
+export function scoredPlaylist(catalog: Catalog, subgenreId: string, selection: readonly number[] = []): ScoredTrack[] {
+  let bySelection = playlistCache.get(catalog)
+  if (!bySelection) playlistCache.set(catalog, bySelection = new WeakMap())
+  let bySubgenre = bySelection.get(selection)
+  if (!bySubgenre) bySelection.set(selection, bySubgenre = new Map())
+  let list = bySubgenre.get(subgenreId)
+  if (!list) {
+    list = catalog.categories
+      ? scoreSubgenreTracks(catalog.categories, catalog, subgenreId, selection)
+      : (catalog.subgenreById.get(subgenreId)?.trackIds ?? []).toSorted().map(id => ({ track: catalog.trackById.get(id)!, score: 0, match: 0 }))
+    bySubgenre.set(subgenreId, list)
+  }
+  return list
 }
 
-/** The first three playlist songs orbit; a selected member outside them takes the first slot. */
-export function systemTracks(catalog: Catalog, subgenreId: string, selectedId?: string | null, stage: readonly number[] = []): Track[] {
-  const members = catalog.subgenreById.get(subgenreId)?.trackIds ?? []
-  const tracks = subgenrePlaylist(catalog, subgenreId, stage).slice(0, 3)
-  if (selectedId && members.includes(selectedId) && !tracks.some(track => track.id === selectedId)) {
-    tracks[0] = catalog.trackById.get(selectedId)!
-  }
-  return tracks
+export function subgenrePlaylist(catalog: Catalog, subgenreId: string, selection: readonly number[] = []): Track[] {
+  return scoredPlaylist(catalog, subgenreId, selection).map(item => item.track)
 }
 
 export function adjacentSubgenre(catalog: Catalog, subgenreId: string, direction: number): Subgenre {

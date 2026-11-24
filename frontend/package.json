@@ -11,7 +11,8 @@
     "test": "node --experimental-strip-types --test tests/*.test.ts",
     "data:prepare": "python3 scripts/prepare_data.py",
     "data:test": "python3 -m unittest discover -s tests -p '*_test.py'",
-    "data:check": "python3 scripts/prepare_data.py --check"
+    "data:check": "python3 scripts/prepare_data.py --check && python3 scripts/build_category_model.py --check",
+    "data:categories": "python3 scripts/build_category_model.py"
   },
   "dependencies": {
     "@react-three/drei": "^10.0.0",

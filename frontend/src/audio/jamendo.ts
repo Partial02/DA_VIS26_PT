@@ -1,5 +1,6 @@
 // Jamendo playback ported from Genre Atlas v4. Songs are CC-licensed Jamendo tracks
 // addressed by the MTG-Jamendo TRACK_ID; the CSV's relative MP3 path is not used.
+import { bandLevels, createLevelState, loudness } from './levels'
 
 export interface JamendoState {
   trackId: string | null
@@ -62,8 +63,65 @@ async function resolveSource(trackId: string, clientId: string): Promise<{ src: 
 
 type Listener = () => void
 
+/**
+ * Live levels of the playing song. Jamendo's storage answers CORS, so the element
+ * loads with crossOrigin="anonymous" and feeds an AnalyserNode. A source without
+ * CORS falls back to a plain element (still audible) and reports no levels.
+ */
+class LiveMeter {
+  private context: AudioContext | null = null
+  private analyser: AnalyserNode | null = null
+  private bins: Float32Array<ArrayBuffer> | null = null
+  private wave: Float32Array<ArrayBuffer> | null = null
+  private gain = createLevelState()
+  private last = 0
+
+  attach(audio: HTMLAudioElement) {
+    if (this.context) return
+    try {
+      const context = new AudioContext()
+      const analyser = context.createAnalyser()
+      analyser.fftSize = 2048
+      analyser.smoothingTimeConstant = .72
+      context.createMediaElementSource(audio).connect(analyser)
+      analyser.connect(context.destination)
+      this.context = context
+      this.analyser = analyser
+      this.bins = new Float32Array(analyser.frequencyBinCount)
+      this.wave = new Float32Array(analyser.fftSize)
+    } catch { /* Web Audio unavailable: levels stay empty, playback continues. */ }
+  }
+
+  resume() { void this.context?.resume().catch(() => {}) }
+
+  /** A new song starts from a neutral gain instead of the last song's peak. */
+  reset() { this.gain = createLevelState(); this.last = 0 }
+
+  /** Fill `out` with bar levels in [0, 1], low to high frequency (see levels.ts); false when silent. */
+  levels(out: Float32Array): boolean {
+    if (!this.analyser || !this.bins || this.context?.state !== 'running') return false
+    this.analyser.getFloatFrequencyData(this.bins)
+    const now = performance.now(), dt = this.last ? (now - this.last) / 1000 : 1 / 60
+    this.last = now
+    return bandLevels(this.bins, this.context.sampleRate / this.analyser.fftSize, out, this.gain, dt)
+  }
+
+  /** Overall loudness (soft-limited RMS of the waveform) in [0, 1]. */
+  volume(): number {
+    if (!this.analyser || !this.wave || this.context?.state !== 'running') return 0
+    this.analyser.getFloatTimeDomainData(this.wave)
+    let sum = 0
+    for (const x of this.wave) sum += x * x
+    return loudness(Math.sqrt(sum / this.wave.length))
+  }
+}
+
 class JamendoPlayer {
   private audio: HTMLAudioElement | null = null
+  /** Used only when a source refuses CORS; it is never routed through Web Audio. */
+  private plain: HTMLAudioElement | null = null
+  private meter = new LiveMeter()
+  private usingPlain = false
   private listeners = new Set<Listener>()
   private request = 0
   private triedDirect = false
@@ -77,36 +135,66 @@ class JamendoPlayer {
     this.listeners.forEach(listener => listener())
   }
 
-  private element() {
-    if (this.audio) return this.audio
-    const audio = new Audio()
+  /** Live band levels of the playing song; false when no real signal is available. */
+  levels = (out: Float32Array) => !this.usingPlain && this.state.playing && this.meter.levels(out)
+  /** Live loudness of the playing song in [0, 1]. */
+  volume = () => !this.usingPlain && this.state.playing ? this.meter.volume() : 0
+
+  private listen(audio: HTMLAudioElement, onError: () => void) {
     audio.preload = 'none'
     audio.addEventListener('playing', () => this.set({ playing: true, loading: false, message: '재생 중 · CC 라이선스' }))
     audio.addEventListener('pause', () => { if (!audio.ended && audio.getAttribute('src')) this.set({ playing: false, message: '일시정지' }) })
     audio.addEventListener('ended', () => this.set({ playing: false, message: '재생 완료' }))
-    audio.addEventListener('error', () => {
-      if (!audio.getAttribute('src') || !this.state.trackId) return // Cleared by stop(); not a failure.
-      if (!this.triedDirect && this.state.clientId) {
+    audio.addEventListener('error', () => { if (audio.getAttribute('src') && this.state.trackId) onError() })
+  }
+
+  private element() {
+    if (this.audio) return this.audio
+    const audio = new Audio()
+    audio.crossOrigin = 'anonymous'
+    this.listen(audio, () => {
+      const { trackId, clientId } = this.state
+      if (!trackId) return
+      if (!this.triedDirect && clientId) {
         // The API's address failed: retry once with the TRACK_ID storage address.
         this.triedDirect = true
-        audio.src = directSource(this.state.trackId, this.state.clientId)
+        audio.src = directSource(trackId, clientId)
         audio.play().catch(() => {})
         return
       }
+      // Possibly a CORS refusal: play the storage address on a plain element instead.
       this.clear()
-      this.set({ playing: false, loading: false, message: '오디오 재생 실패 · Jamendo 연결이나 client_id를 확인하세요' })
+      this.usingPlain = true
+      const plain = this.plainElement()
+      plain.src = directSource(trackId, clientId)
+      plain.play().catch(() => {})
     })
+    this.meter.attach(audio)
     this.audio = audio
     return audio
   }
 
-  private clear() {
-    const audio = this.audio
-    if (!audio) return
-    audio.pause()
-    audio.removeAttribute('src')
-    audio.load()
+  private plainElement() {
+    if (this.plain) return this.plain
+    const plain = new Audio()
+    this.listen(plain, () => {
+      this.clear()
+      this.set({ playing: false, loading: false, message: '오디오 재생 실패 · Jamendo 연결이나 client_id를 확인하세요' })
+    })
+    this.plain = plain
+    return plain
   }
+
+  private clear() {
+    for (const audio of [this.audio, this.plain]) {
+      if (!audio) continue
+      audio.pause()
+      audio.removeAttribute('src')
+      audio.load()
+    }
+  }
+
+  private active() { return this.usingPlain ? this.plain : this.audio }
 
   async play(track: { id: string; title: string; artist: string }) {
     const request = ++this.request // A later click wins.
@@ -117,7 +205,10 @@ class JamendoPlayer {
     const source = await resolveSource(track.id, clientId)
     if (request !== this.request) return
     this.triedDirect = source.direct
+    this.usingPlain = false
     const audio = this.element()
+    this.meter.reset()
+    this.meter.resume()
     audio.src = source.src
     this.set({ license: source.license })
     try { await audio.play() } catch {
@@ -126,8 +217,9 @@ class JamendoPlayer {
   }
 
   toggle() {
-    const audio = this.audio
+    const audio = this.active()
     if (!audio?.getAttribute('src')) return
+    this.meter.resume()
     if (audio.paused) void audio.play().catch(() => this.set({ message: '재생하지 못했습니다' }))
     else audio.pause()
   }

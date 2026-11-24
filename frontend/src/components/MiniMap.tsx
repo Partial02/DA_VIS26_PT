@@ -1,5 +1,7 @@
 import { useMemo } from 'react'
 import { useExperience } from '../state/ExperienceContext'
+import { Icon } from './Icon'
+import { LiquidGlass } from './LiquidGlass'
 import type { Position, SpacePosition } from '../domain/catalog'
 import styles from './Interface.module.css'
 
@@ -52,4 +54,13 @@ export function MiniMap({ bounds }: { bounds: Position[] | null }) {
       {current && <g fill="none" stroke="#f3ecff" pointerEvents="none"><circle cx={project(current)[0]} cy={project(current)[1]} r="6" strokeWidth=".8" /><circle cx={project(current)[0]} cy={project(current)[1]} r="8" strokeWidth=".4" opacity=".4" /></g>}
     </svg>
   </aside>
+}
+
+/** The overview map, docked at the lower left beside the tool rail, which opens and closes it. */
+export function MiniMapDock({ bounds, onClose }: { bounds: Position[] | null; onClose: () => void }) {
+  return <LiquidGlass as="section" id="miniMapDock" className={styles.miniMapDock} aria-labelledby="miniMapTitle">
+    <div className={styles.miniMapHeader}><Icon name="map" size={14} /><span id="miniMapTitle">전체 지도</span>
+      <button onClick={onClose} aria-label="전체 지도 닫기" title="전체 지도 닫기"><Icon name="close" size={14} /></button></div>
+    <div className={styles.miniMapBody}><MiniMap bounds={bounds} /></div>
+  </LiquidGlass>
 }

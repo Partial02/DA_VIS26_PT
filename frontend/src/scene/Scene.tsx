@@ -7,14 +7,13 @@ import type { OrbitControls as OrbitControlsImpl } from 'three-stdlib'
 import { cameraFootprint, frameSpace, spaceFlight, spacePosition } from './space'
 import type { Position } from '../domain/catalog'
 import gsap from 'gsap'
-import { subgenrePlaylist, systemTracks } from '../domain/catalog'
+import { formatDuration } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
 import type { Destination } from '../state/reducer'
 import { journeyMotion } from '../state/motion'
 import { ConstellationLinks, ParticleField } from './ParticleField'
 import { starHitRadius } from './hover'
 import { MusicSystem } from './MusicSystem'
-import { trackOrbitPosition } from './orbits'
 import styles from './Scene.module.css'
 
 const zoomFactor = 1.3
@@ -25,7 +24,7 @@ interface NavigationControls {
   reset: () => void
 }
 
-interface FlightState { busy: boolean; reveal: number; orbitScale: number }
+interface FlightState { busy: boolean; reveal: number }
 
 class CanvasBoundary extends Component<{ children: ReactNode; onError: () => void }, { failed: boolean }> {
   state = { failed: false }
@@ -69,7 +68,6 @@ function CameraRig({ reduced, paused, controls, flight, onSceneArrival, onTravel
       center.copy(spacePosition(catalog.subgenreById.get(state.view.subgenreId)!.position))
       destination.copy(center).add(offset)
     }
-    flight.current.orbitScale = Math.min(1, distance * Math.tan(Math.PI / 8) * Math.min(1, size.width / size.height) / 3.2)
     const localZoom = !firstFlight.current && previousView.current.level !== 'universe' && state.view.level !== 'universe'
       && previousView.current.genreId === state.view.genreId
     if (localZoom) destination.copy(center).addScaledVector(camera.position.clone().sub(controller.target).normalize(), distance)
@@ -134,7 +132,6 @@ function CameraRig({ reduced, paused, controls, flight, onSceneArrival, onTravel
           frame.center.copy(spacePosition(catalog.subgenreById.get(state.view.subgenreId)!.position))
           frame.destination.copy(frame.center).add(offset)
         }
-        flight.current.orbitScale = Math.min(1, frame.distance * Math.tan(Math.PI / 8) * Math.min(1, viewport.width / viewport.height) / 3.2)
         controller.minDistance = Math.max(1.5, frame.distance * .12)
         controller.maxDistance = frame.distance * 3
         camera.position.copy(frame.destination); controller.target.copy(frame.center); controller.update()
@@ -155,15 +152,13 @@ interface Label {
   visited: boolean
   color?: string
   track?: boolean
-  orbit?: number
-  orbitCenter?: [number, number, number]
-  selected?: boolean
+  artist?: string
   navigate: () => void
 }
 
 // Project into the existing DOM tree; avoid extra React roots inside the WebGL renderer.
-function LabelProjection({ labels, elements, lines, container, flight, reduced, onUnavailable, onReady }: {
-  labels: Label[]; elements: RefObject<Map<string, HTMLButtonElement>>; lines: RefObject<Map<string, SVGLineElement>>; reduced: boolean; onUnavailable: () => void; onReady: () => void
+function LabelProjection({ labels, elements, lines, container, flight, onUnavailable, onReady }: {
+  labels: Label[]; elements: RefObject<Map<string, HTMLButtonElement>>; lines: RefObject<Map<string, SVGLineElement>>; onUnavailable: () => void; onReady: () => void
   container: RefObject<HTMLDivElement | null>; flight: RefObject<FlightState>
 }) {
   const vector = useMemo(() => new Vector3(), [])
@@ -174,7 +169,7 @@ function LabelProjection({ labels, elements, lines, container, flight, reduced, 
     gl.domElement.addEventListener('webglcontextlost', lost)
     return () => gl.domElement.removeEventListener('webglcontextlost', lost)
   }, [gl, onUnavailable])
-  useFrame(({ camera, size, clock }) => {
+  useFrame(({ camera, size }) => {
     if (container.current) {
       container.current.style.opacity = String(flight.current.reveal)
       container.current.inert = flight.current.busy
@@ -185,10 +180,6 @@ function LabelProjection({ labels, elements, lines, container, flight, reduced, 
       const element = elements.current.get(label.id)
       if (!element) continue
       vector.set(...label.position)
-      if (label.orbit !== undefined && label.orbitCenter && !flight.current.busy) {
-        trackOrbitPosition(label.id, label.orbit, reduced ? 0 : clock.elapsedTime, flight.current.orbitScale, vector)
-        vector.x += label.orbitCenter[0]; vector.y += label.orbitCenter[1]; vector.z += label.orbitCenter[2]
-      }
       vector.project(camera)
       const anchorX = (vector.x + 1) / 2 * size.width
       const anchorY = (1 - vector.y) / 2 * size.height
@@ -199,7 +190,7 @@ function LabelProjection({ labels, elements, lines, container, flight, reduced, 
         continue
       }
       const width = element.offsetWidth, height = element.offsetHeight
-      let x = anchorX, y = anchorY + (label.track ? 8 : 0)
+      let x = anchorX, y = anchorY + (label.track ? 16 : 0)
       if (!label.track) {
         let placed = false
         for (const offsetY of [8, -42, 42, -80, 80, -118, 118, -156, 156]) {
@@ -227,13 +218,24 @@ function LabelProjection({ labels, elements, lines, container, flight, reduced, 
   return null
 }
 
-export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMap }: { reduced: boolean; onUnavailable: () => void; onBoundsChange: (bounds: Position[] | null) => void; onOpenMap: () => void }) {
+/** Zoom handle the scene hands to the tool rail's + / − buttons. */
+export interface MapZoom { zoomIn: () => void; zoomOut: () => void }
+
+export default function Scene({ reduced, onUnavailable, onBoundsChange, zoomRef }: {
+  reduced: boolean; onUnavailable: () => void; onBoundsChange: (bounds: Position[] | null) => void; zoomRef?: RefObject<MapZoom | null>
+}) {
   const { catalog, state, dispatch } = useExperience()
   const viewport = useRef<HTMLDivElement>(null)
   const start = useRef<[number, number] | null>(null)
   const suppressUntil = useRef(0)
   const controls = useRef<NavigationControls | null>(null)
-  const flight = useRef<FlightState>({ busy: true, reveal: 0, orbitScale: 1 })
+  useEffect(() => {
+    if (!zoomRef) return
+    zoomRef.current = { zoomIn: () => controls.current?.zoom(zoomFactor), zoomOut: () => controls.current?.zoom(1 / zoomFactor) }
+    return () => { zoomRef.current = null }
+  }, [zoomRef])
+  const flight = useRef<FlightState>({ busy: true, reveal: 0 })
+  const [starHover, setStarHover] = useState<string | null>(null)
   const labelsContainer = useRef<HTMLDivElement>(null)
   const [sceneView, setSceneView] = useState(state.view)
   const [traveling, setTraveling] = useState(true)
@@ -272,13 +274,11 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
   const suppressed = () => flight.current.busy || performance.now() < suppressUntil.current
   const labels = useMemo((): Label[] => {
     if (sceneView.level === 'system') {
-      const sub = catalog.subgenreById.get(sceneView.subgenreId)!
-      const ordered = subgenrePlaylist(catalog, sub.id, state.stage).map(track => track.id)
-      const tracks = systemTracks(catalog, sub.id, state.selectedTrackId, state.stage)
-      return tracks.map((track, index) => ({ id: track.id, name: track.title, detail: String(ordered.indexOf(track.id) + 1).padStart(2, '0'),
-        position: track.position, track: true, orbit: index, orbitCenter: sub.position, visited: false,
-        selected: (state.selectedTrackId ?? tracks[0].id) === track.id,
-        navigate: () => dispatch({ type: 'selectTrack', id: track.id }) }))
+      // Only the clicked song shows its card: title, artist, length — values only.
+      const track = state.selectedTrackId ? catalog.trackById.get(state.selectedTrackId) : undefined
+      if (!track || !track.subgenreIds.includes(sceneView.subgenreId)) return []
+      return [{ id: track.id, name: track.title, artist: track.artist, detail: formatDuration(track.duration), track: true, visited: false,
+        position: spacePosition(track.position).toArray() as [number, number, number], navigate: () => {} }]
     }
     const items = sceneView.level === 'universe' ? catalog.genres : catalog.genreById.get(sceneView.genreId)!.subgenreIds.map(id => catalog.subgenreById.get(id)!)
     return [...items].sort((a, b) => b.trackIds.length - a.trackIds.length)
@@ -288,7 +288,7 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
         color: 'color' in item ? item.color : catalog.genreById.get(item.genreId)!.color, visited: 'color' in item ? Boolean(state.genreVisits[item.id]) : Boolean(state.visits[item.id]),
         navigate: () => { if (!suppressed()) dispatch({ type: 'navigate', destination: 'color' in item ? { level: 'genre', genreId: item.id } : { level: 'system', genreId: item.genreId, subgenreId: item.id } }) },
       }))
-  }, [catalog, dispatch, hovered, state.selectedTrackId, state.stage, sceneView, state.visits, state.genreVisits])
+  }, [catalog, dispatch, hovered, state.selectedTrackId, sceneView, state.visits, state.genreVisits])
   return <div ref={viewport} className={`${styles.viewport} ${sceneView.level === 'universe' ? styles.universe : ''}`} data-system={state.view.level === 'system'} data-hovered={sceneView.level !== 'system' && hovered !== null} tabIndex={0} role="region" aria-busy={traveling} aria-label="장르 우주 지도. 드래그로 회전, 우클릭 드래그 또는 두 손가락으로 이동, 휠로 접근하거나 물러납니다. 방향키로 회전하고 0으로 원래 보기를 복원합니다."
     onKeyDown={event => {
       if (event.target !== event.currentTarget) return
@@ -323,24 +323,19 @@ export default function Scene({ reduced, onUnavailable, onBoundsChange, onOpenMa
           <CameraRig reduced={reduced} paused={traveling || hovered !== null} controls={controls} flight={flight} onSceneArrival={setSceneView} onTravelChange={setTraveling} onBoundsChange={onBoundsChange} />
           <ParticleField view={state.view} reduced={reduced} suppressed={suppressed} highlighted={hovered} onHover={highlight} />
           <ConstellationLinks view={sceneView} highlighted={sceneView.level === 'universe' ? hovered : null} />
-          {!traveling && <MusicSystem view={sceneView} reduced={reduced} orbitScale={() => flight.current.orbitScale} suppressed={suppressed} />}
-          <LabelProjection labels={labels} elements={elements} lines={lines} container={labelsContainer} flight={flight} reduced={reduced} onUnavailable={onUnavailable} onReady={() => setReady(true)} />
+          {!traveling && <MusicSystem view={sceneView} reduced={reduced} suppressed={suppressed} hovered={starHover} onHover={setStarHover} />}
+          <LabelProjection labels={labels} elements={elements} lines={lines} container={labelsContainer} flight={flight} onUnavailable={onUnavailable} onReady={() => setReady(true)} />
         </Suspense>
       </Canvas>
     </CanvasBoundary>
     {!ready && <div className={styles.loadingStars} role="status"><i />GATHERING THE STARS</div>}
     <div ref={labelsContainer} className={styles.labels} style={{ opacity: 0 }}><svg className={styles.labelLines} aria-hidden="true">{labels.filter(l => !l.track).map(label => <line key={label.id} data-highlighted={hovered === label.id} ref={element => { if (element) lines.current.set(label.id, element); else lines.current.delete(label.id) }} />)}</svg>{labels.map(label => <button key={label.id}
       ref={element => { if (element) elements.current.set(label.id, element); else elements.current.delete(label.id) }}
-      className={!label.track ? `${styles.marker} ${label.visited ? styles.visitedMarker : ''}` : `${styles.planetLabel} ${label.selected ? styles.selectedPlanet : ''}`}
+      className={!label.track ? `${styles.marker} ${label.visited ? styles.visitedMarker : ''}` : `liquidGlass ${styles.trackCardLabel}`}
       onClick={label.navigate} onPointerEnter={() => highlight(label.id)} onPointerLeave={() => highlight(null)} onFocus={() => highlight(label.id, true)} onBlur={() => highlight(null)}
       data-highlighted={hovered === label.id} title={label.name}
       style={label.color ? { color: hovered === label.id ? label.color : sceneView.level === 'universe' ? '#aeb5c2' : `color-mix(in srgb, ${label.color} 30%, #e3e9f7)` } : undefined}>
-      {label.track ? <><span>{label.detail}</span> {label.name}</> : <><span className={styles.markerName}>{label.name}</span><span className="srOnly">{label.detail}{label.visited ? ' · 발견됨' : ''}</span></>}
+      {label.track ? <><strong>{label.name}</strong><span>{label.artist}</span><small>{label.detail}</small></> : <><span className={styles.markerName}>{label.name}</span><span className="srOnly">{label.detail}{label.visited ? ' · 발견됨' : ''}</span></>}
     </button>)}</div>
-    <div className={styles.mapControls} aria-label="지도 배율 조절">
-      <button disabled={traveling} onClick={() => controls.current?.zoom(zoomFactor)} aria-label="지도 확대" title="확대 (+)">+</button>
-      <button disabled={traveling} onClick={() => controls.current?.zoom(1 / zoomFactor)} aria-label="지도 축소" title="축소 (-)">−</button>
-      <button onClick={onOpenMap} aria-label="미니맵 열기" title="미니맵">⌖</button>
-    </div>
   </div>
 }

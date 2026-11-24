@@ -1,61 +1,53 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useMemo } from 'react'
 import type { CSSProperties } from 'react'
-import { seededRandom } from '../domain/catalog'
+import type { RecommendationTarget } from '../domain/recommendations'
 import { rankRecommendations, topGenreDestinations } from '../domain/recommendations'
 import { useExperience } from '../state/ExperienceContext'
 import { Icon } from './Icon'
-import { containDialogFocus } from './dialogFocus'
-import { StageConsole, useChooseRecommendation, useLineupText } from './StageConsole'
+import { LiquidGlass } from './LiquidGlass'
+import { SignatureOrbs, usePickedSessions, useSignature } from './SignatureOrbs'
+import { shortGenreName, useChooseRecommendation } from './StageConsole'
 import styles from './Interface.module.css'
 
-export function RecommendationJar({ onClose, onEditStage }: { onClose?: () => void; onEditStage?: () => void }) {
+/**
+ * Inside a subgenre: the best subgenre of three other genres. The filter button turns the
+ * dock itself into the genre × instrument picker (see Explore), so nothing floats apart.
+ */
+export function RecommendationJar({ onPick }: { onPick: () => void }) {
   const { catalog, state } = useExperience()
-  const [editing, setEditing] = useState(false)
-  const dialog = useRef<HTMLDialogElement>(null)
-  const editButton = useRef<HTMLButtonElement>(null)
   const choose = useChooseRecommendation()
-  const lineup = useLineupText()
-  const results = useMemo(() => topGenreDestinations(rankRecommendations(catalog, state.stage, state.genreVisits)), [catalog, state.stage, state.genreVisits])
-  const dust = useMemo(() => {
-    const random = seededRandom(91)
-    return Array.from({ length: 65 }, () => ({ x: random() * 320, y: random() * 90, radius: .3 + random() * 1.1, opacity: .15 + random() * .6 }))
-  }, [])
-  useEffect(() => {
-    if (editing) dialog.current?.showModal()
-    else dialog.current?.close()
-  }, [editing])
-  function close() { setEditing(false); editButton.current?.focus() }
-  // Outside a subgenre the stage panel is the editor; inside, the stage opens as a dialog.
-  const edit = () => onEditStage ? onEditStage() : setEditing(true)
-  return <aside className={styles.recommendation} aria-label="연주자 편성으로 고른 세부장르 추천">
-    <div className={styles.recommendationHeader}><span>추천{state.stage.length > 0 && <small> · 무대 {state.stage.length}명</small>}</span><div>
-      <button ref={editButton} onClick={edit} aria-label="무대 편성 편집"><Icon name="mix" size={16} /></button>
-      {onClose && <button onClick={onClose} aria-label="추천 닫기"><Icon name="close" size={16} /></button>}
-    </div></div>
-    <ol className={styles.genreRecommendations}>{results.map(result => {
-      const genre = catalog.genreById.get(result.genreId)!
-      const subgenre = catalog.subgenreById.get(result.subgenreId)!
-      return <li key={result.genreId}>
-        <button className={styles.genreGlass} style={{ '--genre-color': genre.color } as CSSProperties}
-          aria-label={`${genre.name} 추천: ${subgenre.name} 탐색하기, 적합도 ${Math.round(result.score * 100)}%`}
-          onClick={() => choose(result)}>
-          <span className={styles.genreMist} aria-hidden="true" />
-          <svg className={styles.genreDust} viewBox="0 0 320 90" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-            {dust.map((point, index) => <circle key={index} cx={point.x} cy={point.y} r={point.radius} opacity={point.opacity} />)}
-          </svg>
-          <span className={styles.genreGlassLabel}><strong>{genre.name}</strong><small>{subgenre.name}</small></span>
-        </button>
-      </li>
-    })}</ol>
-    {!results.length && <p className={styles.emptyMix}>연주자를 무대에 올리면 어울리는 세부장르가 뜹니다.<br /><button className={styles.inlineAction} onClick={edit}>무대 편성 열기 <Icon name="arrow" size={13} /></button></p>}
-    {lineup && <p className={styles.lineupChange} role="status">{lineup}</p>}
-    {!onEditStage && <dialog ref={dialog} className={`${styles.mixerDialog} ${styles.stageDialog}`} onKeyDown={containDialogFocus} onCancel={close} onClose={() => setEditing(false)} onClick={event => { if (event.target === event.currentTarget) close() }} aria-labelledby="mixerTitle">
-      <div className={styles.dialogInner}>
-        <div className={styles.panelHeading}><span>WHO'S ON STAGE</span><button onClick={close} aria-label="무대 편성 닫기"><Icon name="close" /></button></div>
-        <h2 id="mixerTitle">Play it, <em>then find it.</em></h2>
-        {editing && <StageConsole onChoose={close} stageSize={180} perPage={5} />}
-        <button className="outlinedButton" onClick={close}>이 편성으로 탐색하기 <Icon name="arrow" size={16} /></button>
-      </div>
-    </dialog>}
+  const current = state.view.level === 'system' ? state.view.subgenreId : null
+  const results = useMemo(() => topGenreDestinations(rankRecommendations(catalog, state.selection, state.genreVisits)
+    .filter(result => result.subgenreId !== current)), [catalog, current, state.selection, state.genreVisits])
+  return <aside className={styles.recommendation} aria-label="고른 범주로 찾은 세부장르 추천">
+    <div className={styles.recommendationHeader}><span>다음 추천{state.selection.length > 0 && <small> · {state.selection.length}칸</small>}</span>
+      <button data-pick-entry onClick={onPick} aria-label="장르 × 악기 고르기 열기" title="장르 × 악기 고르기"><Icon name="mix" size={16} /></button></div>
+    <ol className={styles.genreRecommendations}>{results.map(result => <li key={result.genreId}><NextCard result={result} onChoose={() => choose(result)} /></li>)}</ol>
+    {!results.length && <p className={styles.emptyMix}>장르와 악기를 고르면 어울리는 세부장르가 떠요.</p>}
   </aside>
+}
+
+/** One next-recommendation card: the subgenre's signature orbs melt into the glass and sit under its name. */
+function NextCard({ result, onChoose }: { result: RecommendationTarget; onChoose: () => void }) {
+  const { catalog } = useExperience()
+  const genre = catalog.genreById.get(result.genreId)!
+  const subgenre = catalog.subgenreById.get(result.subgenreId)!
+  const signature = useSignature(subgenre.id)
+  const picked = usePickedSessions()
+  const seed = [...subgenre.id].reduce((sum, char) => sum * 31 + char.charCodeAt(0) >>> 0, 7)
+  return <LiquidGlass as="button" className={styles.genreGlass} tint={genre.color} style={{ '--genre-color': genre.color } as CSSProperties}
+    aria-label={`${genre.name} 추천: ${subgenre.name} 탐색하기, 점수 ${Math.round(result.score * 100)}${signature.length ? `, 대표 악기 ${signature.map(s => s.name).join(', ')}` : ''}`}
+    onClick={onChoose}>
+    <span className={styles.cardBlobs} aria-hidden="true">{signature.map(({ weight }, i) =>
+      <i key={i} style={{ ...blobPlace(i, seed), '--d': `${Math.round(36 + 40 * weight)}%`, '--o': (.16 + .24 * weight).toFixed(2) } as CSSProperties} />)}</span>
+    <span className={styles.genreGlassLabel}><strong>{subgenre.name}</strong><small>{shortGenreName(genre.name)} · {Math.round(result.score * 100)}</small></span>
+    <SignatureOrbs signature={signature} picked={picked} />
+  </LiquidGlass>
+}
+
+/** Blob centers: three loose slots, nudged per subgenre so no two cards look alike. */
+function blobPlace(i: number, seed: number): CSSProperties {
+  const slots = [[26, 30], [76, 72], [74, 20]]
+  const jitter = (shift: number) => ((seed >>> shift) % 17) - 8
+  return { left: `${slots[i][0] + jitter(i * 5)}%`, top: `${slots[i][1] + jitter(i * 5 + 3)}%`, animationDelay: `${-((seed >>> i * 3) % 9)}s` }
 }

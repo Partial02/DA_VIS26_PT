@@ -1,16 +1,39 @@
-import { useEffect, useMemo, useState, useSyncExternalStore } from 'react'
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react'
 import type { CSSProperties } from 'react'
 import { jamendoPlayer, jamendoTrackUrl } from '../audio/jamendo'
-import { formatDuration, subgenrePlaylist } from '../domain/catalog'
-import { createDemoSignal } from '../domain/visualization'
-import type { VisualizationSignal } from '../domain/visualization'
+import { formatDuration, scoredPlaylist } from '../domain/catalog'
 import { useExperience } from '../state/ExperienceContext'
+import { useReducedMotion } from '../state/useReducedMotion'
 import { Icon } from './Icon'
 import styles from './Interface.module.css'
 
-export function SignalBars({ signal }: { signal: VisualizationSignal }) {
-  return <div className={styles.signalBars} aria-label={signal.source === 'demo' ? '무음 시각화 데모. 실제 음원 분석 결과가 아닙니다.' : '오디오 반응 시각화'}>
-    {signal.levels.map((level, i) => <i key={i} style={{ height: `${level * 100}%`, '--delay': `${-i * .137}s`, '--speed': `${.8 + level}s` } as CSSProperties} />)}
+const BAR_COUNT = 40
+
+/** Bars driven frame by frame by the playing song's spectrum; they rest flat when nothing plays. */
+export function SignalBars({ color }: { color?: string }) {
+  const root = useRef<HTMLDivElement>(null)
+  const reduced = useReducedMotion()
+  useEffect(() => {
+    const bars = [...(root.current?.children ?? [])] as HTMLElement[]
+    const levels = new Float32Array(BAR_COUNT), shown = new Float32Array(BAR_COUNT).fill(-1)
+    let frame = 0
+    const tick = () => {
+      const live = jamendoPlayer.levels(levels)
+      for (let i = 0; i < BAR_COUNT; i++) {
+        const target = live ? .06 + levels[i] * .94 : .06
+        // Fast attack, slower release, like a VU meter; snap once close to skip invisible writes.
+        const next = shown[i] < 0 ? target : shown[i] + (target - shown[i]) * (target > shown[i] ? .6 : .18)
+        const value = Math.abs(next - target) < .002 ? target : next
+        if (value !== shown[i]) bars[i].style.transform = `scaleY(${value.toFixed(3)})`
+        shown[i] = value
+      }
+      frame = requestAnimationFrame(tick)
+    }
+    if (!reduced) frame = requestAnimationFrame(tick)
+    return () => cancelAnimationFrame(frame)
+  }, [reduced])
+  return <div ref={root} className={styles.signalBars} aria-hidden="true" style={color ? { '--genre-color': color } as CSSProperties : undefined}>
+    {Array.from({ length: BAR_COUNT }, (_, i) => <i key={i} />)}
   </div>
 }
 
@@ -44,22 +67,22 @@ function JamendoPlayerBar() {
 export function TrackDock() {
   const { catalog, state, dispatch } = useExperience()
   const subgenreId = state.view.level === 'system' ? state.view.subgenreId : null
-  // Genre Atlas order: songs that fit the stage first, one per artist before repeats. Scores stay hidden.
-  const tracks = useMemo(() => subgenreId ? subgenrePlaylist(catalog, subgenreId, state.stage) : [], [catalog, subgenreId, state.stage])
-  const current = tracks.find(t => t.id === state.selectedTrackId) ?? tracks[0]
-  const signal = useMemo(() => createDemoSignal(current?.id ?? 'quiet'), [current?.id])
-  if (!tracks.length) return null
-  return <aside className={styles.trackDock} aria-label="현재 영역의 플레이리스트">
-    <div className={styles.panelHeading}><span>플레이리스트 · {tracks.length.toLocaleString()}곡</span><span>{state.stage.length ? '무대 편성에 어울리는 순' : '길이·아티스트 분산 순'}</span></div>
-      <div className={styles.trackList}>{tracks.map((track, index) => <button key={track.id}
+  // Songs ordered by the picked categories' score (match · typicality · length), artists spread out.
+  const scored = useMemo(() => subgenreId ? scoredPlaylist(catalog, subgenreId, state.selection) : [], [catalog, subgenreId, state.selection])
+  const current = scored.find(item => item.track.id === state.selectedTrackId)?.track
+  const color = subgenreId ? catalog.genreById.get(catalog.subgenreById.get(subgenreId)!.genreId)!.color : undefined
+  if (!scored.length) return null
+  return <aside className={styles.trackDock} aria-label="현재 영역의 플레이리스트" style={{ '--genre-color': color } as CSSProperties}>
+    <div className={styles.panelHeading}><span>플레이리스트 · {scored.length.toLocaleString()}곡</span><span>{state.selection.length ? '고른 범주에 어울리는 순' : '대표성·길이 순'}</span></div>
+      <div className={styles.trackList}>{scored.map(({ track, score }, index) => <button key={track.id}
         className={`${styles.trackCard} ${current?.id === track.id ? styles.activeTrack : ''}`}
         aria-pressed={current?.id === track.id} onClick={() => { dispatch({ type: 'selectTrack', id: track.id }); void jamendoPlayer.play(track) }}>
         <span className={styles.trackIndex}>{String(index + 1).padStart(2, '0')}</span>
-        <span className={styles.trackArt} style={{ '--cover-angle': `${-35 + index * 18}deg` } as CSSProperties}><i /><b /></span>
         <span className={styles.trackText}><strong>{track.title}</strong><span>{track.artist}</span></span>
         <span className={styles.duration}>{formatDuration(track.duration)}</span>
+        <span className={styles.trackScore} aria-label={`점수 ${Math.round(score * 100)}`}><i style={{ width: `${Math.round(score * 100)}%` }} /></span>
       </button>)}</div>
-      <SignalBars signal={signal} />
+      <SignalBars color={color} />
       <JamendoPlayerBar />
   </aside>
 }

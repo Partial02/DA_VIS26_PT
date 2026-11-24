@@ -2,13 +2,12 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import gsap from 'gsap'
 import type { Catalog, MusicData } from './domain/catalog'
 import { indexCatalog } from './domain/catalog'
-import type { AtlasModel } from './domain/atlas'
+import type { CategoryModel } from './domain/category'
 import { ExperienceProvider } from './state/ExperienceContext'
 import { AmbientBackground } from './components/AmbientBackground'
 import { Header } from './components/Header'
 import { Explore } from './components/Explore'
-import { Presentation } from './presentation/Presentation'
-import { StoryPages } from './presentation/StoryPages'
+import { IntroPage, StoryPages } from './presentation/StoryPages'
 import { useReducedMotion } from './state/useReducedMotion'
 import { journeyMotion } from './state/motion'
 
@@ -50,7 +49,7 @@ function Experience({ route }: { route: ReturnType<typeof parseHash> }) {
     <AmbientBackground cover={displayed.story && displayed.chapter === 0} exploring={!displayed.story} drift={drift} />
     <Header story={displayed.story} chapter={displayed.chapter} />
     <div ref={stage} className="routeStage" inert={changing} aria-busy={changing}>
-      {displayed.story ? displayed.chapter === 0 ? <Presentation chapter={0} /> : <StoryPages page={displayed.chapter} /> : <Explore />}
+      {displayed.story ? displayed.chapter === 0 ? <IntroPage /> : <StoryPages page={displayed.chapter} /> : <Explore />}
     </div>
   </div>
 }
@@ -68,8 +67,8 @@ export default function App() {
     const controller = new AbortController()
     const load = <T,>(file: string) => fetch(`${import.meta.env.BASE_URL}data/${file}`, { signal: controller.signal })
       .then(response => { if (!response.ok) throw new Error(`${file} unavailable`); return response.json() as Promise<T> })
-    Promise.all([load<MusicData>('music-catalog.json'), load<AtlasModel>('atlas-model.json')])
-      .then(([data, atlas]) => setCatalog(indexCatalog(data, atlas)))
+    Promise.all([load<MusicData>('music-catalog.json'), load<CategoryModel>('category-model.json')])
+      .then(([data, model]) => setCatalog(indexCatalog(data, model)))
       .catch(reason => { if (reason.name !== 'AbortError') setError(true) })
     return () => controller.abort()
   }, [])

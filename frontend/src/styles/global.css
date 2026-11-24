@@ -29,4 +29,19 @@ em { font-family: 'Instrument Serif', serif; font-weight: 400; }
 .loadScreen h1 { font-size: 27px; font-weight: 400; margin: 0; color: #e4dced; }
 .loadScreen p { font-size: 13px; line-height: 2; margin: 0; }
 @keyframes breathe { 50% { opacity: .3; transform: scale(.7); } }
+/* Liquid glass (after the "SVG Liquid Glass" pen): a faint grey body, three inset lights,
+   and an SVG displacement backdrop set inline by <LiquidGlass>. Corners stay round so the
+   refraction reads at the rim. :where() keeps these rules from overriding component layout. */
+:where(.liquidGlass) {
+  position: relative;
+  border-radius: 24px;
+  background: #aaaaaa22;
+  box-shadow: inset -2px -4px 8px #00000005, inset 2px 4px 8px #ffffff10, inset 0 0 4px #ffffff27, 0 10px 36px #0006;
+  isolation: isolate;
+}
+:where(.liquidGlass[data-tinted]) { background: color-mix(in srgb, var(--glass-tint) 14%, #aaaaaa1c); box-shadow: inset -2px -4px 8px #00000005, inset 2px 4px 8px #ffffff10, inset 0 0 4px #ffffff27, inset 0 0 18px color-mix(in srgb, var(--glass-tint) 18%, transparent), 0 10px 36px #0006; }
+/* Specular rim: bright top-left edge, faint bottom-right. */
+:where(.liquidGlass)::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; padding: 1px; pointer-events: none;
+  background: linear-gradient(135deg, #ffffff66, #ffffff10 30%, transparent 55%, #ffffff18 85%, #ffffff40);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0); -webkit-mask-composite: xor; mask-composite: exclude; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }

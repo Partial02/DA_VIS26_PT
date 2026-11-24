@@ -1,5 +1,3 @@
-import type { LineupChange } from '../domain/atlas.ts'
-
 export type Destination =
   | { level: 'universe' }
   | { level: 'genre'; genreId: string }
@@ -14,23 +12,29 @@ export interface ExperienceState {
   genreVisits: Record<string, number>
   arrivedGenreId: string | null
   history: string[]
-  /** Genre Atlas performer ids on stage, in the order they were added. */
-  stage: number[]
-  /** The last automatic lineup change made by choosing a recommendation. */
-  lineupChange: LineupChange | null
+  /** Picked genre × session cells (category indices), in the order they were picked. */
+  selection: number[]
+  /** Genres opened in the picker (their instrument bubbles are shown), in the order they were opened. */
+  pickedGenres: string[]
 }
 
 export type Action =
   | { type: 'navigate'; destination: Destination }
   | { type: 'arrive'; transition: number }
   | { type: 'selectTrack'; id: string }
-  | { type: 'togglePerformer'; id: number }
-  | { type: 'clearStage' }
-  | { type: 'setLineup'; stage: number[]; change: LineupChange }
+  | { type: 'toggleCell'; id: number }
+  /** Pick every given cell, or drop them all when every one is already picked. */
+  | { type: 'toggleCells'; ids: number[] }
+  /**
+   * Open a genre's bubbles, or close it when it is open (picked, or holding picked cells):
+   * closing drops every cell of its row (`rowIds`).
+   */
+  | { type: 'pickGenre'; genreId: string; rowIds: number[] }
+  | { type: 'clearSelection' }
 
 export const initialState: ExperienceState = {
   view: { level: 'universe' }, transition: 0, arrivedTransition: 0,
-  selectedTrackId: null, visits: {}, genreVisits: {}, arrivedGenreId: null, history: [], stage: [], lineupChange: null,
+  selectedTrackId: null, visits: {}, genreVisits: {}, arrivedGenreId: null, history: [], selection: [], pickedGenres: [],
 }
 
 export function experienceReducer(state: ExperienceState, action: Action): ExperienceState {
@@ -51,13 +55,23 @@ export function experienceReducer(state: ExperienceState, action: Action): Exper
     }
     case 'selectTrack':
       return { ...state, selectedTrackId: action.id }
-    case 'togglePerformer':
-      return { ...state, lineupChange: null, stage: state.stage.includes(action.id)
-        ? state.stage.filter(id => id !== action.id) : [...state.stage, action.id] }
-    case 'clearStage':
-      if (!state.stage.length && !state.lineupChange) return state
-      return { ...state, stage: [], lineupChange: null }
-    case 'setLineup':
-      return { ...state, stage: action.stage, lineupChange: action.change }
+    case 'toggleCell':
+      return { ...state, selection: state.selection.includes(action.id)
+        ? state.selection.filter(id => id !== action.id) : [...state.selection, action.id] }
+    case 'toggleCells': {
+      if (!action.ids.length) return state
+      const all = action.ids.every(id => state.selection.includes(id))
+      return { ...state, selection: all ? state.selection.filter(id => !action.ids.includes(id))
+        : [...state.selection, ...action.ids.filter(id => !state.selection.includes(id))] }
+    }
+    case 'pickGenre': {
+      const open = state.pickedGenres.includes(action.genreId) || action.rowIds.some(id => state.selection.includes(id))
+      if (!open) return { ...state, pickedGenres: [...state.pickedGenres, action.genreId] }
+      return { ...state, pickedGenres: state.pickedGenres.filter(id => id !== action.genreId),
+        selection: state.selection.filter(id => !action.rowIds.includes(id)) }
+    }
+    case 'clearSelection':
+      if (!state.selection.length && !state.pickedGenres.length) return state
+      return { ...state, selection: [], pickedGenres: [] }
   }
 }

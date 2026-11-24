@@ -12,10 +12,10 @@ import re
 ROOT = Path(__file__).resolve().parents[2]
 SOURCE = ROOT / "mtg_jamendo_genre_instrument.csv"
 OUTPUT = ROOT / "frontend/public/data/music-catalog.json"
-# Separate genre hue bands (~24 degrees apart); see docs/design-system.md.
-COLORS = ["#ab73ff", "#ffe373", "#73ffe3", "#e373ff", "#e3ff73",
-          "#73abff", "#ff73e3", "#ffab73", "#7373ff", "#ff7373",
-          "#ff73ab", "#73e3ff", "#73ff73", "#73ffab", "#abff73"]
+# Genre colors from genre_color.csv, in genre-name order (scripts/build_category_model.py applies them).
+COLORS = ["#bbdce1", "#e5dec9", "#9ee8d3", "#80c8f6", "#a5cbeb",
+          "#d3cd90", "#d3baef", "#a1d4a9", "#a7c7b9", "#ebb79c",
+          "#d4cada", "#eeb1c9", "#dceeb6", "#7bd9e4", "#cac6a2"]
 RADIUS = 12
 FEATURE_WEIGHTS = (0.15, 0.30, 0.55)  # genre, subgenre, instruments; cosine contributions
 
@@ -222,10 +222,10 @@ if __name__ == "__main__":
     with SOURCE.open(newline="", encoding="utf-8-sig") as source:
         source_rows = list(csv.DictReader(source))
     if args.check:
-        validate(json.loads(OUTPUT.read_text()), source_rows)
+        validate(json.loads(OUTPUT.read_text(encoding="utf-8")), source_rows)
     else:
         data = build(source_rows)
         validate(data, source_rows)
         OUTPUT.parent.mkdir(parents=True, exist_ok=True)
-        OUTPUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n")
+        OUTPUT.write_text(json.dumps(data, ensure_ascii=False, separators=(",", ":")) + "\n", encoding="utf-8")
         print(f"Saved {OUTPUT.relative_to(ROOT)} ({OUTPUT.stat().st_size:,} bytes).")
