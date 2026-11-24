@@ -7,8 +7,7 @@ import { ExperienceProvider } from './state/ExperienceContext'
 import { AmbientBackground } from './components/AmbientBackground'
 import { Header } from './components/Header'
 import { Explore } from './components/Explore'
-import { Presentation } from './presentation/Presentation'
-import { StoryPages } from './presentation/StoryPages'
+import { IntroPage, StoryPages } from './presentation/StoryPages'
 import { useReducedMotion } from './state/useReducedMotion'
 import { journeyMotion } from './state/motion'
 
@@ -50,7 +49,7 @@ function Experience({ route }: { route: ReturnType<typeof parseHash> }) {
     <AmbientBackground cover={displayed.story && displayed.chapter === 0} exploring={!displayed.story} drift={drift} />
     <Header story={displayed.story} chapter={displayed.chapter} />
     <div ref={stage} className="routeStage" inert={changing} aria-busy={changing}>
-      {displayed.story ? displayed.chapter === 0 ? <Presentation chapter={0} /> : <StoryPages page={displayed.chapter} /> : <Explore />}
+      {displayed.story ? displayed.chapter === 0 ? <IntroPage /> : <StoryPages page={displayed.chapter} /> : <Explore />}
     </div>
   </div>
 }
