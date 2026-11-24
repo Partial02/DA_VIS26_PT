@@ -39,7 +39,7 @@
   .resonance canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
   .resonance h1 {
     position: absolute; inset: 0; display: grid; place-items: center; margin: 0;
-    color: #e8e5f4; font: 750 clamp(30px, 11.3vw, 178px)/1 Arial,sans-serif;
+    color: #fff; font: 750 clamp(30px, 11.3vw, 178px)/1 Arial,sans-serif;
     letter-spacing: -.045em;
   }
   .resonance.ready h1 { clip-path: inset(50%); }
@@ -61,152 +61,186 @@
 </section>
 </main>
 <script>
-// A traveling audio waveform gathers the stars before they form the title.
+// One field of white stars moves from sky to wave to fixed letter shapes.
 (() => {
-  const section = document.querySelector('.resonance');
-  const canvas = section.querySelector('canvas');
+  const intro = document.querySelector('.resonance');
+  const canvas = intro.querySelector('canvas');
   const ctx = canvas.getContext('2d');
-  if (!ctx) return;
+  const pointLayer = document.createElement('canvas');
+  const points = pointLayer.getContext('2d');
   const reduced = matchMedia('(prefers-reduced-motion: reduce)');
-  const mask = document.createElement('canvas');
-  const ink = mask.getContext('2d', {willReadFrequently: true});
-  if (!ink) return;
-  const title = section.querySelector('h1').textContent;
-  const tones = ['#fcfaff', '#dadbea', '#d6c9ee', '#a18ac6', '#a3abc8'];
-  const ease = (a,b,t) => {
-    const u = Math.min(1,Math.max(0,(t-a)/(b-a)));
-    return u*u*(3-2*u);
-  };
-  let w=0, h=0, stars=[], handle=0, visible=true, elapsed=0, previous=null;
-  let seed=81272;
+  if (!ctx || !points) return;
+
+  const title = intro.querySelector('h1').textContent;
+  const tau = Math.PI * 2;
+  const lerp = (a,b,t) => a + (b-a)*t;
+  const clamp = x => Math.max(0, Math.min(1,x));
+  const smooth = (a,b,x) => { const t=clamp((x-a)/(b-a)); return t*t*(3-2*t); };
+  const strands = 23, samples = 320;
+  const waves = new Float32Array(strands*(samples+1));
+  const waveShift = new Float32Array(waves.length);
+  const waveSpeed = new Float32Array(waves.length);
+  let seed, w, h, ratio, stars=[], pointImage;
+  let typeSize, pointerRadius, waveMargin;
+  let visible=true, frame=0, last=0, clock=0;
+  const pointer = {x:0,y:0,active:false};
   function random() {
-    seed=(Math.imul(seed,1664525)+1013904223)>>>0;
-    return seed/4294967296;
+    seed = (Math.imul(seed,1664525)+1013904223)>>>0;
+    return seed / 4294967296;
   }
 
-  function letterPixels() {
-    mask.width=Math.min(1500,Math.round(w*.86));
-    mask.height=Math.max(48,Math.ceil(mask.width*.21));
-    ink.font='750 100px Arial,sans-serif';
-    const size=Math.min(mask.height*.95, (mask.width-8)*100/ink.measureText(title).width);
-    ink.font='750 '+size+'px Arial,sans-serif';
-    ink.textAlign='center';
-    const bounds=ink.measureText(title);
-    const baseline=(mask.height+bounds.actualBoundingBoxAscent-bounds.actualBoundingBoxDescent)/2;
-    ink.fillText(title,mask.width/2,baseline);
-    const data=ink.getImageData(0,0,mask.width,mask.height).data;
+  function makeType() {
+    const mask = document.createElement('canvas');
+    const pen = mask.getContext('2d',{willReadFrequently:true});
+    pen.font='800 100px Arial, sans-serif';
+    typeSize=Math.min(208,w*.86*100/pen.measureText(title).width,h*.33);
+    mask.width=Math.ceil(w); mask.height=Math.ceil(typeSize*1.65);
+    pen.font='800 '+typeSize+'px Arial, sans-serif'; pen.textAlign='center';
+    const box=pen.measureText(title);
+    pen.fillText(title,w/2,(mask.height+box.actualBoundingBoxAscent-box.actualBoundingBoxDescent)/2);
+    const data=pen.getImageData(0,0,mask.width,mask.height).data;
     const pixels=[];
-    for(let i=0;i<data.length/4;i++) if(data[4*i+3]>140) pixels.push(i);
-    return pixels;
+    for(let i=0;i<data.length/4;i++) if(data[i*4+3]>160) pixels.push(i);
+    return {pixels,width:mask.width,top:(h-mask.height)/2};
   }
 
-  // Each sample stays at a fixed horizontal position. Increasing time
-  // shifts the signal right, so every crest can be followed across the field.
-  const samples = 512;
-  const signal = new Float32Array(samples);
-  const tau = 2 * Math.PI;
-  function updateSignal(time) {
-    const peak = Math.min(h * .23, w * .16);
-    for (let i = 0; i < samples; i++) {
-      const u = i / (samples - 1);
-      const phase = u - .16 * time;
-      const envelope = .44 + .56 * (.5 + .5 * Math.cos(tau * (phase * 1.65 + .08))) ** 2;
-      const fundamental = Math.sin(tau * 3.8 * phase);
-      const harmonic = .26 * Math.sin(tau * 7.6 * phase + .8) + .13 * Math.sin(tau * 11.4 * phase - .3);
-      const taper = Math.sin(Math.PI * u) ** .55;
-      signal[i] = peak * taper * envelope * (fundamental + harmonic);
-    }
-  }
-
-  function layout() {
-    const width=section.clientWidth, height=section.clientHeight;
-    if (!width||!height||(width===w&&height===h)) return;
-    w=width; h=height;
-    const ratio=Math.min(devicePixelRatio||1,2);
+  function layout(){
+    if(w===intro.clientWidth && h===intro.clientHeight) return;
+    w=intro.clientWidth; h=intro.clientHeight;
+    if(!w||!h) return;
+    seed=527174;
+    ratio=Math.min(devicePixelRatio||1,1.75);
     canvas.width=Math.round(w*ratio); canvas.height=Math.round(h*ratio);
     ctx.setTransform(ratio,0,0,ratio,0,0);
-    seed=81272;
-    const pixels=letterPixels();
-    if(!pixels.length) return;
-    const count=Math.round(Math.max(2200,Math.min(9600,w*h/112)));
-    const margin = w < 600 ? w * .045 : w * .07;
+    pointLayer.width=w; pointLayer.height=h;
+    pointImage=points.createImageData(w,h);
+    const mask=makeType();
+    if(!mask.pixels.length) return;
+    pointerRadius=Math.max(32,Math.min(110,typeSize*.65));
+    waveMargin=w*.025;
+    waveShift.fill(0);
+    waveSpeed.fill(0);
+    const count=Math.round(Math.max(15000,Math.min(58000,w*h*.046)));
     stars=Array.from({length:count},(_,i)=>{
-      const sx=random()*w, sy=random()*h, phase=random()*Math.PI*2;
-      const u = sx / w;
-      const sample = u * (samples - 1);
-      const sampleIndex = Math.min(samples - 2, Math.floor(sample));
-      const band = (random() + random() + random() - 1.5) * (w < 600 ? 2.6 : 4.8);
-      const pixel=pixels[Math.min(pixels.length-1,Math.floor((i+random())/count*pixels.length))];
-      const tx=(w-mask.width)/2+pixel%mask.width+.5;
-      const ty=(h-mask.height)/2+Math.floor(pixel/mask.width)+.5;
-      const ambient=i%13===0;
-      return {sx,sy,wx:margin + u * (w - 2 * margin), sampleIndex,
-        fraction:sample - sampleIndex,band,tx,ty,phase,ambient,
-        delay:random()*.66, size:.48+random()**2*(w<600?.75:1.20),
-        opacity:.40+random()*.60,tone:tones[Math.floor(random()*tones.length)]};
+      const pixel=mask.pixels[Math.floor(random()*mask.pixels.length)];
+      const tx=pixel%mask.width+random(), ty=Math.floor(pixel/mask.width)+mask.top+random();
+      const sx=random()*w, sy=random()*h, u=sx/w;
+      const strand=Math.floor(random()*strands);
+      return {sx,sy,tx,ty,u,ix:Math.floor(u*samples),f:u*samples%1,strand,
+        jitter:(random()+random()+random()-1.5)*Math.max(1.2,w*.0018),
+        phase:random()*tau,light:random()**2,delay:random()*.52, ambient:i%17===0,
+        dx:0,dy:0,vx:0,vy:0};
     });
-    // Break the correspondence between text scanlines and the order of the seeds.
-    for(let i=stars.length-1;i>0;i--){
-      const a=stars[i], b=stars[Math.floor(random()*(i+1))];
-      [a.tx,b.tx]=[b.tx,a.tx]; [a.ty,b.ty]=[b.ty,a.ty];
-    }
-    section.classList.add('ready');
-    paint(); queue();
+    intro.classList.add('ready');
+    render(0);schedule();
   }
 
-  function paint() {
-    ctx.clearRect(0,0,w,h);
-    const t=reduced.matches?12:elapsed;
-    updateSignal(t);
-    for(const s of stars){
-      const wave=s.ambient?0:ease(.65+s.delay,2.35+s.delay,t);
-      const word=s.ambient?0:ease(8.25+s.delay,10.65+s.delay,t);
-      const phase=s.phase;
-      const drift=1-word;
-      const i = s.sampleIndex;
-      const displacement = signal[i] + s.fraction * (signal[i+1] - signal[i]);
-      const wy = h / 2 - displacement + s.band;
-      const x = s.sx + (s.wx - s.sx) * wave;
-      const y=s.sy+(wy-s.sy)*wave;
-      const px=x+(s.tx-x)*word+drift*(2+3*(1-wave))*Math.cos(t*.46+phase);
-      const py=y+(s.ty-y)*word+drift*(2+3*(1-wave))*Math.sin(t*.50+phase);
-      ctx.fillStyle=s.tone;
-      ctx.globalAlpha=s.opacity*(s.ambient?.42:.55+.40*Math.max(wave,word))*(.90+.10*Math.sin(phase+t*1.2));
-      const size=s.size*(.80+.23*wave+.36*word);
-      ctx.fillRect(px-size/2,py-size/2,size,size);
+  // Curves share a bright central axis. Phase offsets open them into ribbons at the peaks.
+  function traceWaves(t,dt){
+    const radius=pointerRadius*1.24;
+    const active=pointer.active && !reduced.matches && t>.65;
+    const decay=Math.exp(-8*dt);
+    const amp=Math.min(w*.17,h*.28);
+    for(let row=0;row<strands;row++){
+      const lane=2*row/(strands-1)-1;
+      for(let j=0;j<=samples;j++){
+        const u=j/samples;
+        const phase=u-.115*t;
+        const bend=.5+.5*Math.sin(tau*(1.75*phase+.07));
+        const envelope=Math.sin(Math.PI*u)**.78;
+        const pulse=.36+.64*Math.cos(tau*(.90*phase+.18))**2;
+        const a=tau*(3.3*phase+.11*Math.sin(tau*phase));
+        const peak=Math.sin(a+lane*.86)+.34*Math.sin(2*a+.4+lane*1.2);
+        const echo=Math.sin(a*1.36-lane*1.85+.4);
+        const ribbon=lerp(peak,echo,(lane+1)*.24);
+        const spread=(.35+.65*bend)*(.22+.78*Math.abs(lane));
+        const k=row*(samples+1)+j;
+        const y=h*.5-amp*envelope*pulse*(ribbon*spread+lane*.23*Math.sin(a-.7));
+        let target=0;
+        if(active){
+          const rx=(waveMargin+u*(w-2*waveMargin)-pointer.x)/radius;
+          const ry=(y-pointer.y)/radius;
+          const distance=rx*rx+ry*ry;
+          if(distance<1){
+            const falloff=(1-distance)**2;
+            target=radius*.94*falloff*Math.sin(t*9-rx*4+lane*.85);
+          }
+        }
+        waveSpeed[k]=(waveSpeed[k]+(target-waveShift[k])*205*dt)*decay;
+        waveShift[k]+=waveSpeed[k]*dt;
+        waves[k]=y+waveShift[k];
+      }
     }
-    ctx.globalAlpha=1;
   }
-  function frame(now) {
-    handle=0;
-    if(!visible||document.hidden) {previous=null;return;}
-    if(previous!==null && now-previous<31){queue();return;}
-    if(previous!==null) elapsed+=Math.min(.15,(now-previous)/1000);
-    previous=now;
-    paint();
-    if(!reduced.matches && elapsed<11.5) queue();
+  function addWhiteStar(image,k,light){
+    const value=Math.min(255,image[k]+light);
+    image[k]=image[k+1]=image[k+2]=value;
+    image[k+3]=255;
   }
-  function queue(){
-    if(!handle&&visible&&!document.hidden) handle=requestAnimationFrame(frame);
+
+  function render(dt) {
+    if(!stars.length)return;
+    const t=reduced.matches?13:clock;
+    if(t<11.4)traceWaves(t,dt);
+    ctx.clearRect(0,0,w,h);
+    const image=pointImage.data;
+    image.fill(0);
+    const active=pointer.active && t>8.05 && !reduced.matches;
+    const damp=Math.exp(-9.8*dt), radius2=pointerRadius*pointerRadius;
+    for(const s of stars){
+      const waveMix=s.ambient?0:smooth(.65+s.delay,2.7+s.delay,t);
+      const titleMix=s.ambient?0:smooth(8.05+s.delay,10.85+s.delay,t);
+      const wi=s.strand*(samples+1)+s.ix;
+      const waveY=lerp(waves[wi],waves[wi+1],s.f)+s.jitter;
+      let x=lerp(lerp(s.sx,waveMargin+s.u*(w-2*waveMargin),waveMix),s.tx,titleMix);
+      let y=lerp(lerp(s.sy,waveY,waveMix),s.ty,titleMix);
+      if(waveMix<1){x+=2.6*Math.cos(t*.39+s.phase)*(1-waveMix);y+=2.6*Math.sin(t*.43+s.phase)*(1-waveMix);}
+      let ex=0,ey=0;
+      if(active && titleMix>0){
+        const rx=x-pointer.x,ry=y-pointer.y,dist2=rx*rx+ry*ry;
+        if(dist2<radius2){
+          const dist=Math.sqrt(dist2)||.01,fall=1-dist/pointerRadius;
+          const force=titleMix*pointerRadius*fall*fall*(.83+.76*s.light);
+          ex=(rx/dist+.38*Math.cos(s.phase))*force;ey=(ry/dist+.38*Math.sin(s.phase))*force;
+        }
+      }
+      s.vx=(s.vx+(ex-s.dx)*104*dt)*damp;s.vy=(s.vy+(ey-s.dy)*104*dt)*damp;
+      s.dx+=s.vx*dt;s.dy+=s.vy*dt;x+=s.dx;y+=s.dy;
+      const ix=Math.floor(x),iy=Math.floor(y);
+      if(ix<0||ix>=w-1||iy<0||iy>=h-1)continue;
+      const k=(iy*w+ix)*4,fx=x-ix,fy=y-iy;
+      const light=(.14+.93*s.light)*(s.ambient?.47:1)*lerp(1,1.52,titleMix)*255;
+      addWhiteStar(image,k,(1-fx)*(1-fy)*light);
+      addWhiteStar(image,k+4,fx*(1-fy)*light);
+      addWhiteStar(image,k+w*4,(1-fx)*fy*light);
+      addWhiteStar(image,k+w*4+4,fx*fy*light);
+    }
+    points.putImageData(pointImage,0,0);
+    ctx.globalCompositeOperation='lighter';ctx.drawImage(pointLayer,0,0);
+    ctx.globalCompositeOperation='source-over';
   }
-  function resume(){
-    previous=null;
-    if(visible&&!document.hidden){paint();if(!reduced.matches&&elapsed<11.5) queue();}
+  function tick(now){
+    frame=0;
+    if(!visible||document.hidden){last=0;return;}
+    if(last&&now-last<30){schedule();return;}
+    const dt=last?Math.min(.05,(now-last)/1000):1/60;
+    if(last)clock+=Math.min(.2,(now-last)/1000);
+    last=now;render(dt);
+    if(!reduced.matches)schedule();
   }
-  // A deliberate sweep stirs the field again; a resting pointer lets the title settle.
-  let pointer=null;
-  section.addEventListener('pointermove',event=>{
-    if(reduced.matches||event.pointerType==='touch')return;
-    const p={x:event.clientX,y:event.clientY};
-    if(!pointer){pointer=p;return;}
-    if(Math.hypot(p.x-pointer.x,p.y-pointer.y)<12)return;
-    pointer=p;
-    if(elapsed>0.6) elapsed=Math.max(.45,elapsed-.36);
-    previous=null;queue();
-  });
-  section.addEventListener('pointerleave',()=>{pointer=null;});
-  new ResizeObserver(layout).observe(section);
-  new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;resume();}).observe(section);
+  function schedule(){if(!frame&&visible&&!document.hidden)frame=requestAnimationFrame(tick);}
+  function resume(){last=0;schedule();}
+  function track(e){
+    const box=canvas.getBoundingClientRect();
+    pointer.x=e.clientX-box.left;pointer.y=e.clientY-box.top;pointer.active=true;
+    schedule();
+  }
+  intro.addEventListener('pointermove',track,{passive:true});
+  intro.addEventListener('pointerdown',track,{passive:true});
+  for(const event of ['pointerleave','pointercancel'])intro.addEventListener(event,()=>{pointer.active=false;});
+  intro.addEventListener('pointerup',e=>{if(e.pointerType!=='mouse')pointer.active=false;});
+  new ResizeObserver(layout).observe(intro);
+  new IntersectionObserver(([entry])=>{visible=entry.isIntersecting;resume();}).observe(intro);
   document.addEventListener('visibilitychange',resume);
   reduced.addEventListener('change',resume);
   layout();
