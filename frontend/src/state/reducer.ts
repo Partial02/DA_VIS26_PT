@@ -45,7 +45,11 @@ export function experienceReducer(state: ExperienceState, action: Action): Exper
     case 'arrive': {
       if (action.transition !== state.transition || state.arrivedTransition === action.transition) return state
       const genreId = state.view.level === 'universe' ? null : state.view.genreId
-      const genreVisits = genreId && genreId !== state.arrivedGenreId
+      // A genre visit counts on entering the genre from elsewhere and on every subgenre arrival
+      // (moving between its subgenres or landing from a recommendation); only stepping up from a
+      // subgenre to its own genre view does not count.
+      const countsGenre = genreId && (genreId !== state.arrivedGenreId || state.view.level === 'system')
+      const genreVisits = countsGenre
         ? { ...state.genreVisits, [genreId]: (state.genreVisits[genreId] ?? 0) + 1 } : state.genreVisits
       const arrived = { ...state, arrivedTransition: action.transition, genreVisits, arrivedGenreId: genreId }
       if (state.view.level !== 'system') return arrived
