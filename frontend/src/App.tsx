@@ -8,14 +8,22 @@ import { AmbientBackground } from './components/AmbientBackground'
 import { Header } from './components/Header'
 import { Explore } from './components/Explore'
 import { IntroPage, StoryPages } from './presentation/StoryPages'
+import { MethodSlides, methodSlides } from './presentation/method/MethodSlides'
 import { useReducedMotion } from './state/useReducedMotion'
 import { journeyMotion } from './state/motion'
 
-function parseHash() {
-  if (location.hash === '#/explore') return { story: false, chapter: 0 }
+export type Part = 'story' | 'explore' | 'method'
+
+/** Part 1 발표 `#/story[/1–5]`, Part 2 탐색 `#/explore`, Part 3 방법 `#/method[/n]`. */
+function parseHash(): { part: Part; chapter: number } {
+  if (location.hash === '#/explore') return { part: 'explore', chapter: 0 }
+  const method = location.hash.match(/^#\/method(?:\/(\d+))?$/)
+  if (method) return { part: 'method', chapter: Math.min(Number(method[1] ?? 0), methodSlides.length - 1) }
   const match = location.hash.match(/^#\/story\/([1-5])$/)
-  return { story: true, chapter: match ? Number(match[1]) : 0 }
+  return { part: 'story', chapter: match ? Number(match[1]) : 0 }
 }
+
+const partOrder: Record<Part, number> = { story: 0, explore: 1, method: 2 }
 
 function Experience({ route }: { route: ReturnType<typeof parseHash> }) {
   const reduced = useReducedMotion()
@@ -26,13 +34,13 @@ function Experience({ route }: { route: ReturnType<typeof parseHash> }) {
   const drift = useRef({ depth: 0 })
   useLayoutEffect(() => {
     const previous = current.current
-    if (previous.story === route.story && previous.chapter === route.chapter) {
+    if (previous.part === route.part && previous.chapter === route.chapter) {
       gsap.set(stage.current, { opacity: 1 })
       setChanging(false)
       return
     }
     setChanging(true)
-    const direction = route.story && (!previous.story || route.chapter < previous.chapter) ? -1 : 1
+    const direction = partOrder[route.part] * 100 + route.chapter < partOrder[previous.part] * 100 + previous.chapter ? -1 : 1
     const duration = reduced ? .2 : journeyMotion.duration
     const fade = reduced ? .1 : journeyMotion.fade
     const timeline = gsap.timeline({ onComplete: () => setChanging(false) })
@@ -46,10 +54,11 @@ function Experience({ route }: { route: ReturnType<typeof parseHash> }) {
     if (!changing) stage.current?.querySelector<HTMLElement>('main[tabindex]')?.focus({ preventScroll: true })
   }, [changing])
   return <div className="app">
-    <AmbientBackground cover={displayed.story && displayed.chapter === 0} exploring={!displayed.story} drift={drift} />
-    <Header story={displayed.story} chapter={displayed.chapter} />
+    <AmbientBackground cover={displayed.part === 'story' && displayed.chapter === 0} exploring={displayed.part === 'explore'} drift={drift} />
+    <Header part={displayed.part} chapter={displayed.chapter} />
     <div ref={stage} className="routeStage" inert={changing} aria-busy={changing}>
-      {displayed.story ? displayed.chapter === 0 ? <IntroPage /> : <StoryPages page={displayed.chapter} /> : <Explore />}
+      {displayed.part === 'story' ? displayed.chapter === 0 ? <IntroPage /> : <StoryPages page={displayed.chapter} />
+        : displayed.part === 'method' ? <MethodSlides slide={displayed.chapter} /> : <Explore />}
     </div>
   </div>
 }

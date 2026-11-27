@@ -3,9 +3,12 @@ import { useExperience } from '../state/ExperienceContext'
 import { Icon } from './Icon'
 import { SoundToggle } from './SoundToggle'
 import { storyPages } from '../presentation/StoryPages'
+import { methodSlides } from '../presentation/method/MethodSlides'
+import type { Part } from '../App'
 import styles from './Interface.module.css'
 
-export function Header({ story, chapter }: { story: boolean; chapter: number }) {
+export function Header({ part, chapter }: { part: Part; chapter: number }) {
+  const story = part === 'story'
   const { state, catalog, dispatch } = useExperience()
   const genre = state.view.level !== 'universe' ? catalog.genreById.get(state.view.genreId)! : null
   const subgenre = state.view.level === 'system' ? catalog.subgenreById.get(state.view.subgenreId)! : null
@@ -23,7 +26,7 @@ export function Header({ story, chapter }: { story: boolean; chapter: number }) 
   return <header className={styles.header}>
     <div className={styles.headerIdentity}>
       <a className={styles.wordmark} href="#/explore" aria-label="INNER VERSE 시스템 홈으로" onClick={() => { setOpen(false); dispatch({ type: 'navigate', destination: { level: 'universe' } }) }}>INNER<span>//</span>VERSE</a>
-      {!story && genre && <nav className={styles.breadcrumbs} data-traveling={state.transition !== state.arrivedTransition} inert={state.transition !== state.arrivedTransition} aria-label="현재 탐색 경로">
+      {part === 'explore' && genre && <nav className={styles.breadcrumbs} data-traveling={state.transition !== state.arrivedTransition} inert={state.transition !== state.arrivedTransition} aria-label="현재 탐색 경로">
         <button onClick={() => dispatch({ type: 'navigate', destination: { level: 'genre', genreId: genre.id } })} aria-current={!subgenre ? 'location' : undefined}>{genre.name}</button><span aria-hidden="true">/</span>
         {subgenre && <><span aria-current="location">{subgenre.name}</span><span aria-hidden="true">/</span></>}
       </nav>}
@@ -37,7 +40,11 @@ export function Header({ story, chapter }: { story: boolean; chapter: number }) 
           <li><a href="#/story" onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={story && chapter === 0 ? 'page' : undefined}><span>00</span>인트로</a></li>
           {storyPages.map((item, index) => <li key={item.title}><a href={`#/story/${index + 1}`} onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={story && chapter === index + 1 ? 'page' : undefined}><span>{String(index + 1).padStart(2, '0')}</span>{item.title}</a></li>)}
         </ol>
-        <a href="#/explore" onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={!story ? 'page' : undefined}>Part 2 · 음악 탐색</a>
+        <a href="#/explore" onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={part === 'explore' ? 'page' : undefined}>Part 2 · 음악 탐색</a>
+        <a href="#/method" onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={part === 'method' && chapter === 0 ? 'page' : undefined}>Part 3 · 데이터와 방법</a>
+        <ol className={styles.chapterNav}>
+          {methodSlides.slice(1).map((item, index) => <li key={item.title}><a href={`#/method/${index + 1}`} onClick={() => { setOpen(false); trigger.current?.focus() }} aria-current={part === 'method' && chapter === index + 1 ? 'page' : undefined}><span>{String(index + 1).padStart(2, '0')}</span>{item.title}</a></li>)}
+        </ol>
         <details className={styles.menuDetails}><summary>사용법</summary>
           <p>인트로는 아래로 스크롤하거나 방향키를 누르면 넘어갑니다. 발표는 아래로 스크롤하면 이어지고, 위로 스크롤하면 이전 내용으로 돌아갑니다. 햄버거 메뉴의 목차에서 파트와 페이지를 선택할 수 있습니다.</p>
           <p>전체 지도·장르·항성계에서 드래그 또는 방향키로 회전하고 우클릭 드래그·두 손가락으로 이동합니다. 휠 또는 +/−로 접근·후퇴하고 지도에 포커스를 둔 상태에서 0으로 원래 보기를 복원합니다.</p>
