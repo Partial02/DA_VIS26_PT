@@ -12,7 +12,7 @@ import styles from './Method.module.css'
 
 // ---------------------------------------------------------------- shared pieces
 
-function Slide({ title, lede, children, wide }: { title: ReactNode; lede?: ReactNode; children?: ReactNode; wide?: boolean }) {
+export function Slide({ title, lede, children, wide }: { title: ReactNode; lede?: ReactNode; children?: ReactNode; wide?: boolean }) {
   return <div className={styles.layout} data-wide={wide || undefined}>
     <section className={styles.copy}>
       <h1>{title}</h1>
@@ -233,10 +233,16 @@ export function AlgorithmPlaylist() {
     ['A', '곡 2', .85, .85 - ARTIST_PENALTY, '3'],
     ['B', '곡 1', .80, .80, '2'],
   ]
-  return <Slide wide title={<>세부장르 안에서는<br /><em>곡</em>에 점수를 매긴다</>} lede={<>
-    <p>세부장르에 들어가면 같은 선택으로 플레이리스트 순서를 정합니다. 곡 점수는 세 항목의 가중합입니다.</p>
-    <p className={styles.note}>아무 칸도 고르지 않았다면 대표성 0.55 + 길이 0.45로 정렬합니다.</p>
-  </>}>
+  const steps: [string, ReactNode, ReactNode][] = [
+    ['① match', <>F1(prec, recall)</>, <>prec = Σ<sub>c: s_c ∈ T</sub> ρ(c) / |C|, recall = Σ<sub>s ∈ T</sub> w(s) / |T|. T = 곡의 세션 집합.</>],
+    ['② typical', <>mean<sub>s ∈ T</sub> q_S(s) / max q_S</>, <>곡의 편성이 그 세부장르에서 흔한 세션으로 이루어졌는가.</>],
+    ['③ length', <>1 (2:30–5:00), 선형 감소, 0</>, <>1:00 이하와 9:00 이상은 0, 그 사이는 직선으로 이어집니다.</>],
+    ['④ 곡 점수', <>{TRACK_WEIGHTS.match}·match + {TRACK_WEIGHTS.typical}·typical + {TRACK_WEIGHTS.length}·length</>, <>칸을 안 골랐으면 0.55·typical + 0.45·length. 동점 방지용 해시 잡음 ≤ 0.008.</>],
+    ['⑤ 순서', <>argmax [점수 − {ARTIST_PENALTY}·k<sub>artist</sub>]</>, <>k = 이미 목록에 들어간 같은 아티스트 곡 수. 매번 가장 큰 곡을 하나씩 뽑습니다.</>],
+  ]
+  return <Slide wide title={<>세부장르 안에서는<br /><em>곡</em>마다 점수</>} lede={<ol className={styles.steps}>{steps.map(([label, formula, text]) => <li key={label}>
+    <span className={styles.stepLabel}>{label}</span><code>{formula}</code><p>{text}</p>
+  </li>)}</ol>}>
     <figure className={styles.panel}>
       <figcaption>곡 점수 = 0.74·match + 0.12·typical + 0.14·length</figcaption>
       <div className={styles.stack}>{parts.map(([name, weight], i) => <span key={name} style={{ flexGrow: weight, opacity: 1 - i * .28 }}><b>{name}</b>{weight}</span>)}</div>
@@ -263,78 +269,3 @@ export function AlgorithmPlaylist() {
   </Slide>
 }
 
-// ---------------------------------------------------------------- 03 system
-
-export function SystemPipeline() {
-  const { catalog } = useModel()
-  const instruments = useMemo(() => new Set(catalog.tracks.flatMap(track => track.instruments)).size, [catalog])
-  const dims = catalog.genres.length + catalog.subgenres.length + instruments
-  const steps: [string, string, string][] = [
-    ['CSV', `${catalog.tracks.length.toLocaleString()}곡`, '장르·세부장르·악기 태그'],
-    ['프로필', `${catalog.meta.profileCount.toLocaleString()}개`, '중복 없는 태그 조합'],
-    ['특징', `${dims}차원`, `장르 ${catalog.genres.length} + 세부 ${catalog.subgenres.length} + 악기 ${instruments}`],
-    ['t-SNE', '3차원', 'cosine · perplexity 40 · PCA 초기값 · seed 42'],
-    ['구형 배치', '반경 12', '축 균형 · 밀도 조정 · 곡별 오프셋'],
-    ['JSON', 'music-catalog', '브라우저가 그대로 읽음'],
-  ]
-  const weights: [string, number][] = [['대장르', .15], ['세부장르', .30], ['악기', .55]]
-  return <Slide wide title={<>태그만으로 만든<br /><em>3차원</em> 음악 지도</>} lede={<>
-    <p>비슷한 태그 조합을 가진 곡이 가까이 모이도록 t-SNE로 3차원 좌표를 만들고, 둥근 우주처럼 보이도록 구 안에 다시 펼쳤습니다.</p>
-    <p className={styles.note}>모든 계산은 Python으로 미리 끝내고, 브라우저는 저장된 좌표만 읽습니다.</p>
-  </>}>
-    <ol className={styles.pipeline}>{steps.map(([name, value, detail]) => <li key={name}><span>{name}</span><strong>{value}</strong><small>{detail}</small></li>)}</ol>
-    <figure className={styles.panel}>
-      <figcaption>특징 묶음의 비중 (cosine 유사도에 기여하는 몫)</figcaption>
-      <div className={styles.stack}>{weights.map(([name, weight], i) => <span key={name} style={{ flexGrow: weight, opacity: .45 + i * .27 }}><b>{name}</b>{percent(weight)}</span>)}</div>
-      <p className={styles.caption}>각 묶음을 √(w/k)로 정규화해 태그 수가 많아도 묶음의 비중은 그대로입니다. 악기를 가장 크게 둔 것은 “어떤 소리로 이루어졌나”를 지도의 기준으로 삼기 위해서입니다.</p>
-    </figure>
-  </Slide>
-}
-
-export function SystemArchitecture() {
-  const columns: { title: string; tag: string; items: [string, string][] }[] = [
-    { title: '오프라인 준비', tag: 'Python', items: [
-      ['prepare_data.py', '태그 특징 → t-SNE → 구형 배치'],
-      ['build_category_model.py', '장르 × 세션 231칸, 세부장르 프로필'],
-    ] },
-    { title: '정적 데이터', tag: 'JSON', items: [
-      ['music-catalog.json', '곡·장르·좌표·장르색'],
-      ['category-model.json', '세션 16종·범주·곡별 세션'],
-    ] },
-    { title: '브라우저', tag: 'React · Three.js', items: [
-      ['별 지도', '전체 → 장르 → 세부장르 줌'],
-      ['추천 엔진', 'category.ts: 세부장르·곡 점수'],
-      ['방문 누적', '장르색·밝기, 미방문 보너스'],
-    ] },
-    { title: '소리', tag: 'Jamendo · Web Audio', items: [
-      ['Jamendo API', 'TRACK_ID로 CC 음원 재생'],
-      ['AnalyserNode', '실시간 스펙트럼 → 막대·별 반짝임'],
-    ] },
-  ]
-  return <Slide wide title={<>서버 없이 돌아가는<br /><em>정적</em> 웹 앱</>} lede={<>
-    <p>무거운 계산은 미리 JSON으로 만들어 두고, 추천 점수처럼 선택에 따라 바뀌는 부분만 브라우저에서 즉시 계산합니다.</p>
-    <ul>
-      <li>로그인·추천 서버·사용자 학습 없음</li>
-      <li>선택·방문 기록은 메모리에만 보관</li>
-      <li>정적 호스팅만으로 배포 가능</li>
-    </ul>
-  </>}>
-    <ol className={styles.architecture}>{columns.map(column => <li key={column.title}>
-      <header><strong>{column.title}</strong><span>{column.tag}</span></header>
-      <ul>{column.items.map(([name, text]) => <li key={name}><code>{name}</code><small>{text}</small></li>)}</ul>
-    </li>)}</ol>
-    <p className={styles.caption}>선택(장르 × 세션 칸) → 추천 엔진 → 세부장르 이동 → 방문 기록 → 다음 추천의 미방문 보너스로 다시 이어집니다.</p>
-  </Slide>
-}
-
-export function SystemLimits() {
-  const items: [string, string][] = [
-    ['거리 ≠ 음향 차이', 't-SNE와 구형 후처리는 거리를 바꿉니다. 가까운 별은 태그가 비슷하다는 단서일 뿐, 소리의 차이를 잰 값이 아닙니다.'],
-    ['설계한 가중치', '15·30·55%, 0.86·0.14, 0.74·0.12·0.14는 사용자 데이터에서 학습한 값이 아니라 설명 가능하도록 정한 값입니다.'],
-    ['태그의 한계', '오디오 특징을 쓰지 않아, 태그가 빈약하거나 틀린 곡은 엉뚱한 자리에 놓일 수 있습니다.'],
-    ['다음 단계', '실제 오디오 임베딩 결합, 청취 기록으로 가중치 보정, 추천 다양성의 정량 평가.'],
-  ]
-  return <Slide wide title={<>무엇을 말할 수 있고,<br /><em>무엇은</em> 아닌가</>} lede={<p>이 시스템은 정답을 맞히는 추천기라기보다, <b>왜 이 장르가 추천됐는지 보이는</b> 탐색 도구를 목표로 했습니다.</p>}>
-    <ul className={styles.limits}>{items.map(([title, text]) => <li key={title}><strong>{title}</strong><p>{text}</p></li>)}</ul>
-  </Slide>
-}

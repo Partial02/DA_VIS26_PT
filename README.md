@@ -44,8 +44,8 @@ Part 2를 시연한 뒤 이어서 보여주는 발표 전용 슬라이드 9장�
 | 구역 | 슬라이드 |
 | --- | --- |
 | 01 사용한 데이터셋 | MTG-Jamendo 곡·장르·세부장르·악기 수와 장르별 곡 수, 악기 125개 → 세션 16개와 `family_rate`·`lift` |
-| 02 추천 알고리즘 | 직접 눌러보는 장르 × 세션 선택표와 실시간 세부장르 순위, 점수 식 분해(예시: Jazz × 피아노·금관), 곡 점수·길이 적합도·아티스트 감점 |
-| 03 시스템 방법 | 태그 → t-SNE → 구형 배치 파이프라인과 특징 비중, 오프라인 Python → 정적 JSON → 브라우저·Jamendo 구성, 해석의 범위 |
+| 02 추천 알고리즘 | 직접 눌러보는 장르 × 세션 선택표와 실시간 세부장르 순위, 점수 식 분해(예시: Jazz × 피아노·금관), 곡 점수 식(match·typical·length·아티스트 감점) |
+| 03 시스템 방법 | I want hue로 만든 장르색 15개(CIELAB a*–b* 분포·가장 가까운 쌍), Jamendo API → TRACK_ID 저장소 주소 → 일반 재생·곡 페이지 링크로 이어지는 음원 불러오기, 최근 연구에 근거한 음악 추천의 한계 |
 
 수치와 차트는 `music-catalog.json`·`category-model.json`과 `domain/category.ts`의 실제 함수·상수를 그대로 읽으므로 데이터나 가중치를 바꾸면 슬라이드도 함께 바뀝니다. 슬라이드 순서와 제목은 `frontend/src/presentation/method/MethodSlides.tsx`, 내용은 같은 폴더의 `slides.tsx`에서 관리합니다.
 

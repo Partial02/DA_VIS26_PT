@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react'
 import type { ComponentType } from 'react'
-import { AlgorithmFormula, AlgorithmPlaylist, AlgorithmTable, DatasetOverview, DatasetSessions, MethodCover, SystemArchitecture, SystemLimits, SystemPipeline } from './slides'
+import { AlgorithmFormula, AlgorithmPlaylist, AlgorithmTable, DatasetOverview, DatasetSessions, MethodCover } from './slides'
+import { SystemAudio, SystemColors, SystemLimits } from './systemSlides'
 import styles from './Method.module.css'
 
 /**
@@ -20,9 +21,9 @@ export const methodSlides: { title: string; section?: (typeof methodSections)[nu
   { title: '장르 × 세션 선택표', section: 'algorithm', component: AlgorithmTable },
   { title: '세부장르 점수 식', section: 'algorithm', component: AlgorithmFormula },
   { title: '세부장르 안의 곡 순서', section: 'algorithm', component: AlgorithmPlaylist },
-  { title: '태그로 만든 3차원 지도', section: 'system', component: SystemPipeline },
-  { title: '시스템 구성', section: 'system', component: SystemArchitecture },
-  { title: '해석의 범위', section: 'system', component: SystemLimits },
+  { title: '장르색: I want hue', section: 'system', component: SystemColors },
+  { title: 'Jamendo 음원 불러오기', section: 'system', component: SystemAudio },
+  { title: '음악 추천의 한계', section: 'system', component: SystemLimits },
 ]
 
 const interactive = 'button, a, input, select, textarea, summary, dialog, [role="button"], [role="slider"], [contenteditable="true"], [data-no-advance]'
